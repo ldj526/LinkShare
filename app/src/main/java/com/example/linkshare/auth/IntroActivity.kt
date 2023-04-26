@@ -7,17 +7,24 @@ import com.example.linkshare.databinding.ActivityIntroBinding
 
 class IntroActivity : AppCompatActivity() {
 
-    private lateinit var binding: ActivityIntroBinding
+    private var _binding: ActivityIntroBinding? = null
+    private val binding get() = _binding!!
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityIntroBinding.inflate(layoutInflater)
+        _binding = ActivityIntroBinding.inflate(layoutInflater)
 
         setContentView(binding.root)
 
         binding.joinText.setOnClickListener {
+            // JoinActivity 로 이동
             val intent = Intent(this, JoinActivity::class.java)
             startActivity(intent)
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        _binding = null
     }
 }
