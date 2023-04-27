@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "161663288864",
+    "project_id": "linkshare-87817",
+    "storage_bucket": "linkshare-87817.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:161663288864:android:26c09566a0f4ce4578de45",
+        "android_client_info": {
+          "package_name": "com.example.linkshare"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "161663288864-hp2g7g15modvmqgrd6cmqnocdiohcota.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB-mvKilIb4ya9bwnpvmjCJEntLP4NrhDw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "161663288864-hp2g7g15modvmqgrd6cmqnocdiohcota.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
