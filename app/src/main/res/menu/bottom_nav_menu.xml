@@ -9,4 +9,9 @@
         android:id="@+id/secondFragment"
         android:title="second"
         android:icon="@android:drawable/arrow_up_float"/>
+
+    <item
+        android:id="@+id/thirdFragment"
+        android:title="third"
+        android:icon="@android:drawable/sym_action_email"/>
 </menu>
