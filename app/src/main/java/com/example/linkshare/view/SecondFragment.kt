@@ -1,13 +1,19 @@
 package com.example.linkshare.view
 
+import android.content.Intent
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.example.linkshare.R
+import androidx.fragment.app.Fragment
+import com.example.linkshare.board.BoardWriteActivity
+import com.example.linkshare.databinding.FragmentSecondBinding
 
 class SecondFragment : Fragment() {
+
+    private var _binding: FragmentSecondBinding? = null
+    private val binding get() = _binding!!
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
     }
@@ -17,6 +23,17 @@ class SecondFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_second, container, false)
+        _binding = FragmentSecondBinding.inflate(inflater, container, false)
+
+        binding.writeBtn.setOnClickListener {
+            val intent = Intent(context, BoardWriteActivity::class.java)
+            startActivity(intent)
+        }
+        return binding.root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }
