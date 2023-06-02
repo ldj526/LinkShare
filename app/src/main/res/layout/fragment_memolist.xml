@@ -5,12 +5,10 @@
     android:layout_height="match_parent"
     tools:context=".view.MemoListFragment">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <ListView
+        android:id="@+id/memoListView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="Second"
-        android:textSize="30sp" />
+        android:layout_height="match_parent" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fbAdd"
@@ -19,6 +17,6 @@
         android:layout_gravity="bottom|end"
         android:layout_marginRight="16dp"
         android:layout_marginBottom="16dp"
-        android:src="@android:drawable/ic_input_add"/>
+        android:src="@android:drawable/ic_input_add" />
 
 </FrameLayout>

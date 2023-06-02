@@ -2,17 +2,29 @@ package com.example.linkshare.view
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import com.example.linkshare.databinding.FragmentMemolistBinding
+import com.example.linkshare.memo.MemoLVAdapter
+import com.example.linkshare.memo.MemoModel
 import com.example.linkshare.memo.MemoWriteActivity
-import com.example.linkshare.databinding.FragmentSecondBinding
+import com.example.linkshare.utils.FBRef
+import com.example.linkshare.utils.FBRef.Companion.memoList
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.ValueEventListener
+import timber.log.Timber
 
 class MemoListFragment : Fragment() {
 
-    private var _binding: FragmentSecondBinding? = null
+    private var _binding: FragmentMemolistBinding? = null
     private val binding get() = _binding!!
+    private val memoDataList = mutableListOf<MemoModel>()
+    private lateinit var memoLVAdapter: MemoLVAdapter
+    private val TAG = MemoListFragment::class.java.simpleName
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -23,13 +35,41 @@ class MemoListFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        _binding = FragmentSecondBinding.inflate(inflater, container, false)
+        _binding = FragmentMemolistBinding.inflate(inflater, container, false)
+
+        // ListView 연결
+        memoLVAdapter = MemoLVAdapter(memoDataList)
+        binding.memoListView.adapter = memoLVAdapter
 
         binding.fbAdd.setOnClickListener {
             val intent = Intent(context, MemoWriteActivity::class.java)
             startActivity(intent)
         }
+
+        getFBBoardData()
+
         return binding.root
+    }
+
+    private fun getFBBoardData() {
+        val postListener = object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                // Get Post object and use the values to update the UI
+                for (dataModel in dataSnapshot.children) {
+                    // BoardModel 형식의 데이터 받기
+                    val item = dataModel.getValue(MemoModel::class.java)
+                    memoDataList.add(item!!)
+                }
+                // Sync
+                memoLVAdapter.notifyDataSetChanged()
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {
+                // Getting Post failed, log a message
+                Timber.w(TAG, "loadPost:onCancelled", databaseError.toException())
+            }
+        }
+        FBRef.memoList.addValueEventListener(postListener)
     }
 
     override fun onDestroyView() {

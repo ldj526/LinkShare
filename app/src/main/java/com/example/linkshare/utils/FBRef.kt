@@ -8,6 +8,6 @@ class FBRef {
     companion object {
         private val database = Firebase.database
 
-        val category = database.getReference("memoList")
+        val memoList = database.getReference("memoList")
     }
 }

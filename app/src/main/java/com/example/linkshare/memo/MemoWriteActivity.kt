@@ -1,19 +1,19 @@
 package com.example.linkshare.memo
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import com.example.linkshare.databinding.ActivityBoardWriteBinding
+import androidx.appcompat.app.AppCompatActivity
+import com.example.linkshare.databinding.ActivityMemoWriteBinding
 import com.example.linkshare.utils.FBAuth
 import com.example.linkshare.utils.FBRef
 
 class MemoWriteActivity : AppCompatActivity() {
 
-    private var _binding: ActivityBoardWriteBinding? = null
+    private var _binding: ActivityMemoWriteBinding? = null
     private val binding get() = _binding!!
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        _binding = ActivityBoardWriteBinding.inflate(layoutInflater)
+        _binding = ActivityMemoWriteBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         binding.writeBtn.setOnClickListener {
@@ -22,7 +22,7 @@ class MemoWriteActivity : AppCompatActivity() {
             val uid = FBAuth.getUid()
             val time = FBAuth.getTime()
 
-            FBRef.category.push().setValue(MemoModel(title, content, uid, time))
+            FBRef.memoList.push().setValue(MemoModel(title, content, uid, time))
 
             finish()
         }
