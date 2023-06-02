@@ -25,7 +25,7 @@ class SecondFragment : Fragment() {
         // Inflate the layout for this fragment
         _binding = FragmentSecondBinding.inflate(inflater, container, false)
 
-        binding.writeBtn.setOnClickListener {
+        binding.fbAdd.setOnClickListener {
             val intent = Intent(context, BoardWriteActivity::class.java)
             startActivity(intent)
         }
