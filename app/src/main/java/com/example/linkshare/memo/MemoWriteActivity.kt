@@ -1,13 +1,12 @@
-package com.example.linkshare.board
+package com.example.linkshare.memo
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import com.example.linkshare.R
 import com.example.linkshare.databinding.ActivityBoardWriteBinding
 import com.example.linkshare.utils.FBAuth
 import com.example.linkshare.utils.FBRef
 
-class BoardWriteActivity : AppCompatActivity() {
+class MemoWriteActivity : AppCompatActivity() {
 
     private var _binding: ActivityBoardWriteBinding? = null
     private val binding get() = _binding!!
@@ -23,7 +22,7 @@ class BoardWriteActivity : AppCompatActivity() {
             val uid = FBAuth.getUid()
             val time = FBAuth.getTime()
 
-            FBRef.category.push().setValue(BoardModel(title, content, uid, time))
+            FBRef.category.push().setValue(MemoModel(title, content, uid, time))
 
             finish()
         }

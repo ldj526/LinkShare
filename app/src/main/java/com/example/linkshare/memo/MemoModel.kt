@@ -1,6 +1,6 @@
-package com.example.linkshare.board
+package com.example.linkshare.memo
 
-data class BoardModel(
+data class MemoModel(
     val title: String?,
     val content: String?,
     val uid: String?,

@@ -12,10 +12,10 @@
         tools:layout="@layout/fragment_first" >
     </fragment>
     <fragment
-        android:id="@+id/secondFragment"
-        android:name="com.example.linkshare.view.SecondFragment"
+        android:id="@+id/memoFragment"
+        android:name="com.example.linkshare.view.MemoListFragment"
         android:label="fragment_second"
-        tools:layout="@layout/fragment_second" >
+        tools:layout="@layout/fragment_memolist" >
     </fragment>
     <fragment
         android:id="@+id/thirdFragment"

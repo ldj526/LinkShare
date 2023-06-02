@@ -6,10 +6,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import com.example.linkshare.board.BoardWriteActivity
+import com.example.linkshare.memo.MemoWriteActivity
 import com.example.linkshare.databinding.FragmentSecondBinding
 
-class SecondFragment : Fragment() {
+class MemoListFragment : Fragment() {
 
     private var _binding: FragmentSecondBinding? = null
     private val binding get() = _binding!!
@@ -26,7 +26,7 @@ class SecondFragment : Fragment() {
         _binding = FragmentSecondBinding.inflate(inflater, container, false)
 
         binding.fbAdd.setOnClickListener {
-            val intent = Intent(context, BoardWriteActivity::class.java)
+            val intent = Intent(context, MemoWriteActivity::class.java)
             startActivity(intent)
         }
         return binding.root

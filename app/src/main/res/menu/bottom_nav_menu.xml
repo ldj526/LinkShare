@@ -6,7 +6,7 @@
         android:icon="@android:drawable/arrow_down_float"/>
 
     <item
-        android:id="@+id/secondFragment"
+        android:id="@+id/memoFragment"
         android:title="memo"
         android:icon="@android:drawable/arrow_up_float"/>
 
