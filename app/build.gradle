@@ -50,6 +50,8 @@ dependencies {
     implementation 'com.google.firebase:firebase-analytics-ktx'
     // Add the dependency for the Firebase Authentication library
     implementation 'com.google.firebase:firebase-auth-ktx'
+    // Add firebase realtime database
+    implementation 'com.google.firebase:firebase-database-ktx'
 
     implementation 'androidx.core:core-ktx:1.7.0'
     implementation 'androidx.appcompat:appcompat:1.6.1'
