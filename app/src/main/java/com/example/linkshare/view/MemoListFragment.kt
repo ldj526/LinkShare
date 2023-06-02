@@ -54,6 +54,8 @@ class MemoListFragment : Fragment() {
     private fun getFBBoardData() {
         val postListener = object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
+                // 중복 방지
+                memoDataList.clear()
                 // Get Post object and use the values to update the UI
                 for (dataModel in dataSnapshot.children) {
                     // BoardModel 형식의 데이터 받기

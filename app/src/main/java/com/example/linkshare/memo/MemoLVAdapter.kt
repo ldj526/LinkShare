@@ -4,6 +4,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
+import android.widget.TextView
 import com.example.linkshare.R
 
 class MemoLVAdapter(val memoList: MutableList<MemoModel>) : BaseAdapter() {
@@ -23,6 +24,15 @@ class MemoLVAdapter(val memoList: MutableList<MemoModel>) : BaseAdapter() {
             view =
                 LayoutInflater.from(parent?.context).inflate(R.layout.memo_list_item, parent, false)
         }
+
+        val title = view?.findViewById<TextView>(R.id.title)
+        val content = view?.findViewById<TextView>(R.id.content)
+        val time = view?.findViewById<TextView>(R.id.time)
+
+        title!!.text = memoList[position].title
+        content!!.text = memoList[position].content
+        time!!.text = memoList[position].time
+
         return view!!
     }
 
