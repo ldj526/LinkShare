@@ -1,12 +1,17 @@
 package com.example.linkshare.memo
 
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
 import android.provider.MediaStore
 import androidx.appcompat.app.AppCompatActivity
 import com.example.linkshare.databinding.ActivityMemoWriteBinding
 import com.example.linkshare.utils.FBAuth
 import com.example.linkshare.utils.FBRef
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.ktx.storage
+import java.io.ByteArrayOutputStream
 
 class MemoWriteActivity : AppCompatActivity() {
 
@@ -29,9 +34,39 @@ class MemoWriteActivity : AppCompatActivity() {
             val uid = FBAuth.getUid()
             val time = FBAuth.getTime()
 
-            FBRef.memoList.push().setValue(MemoModel(title, content, uid, time))
+            val key = FBRef.memoList.push().key.toString()
 
+            FBRef.memoList.child(key).setValue(MemoModel(title, content, uid, time))
+
+            imageUpload(key)
             finish()
+        }
+    }
+
+    // Firebase에 image upload
+    private fun imageUpload(key: String) {
+        // Get the data from an ImageView as bytes
+
+        val storage = Firebase.storage
+        // Create a storage reference from our app
+        val storageRef = storage.reference
+        // Create a reference to "mountains.jpg"
+        val mountainsRef = storageRef.child("$key.png")
+
+        val imageView = binding.imageView
+        imageView.isDrawingCacheEnabled = true
+        imageView.buildDrawingCache()
+        val bitmap = (imageView.drawable as BitmapDrawable).bitmap
+        val baos = ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos)
+        val data = baos.toByteArray()
+
+        val uploadTask = mountainsRef.putBytes(data)
+        uploadTask.addOnFailureListener {
+            // Handle unsuccessful uploads
+        }.addOnSuccessListener { taskSnapshot ->
+            // taskSnapshot.metadata contains file metadata such as size, content-type, etc.
+            // ...
         }
     }
 
