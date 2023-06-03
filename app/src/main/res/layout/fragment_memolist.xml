@@ -5,8 +5,8 @@
     android:layout_height="match_parent"
     tools:context=".view.MemoListFragment">
 
-    <ListView
-        android:id="@+id/memoListView"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/memoRV"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 

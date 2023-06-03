@@ -2,17 +2,16 @@ package com.example.linkshare.view
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.linkshare.databinding.FragmentMemolistBinding
-import com.example.linkshare.memo.MemoLVAdapter
+import com.example.linkshare.memo.MemoRVAdapter
 import com.example.linkshare.memo.MemoModel
 import com.example.linkshare.memo.MemoWriteActivity
 import com.example.linkshare.utils.FBRef
-import com.example.linkshare.utils.FBRef.Companion.memoList
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
@@ -23,7 +22,7 @@ class MemoListFragment : Fragment() {
     private var _binding: FragmentMemolistBinding? = null
     private val binding get() = _binding!!
     private val memoDataList = mutableListOf<MemoModel>()
-    private lateinit var memoLVAdapter: MemoLVAdapter
+    private lateinit var memoRVAdapter: MemoRVAdapter
     private val TAG = MemoListFragment::class.java.simpleName
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -38,8 +37,9 @@ class MemoListFragment : Fragment() {
         _binding = FragmentMemolistBinding.inflate(inflater, container, false)
 
         // ListView 연결
-        memoLVAdapter = MemoLVAdapter(memoDataList)
-        binding.memoListView.adapter = memoLVAdapter
+        memoRVAdapter = MemoRVAdapter(memoDataList)
+        binding.memoRV.adapter = memoRVAdapter
+        binding.memoRV.layoutManager = LinearLayoutManager(context)
 
         binding.fbAdd.setOnClickListener {
             val intent = Intent(context, MemoWriteActivity::class.java)
@@ -62,8 +62,10 @@ class MemoListFragment : Fragment() {
                     val item = dataModel.getValue(MemoModel::class.java)
                     memoDataList.add(item!!)
                 }
-                // Sync
-                memoLVAdapter.notifyDataSetChanged()
+                // 최신 글이 가장 위로
+                memoDataList.reverse()
+                // Syncㅣ
+                memoRVAdapter.notifyDataSetChanged()
             }
 
             override fun onCancelled(databaseError: DatabaseError) {
