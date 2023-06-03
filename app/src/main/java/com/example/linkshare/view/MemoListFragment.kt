@@ -5,11 +5,12 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.linkshare.databinding.FragmentMemolistBinding
-import com.example.linkshare.memo.MemoRVAdapter
 import com.example.linkshare.memo.MemoModel
+import com.example.linkshare.memo.MemoRVAdapter
 import com.example.linkshare.memo.MemoWriteActivity
 import com.example.linkshare.utils.FBRef
 import com.google.firebase.database.DataSnapshot
@@ -40,6 +41,12 @@ class MemoListFragment : Fragment() {
         memoRVAdapter = MemoRVAdapter(memoDataList)
         binding.memoRV.adapter = memoRVAdapter
         binding.memoRV.layoutManager = LinearLayoutManager(context)
+
+        memoRVAdapter.setItemClickListener(object : MemoRVAdapter.OnItemClickListener {
+            override fun onClick(v: View, position: Int) {
+                Toast.makeText(context, "dd", Toast.LENGTH_LONG).show()
+            }
+        })
 
         binding.fbAdd.setOnClickListener {
             val intent = Intent(context, MemoWriteActivity::class.java)
