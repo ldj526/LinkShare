@@ -1,16 +1,25 @@
 package com.example.linkshare.memo
 
+import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.drawable.BitmapDrawable
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.provider.MediaStore
 import android.util.Log
+import com.bumptech.glide.Glide
 import com.example.linkshare.R
 import com.example.linkshare.databinding.ActivityMemoUpdateBinding
 import com.example.linkshare.utils.FBRef
 import com.example.linkshare.view.MemoListFragment
+import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.ktx.storage
 import timber.log.Timber
+import java.io.ByteArrayOutputStream
 
 class MemoUpdateActivity : AppCompatActivity() {
 
@@ -28,6 +37,65 @@ class MemoUpdateActivity : AppCompatActivity() {
         key = intent.getStringExtra("key").toString()
 
         getBoardData(key)
+        getImageData(key)
+
+        binding.imageView.setOnClickListener {
+            val gallery = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.INTERNAL_CONTENT_URI)
+            startActivityForResult(gallery, 100)
+        }
+
+        imageUpload(key)
+    }
+
+    private fun imageUpload(key: String) {
+        // Get the data from an ImageView as bytes
+
+        val storage = Firebase.storage
+        // Create a storage reference from our app
+        val storageRef = storage.reference
+        // Create a reference to "mountains.jpg"
+        val mountainsRef = storageRef.child("${key}.png")
+
+        val imageView = binding.imageView
+        imageView.isDrawingCacheEnabled = true
+        imageView.buildDrawingCache()
+        val bitmap = (imageView.drawable as BitmapDrawable).bitmap
+        val baos = ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos)
+        val data = baos.toByteArray()
+
+        var uploadTask = mountainsRef.putBytes(data)
+        uploadTask.addOnFailureListener {
+            // Handle unsuccessful uploads
+        }.addOnSuccessListener { taskSnapshot ->
+            // taskSnapshot.metadata contains file metadata such as size, content-type, etc.
+            // ...
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (resultCode == RESULT_OK && requestCode == 100) {
+            binding.imageView.setImageURI(data?.data)
+        }
+    }
+
+    private fun getImageData(key: String) {
+        // Reference to an image file in Cloud Storage
+        val storageReference = Firebase.storage.reference.child("${key}.png")
+
+        // ImageView in your Activity
+        val imageViewFromFB = binding.imageView
+
+        storageReference.downloadUrl.addOnCompleteListener(OnCompleteListener { task ->
+            if (task.isSuccessful) {
+                Glide.with(this)
+                    .load(task.result)
+                    .into(imageViewFromFB)
+            } else {
+
+            }
+        })
     }
 
     private fun getBoardData(key: String) {
@@ -46,7 +114,6 @@ class MemoUpdateActivity : AppCompatActivity() {
         }
         FBRef.memoList.child(key).addValueEventListener(postListener)
     }
-
 
     override fun onDestroy() {
         super.onDestroy()

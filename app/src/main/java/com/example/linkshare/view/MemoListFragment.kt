@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.linkshare.databinding.FragmentMemolistBinding
 import com.example.linkshare.memo.MemoModel
 import com.example.linkshare.memo.MemoRVAdapter
+import com.example.linkshare.memo.MemoUpdateActivity
 import com.example.linkshare.memo.MemoWriteActivity
 import com.example.linkshare.utils.FBRef
 import com.google.firebase.database.DataSnapshot
@@ -23,6 +24,7 @@ class MemoListFragment : Fragment() {
     private var _binding: FragmentMemolistBinding? = null
     private val binding get() = _binding!!
     private val memoDataList = mutableListOf<MemoModel>()
+    private val memoKeyList = mutableListOf<String>()
     private lateinit var memoRVAdapter: MemoRVAdapter
     private val TAG = MemoListFragment::class.java.simpleName
 
@@ -44,7 +46,9 @@ class MemoListFragment : Fragment() {
 
         memoRVAdapter.setItemClickListener(object : MemoRVAdapter.OnItemClickListener {
             override fun onClick(v: View, position: Int) {
-                Toast.makeText(context, "dd", Toast.LENGTH_LONG).show()
+                val intent = Intent(context, MemoUpdateActivity::class.java)
+                intent.putExtra("key", memoKeyList[position])
+                startActivity(intent)
             }
         })
 
@@ -68,8 +72,10 @@ class MemoListFragment : Fragment() {
                     // BoardModel 형식의 데이터 받기
                     val item = dataModel.getValue(MemoModel::class.java)
                     memoDataList.add(item!!)
+                    memoKeyList.add(dataModel.key.toString())
                 }
                 // 최신 글이 가장 위로
+                memoKeyList.reverse()
                 memoDataList.reverse()
                 // Syncㅣ
                 memoRVAdapter.notifyDataSetChanged()
