@@ -3,15 +3,13 @@ package com.example.linkshare.memo
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.MediaStore
-import android.util.Log
+import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
-import com.example.linkshare.R
 import com.example.linkshare.databinding.ActivityMemoUpdateBinding
+import com.example.linkshare.utils.FBAuth
 import com.example.linkshare.utils.FBRef
-import com.example.linkshare.view.MemoListFragment
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -28,6 +26,7 @@ class MemoUpdateActivity : AppCompatActivity() {
     private lateinit var key: String
     private lateinit var writeUid: String
     private val TAG = MemoUpdateActivity::class.java.simpleName
+    private var isImageUpload = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,14 +38,36 @@ class MemoUpdateActivity : AppCompatActivity() {
         getBoardData(key)
         getImageData(key)
 
+        binding.updateBtn.setOnClickListener {
+            updateMemoData(key)
+
+            if (isImageUpload) {
+                imageUpload(key)
+            }
+            finish()
+        }
+
         binding.imageView.setOnClickListener {
             val gallery = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.INTERNAL_CONTENT_URI)
             startActivityForResult(gallery, 100)
+            isImageUpload = true
         }
-
-        imageUpload(key)
     }
 
+    private fun updateMemoData(key: String) {
+        // 수정한 메모 데이터를 Firebase로 업로드
+        FBRef.memoList.child(key).setValue(
+            MemoModel(
+                binding.title.text.toString(),
+                binding.content.text.toString(),
+                writeUid,
+                FBAuth.getTime()
+            )
+        )
+        finish()
+    }
+
+    // firebase storage에 이미지 업로드 하기
     private fun imageUpload(key: String) {
         // Get the data from an ImageView as bytes
 
@@ -80,6 +101,7 @@ class MemoUpdateActivity : AppCompatActivity() {
         }
     }
 
+    // firebase에서 이미지 받아오기
     private fun getImageData(key: String) {
         // Reference to an image file in Cloud Storage
         val storageReference = Firebase.storage.reference.child("${key}.png")
@@ -98,14 +120,15 @@ class MemoUpdateActivity : AppCompatActivity() {
         })
     }
 
+    // firebase에서 데이터값 받아오기
     private fun getBoardData(key: String) {
         val postListener = object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 val dataModel = dataSnapshot.getValue(MemoModel::class.java)
 
                 binding.title.setText(dataModel!!.title)
-                binding.content.setText(dataModel.content)
-                writeUid = dataModel.uid
+                binding.content.setText(dataModel!!.content)
+                writeUid = dataModel!!.uid
             }
 
             override fun onCancelled(databaseError: DatabaseError) {

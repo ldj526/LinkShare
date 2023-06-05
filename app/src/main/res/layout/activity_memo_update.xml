@@ -70,7 +70,7 @@
                 android:src="@android:drawable/ic_input_add" />
 
             <Button
-                android:id="@+id/writeBtn"
+                android:id="@+id/updateBtn"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="20dp"

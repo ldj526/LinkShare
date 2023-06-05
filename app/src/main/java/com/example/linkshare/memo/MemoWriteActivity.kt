@@ -17,6 +17,7 @@ class MemoWriteActivity : AppCompatActivity() {
 
     private var _binding: ActivityMemoWriteBinding? = null
     private val binding get() = _binding!!
+    private var isImageUpload = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -26,6 +27,7 @@ class MemoWriteActivity : AppCompatActivity() {
         binding.imageView.setOnClickListener {
             val gallery = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.INTERNAL_CONTENT_URI)
             startActivityForResult(gallery, 100)
+            isImageUpload = true
         }
 
         binding.writeBtn.setOnClickListener {
@@ -38,12 +40,14 @@ class MemoWriteActivity : AppCompatActivity() {
 
             FBRef.memoList.child(key).setValue(MemoModel(title, content, uid, time))
 
-            imageUpload(key)
+            if(isImageUpload){
+                imageUpload(key)
+            }
             finish()
         }
     }
 
-    // Firebase에 image upload
+    // Firebase storage에 image upload
     private fun imageUpload(key: String) {
         // Get the data from an ImageView as bytes
 
