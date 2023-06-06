@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     tools:context=".memo.MemoWriteActivity">
 
@@ -19,12 +20,28 @@
                 android:layout_width="match_parent"
                 android:layout_height="60dp">
 
-                <TextView
+                <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:gravity="center"
-                    android:text="글쓰기 페이지"
-                    android:textColor="@color/black" />
+                    android:layout_height="match_parent">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_marginLeft="50dp"
+                        android:layout_marginRight="50dp"
+                        android:gravity="center"
+                        android:text="글쓰기 페이지"
+                        android:textColor="@color/black" />
+
+                    <ImageView
+                        android:id="@+id/memoDelete"
+                        android:layout_width="30dp"
+                        android:layout_height="40dp"
+                        android:layout_margin="10dp"
+                        android:src="@android:drawable/ic_menu_delete"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"/>
+                </androidx.constraintlayout.widget.ConstraintLayout>
             </LinearLayout>
 
             <LinearLayout

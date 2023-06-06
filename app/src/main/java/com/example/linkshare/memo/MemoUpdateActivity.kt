@@ -47,6 +47,10 @@ class MemoUpdateActivity : AppCompatActivity() {
             finish()
         }
 
+        binding.memoDelete.setOnClickListener {
+
+        }
+
         binding.imageView.setOnClickListener {
             val gallery = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.INTERNAL_CONTENT_URI)
             startActivityForResult(gallery, 100)
