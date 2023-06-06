@@ -66,15 +66,16 @@ class MemoUpdateActivity : AppCompatActivity() {
 
     private fun showDialog() {
         val mDialogView = LayoutInflater.from(this).inflate(R.layout.custom_dialog, null)
-        val mBuilder = AlertDialog.Builder(this).setView(mDialogView).setTitle("게시글 삭제")
+        val mBuilder = AlertDialog.Builder(this).setView(mDialogView).setTitle("삭제 하시겠습니까?")
         val alertDialog = mBuilder.show()
 
         alertDialog.findViewById<Button>(R.id.removeBtn)?.setOnClickListener {
-            Toast.makeText(this, "삭제", Toast.LENGTH_LONG).show()
+            FBRef.memoList.child(key).removeValue()
+            finish()
         }
 
         alertDialog.findViewById<Button>(R.id.cancelBtn)?.setOnClickListener {
-            Toast.makeText(this, "취소", Toast.LENGTH_LONG).show()
+            finish()
         }
     }
 
@@ -148,11 +149,16 @@ class MemoUpdateActivity : AppCompatActivity() {
     private fun getBoardData(key: String) {
         val postListener = object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
-                val dataModel = dataSnapshot.getValue(MemoModel::class.java)
+                // 메모가 삭제 됐을 때 정보가 없으면 에러가 나기 때문에 예외처리를 해준다.
+                try {
+                    val dataModel = dataSnapshot.getValue(MemoModel::class.java)
 
-                binding.title.setText(dataModel!!.title)
-                binding.content.setText(dataModel!!.content)
-                writeUid = dataModel!!.uid
+                    binding.title.setText(dataModel!!.title)
+                    binding.content.setText(dataModel!!.content)
+                    writeUid = dataModel!!.uid
+                } catch (e:Exception){
+
+                }
             }
 
             override fun onCancelled(databaseError: DatabaseError) {
