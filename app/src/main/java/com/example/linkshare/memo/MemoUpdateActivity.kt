@@ -5,8 +5,14 @@ import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
 import android.provider.MediaStore
+import android.text.Layout
+import android.view.LayoutInflater
+import android.widget.Button
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
+import com.example.linkshare.R
 import com.example.linkshare.databinding.ActivityMemoUpdateBinding
 import com.example.linkshare.utils.FBAuth
 import com.example.linkshare.utils.FBRef
@@ -48,13 +54,27 @@ class MemoUpdateActivity : AppCompatActivity() {
         }
 
         binding.memoDelete.setOnClickListener {
-
+            showDialog()
         }
 
         binding.imageView.setOnClickListener {
             val gallery = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.INTERNAL_CONTENT_URI)
             startActivityForResult(gallery, 100)
             isImageUpload = true
+        }
+    }
+
+    private fun showDialog() {
+        val mDialogView = LayoutInflater.from(this).inflate(R.layout.custom_dialog, null)
+        val mBuilder = AlertDialog.Builder(this).setView(mDialogView).setTitle("게시글 삭제")
+        val alertDialog = mBuilder.show()
+
+        alertDialog.findViewById<Button>(R.id.removeBtn)?.setOnClickListener {
+            Toast.makeText(this, "삭제", Toast.LENGTH_LONG).show()
+        }
+
+        alertDialog.findViewById<Button>(R.id.cancelBtn)?.setOnClickListener {
+            Toast.makeText(this, "취소", Toast.LENGTH_LONG).show()
         }
     }
 
