@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.linkshare.databinding.FragmentMemolistBinding
 import com.example.linkshare.memo.MemoModel
@@ -41,7 +42,7 @@ class MemoListFragment : Fragment() {
         // ListView 연결
         memoRVAdapter = MemoRVAdapter(memoDataList)
         binding.memoRV.adapter = memoRVAdapter
-        binding.memoRV.layoutManager = LinearLayoutManager(context)
+        binding.memoRV.layoutManager = GridLayoutManager(context, 2)
 
         memoRVAdapter.setItemClickListener(object : MemoRVAdapter.OnItemClickListener {
             override fun onClick(v: View, position: Int) {
