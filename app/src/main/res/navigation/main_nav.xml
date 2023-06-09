@@ -3,23 +3,25 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main_nav"
-    app:startDestination="@id/firstFragment">
+    app:startDestination="@id/memoListFragment">
 
     <fragment
-        android:id="@+id/firstFragment"
-        android:name="com.example.linkshare.view.FirstFragment"
-        android:label="fragment_first"
-        tools:layout="@layout/fragment_first" >
-    </fragment>
-    <fragment
-        android:id="@+id/memoFragment"
+        android:id="@+id/memoListFragment"
         android:name="com.example.linkshare.view.MemoListFragment"
-        android:label="fragment_second"
+        android:label="fragment_memoList"
         tools:layout="@layout/fragment_memolist" >
     </fragment>
+
     <fragment
-        android:id="@+id/thirdFragment"
-        android:name="com.example.linkshare.view.ThirdFragment"
-        android:label="fragment_third"
-        tools:layout="@layout/fragment_third" />
+        android:id="@+id/boardFragment"
+        android:name="com.example.linkshare.view.BoardFragment"
+        android:label="fragment_board"
+        tools:layout="@layout/fragment_board" >
+    </fragment>
+
+    <fragment
+        android:id="@+id/settingFragment"
+        android:name="com.example.linkshare.view.SettingFragment"
+        android:label="fragment_setting"
+        tools:layout="@layout/fragment_setting" />
 </navigation>

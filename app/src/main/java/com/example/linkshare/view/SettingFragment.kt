@@ -10,16 +10,14 @@ import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import com.example.linkshare.R
 import com.example.linkshare.auth.IntroActivity
-import com.example.linkshare.databinding.FragmentMemolistBinding
-import com.example.linkshare.databinding.FragmentThirdBinding
-import com.example.linkshare.utils.FBRef
+import com.example.linkshare.databinding.FragmentSettingBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 
-class ThirdFragment : Fragment() {
+class SettingFragment : Fragment() {
 
-    private var _binding: FragmentThirdBinding? = null
+    private var _binding: FragmentSettingBinding? = null
     private val binding get() = _binding!!
     private lateinit var auth: FirebaseAuth
     private var alertDialog: AlertDialog? = null
@@ -33,7 +31,7 @@ class ThirdFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        _binding = FragmentThirdBinding.inflate(inflater, container, false)
+        _binding = FragmentSettingBinding.inflate(inflater, container, false)
 
         auth = Firebase.auth
 
