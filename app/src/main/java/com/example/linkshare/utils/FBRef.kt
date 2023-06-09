@@ -9,5 +9,6 @@ class FBRef {
         private val database = Firebase.database
 
         val memoList = database.getReference("memoList")
+        val boardList = database.getReference("boardList")
     }
 }
