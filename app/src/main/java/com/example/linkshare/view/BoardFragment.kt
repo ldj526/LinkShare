@@ -4,16 +4,14 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
-import android.view.View.OnClickListener
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.linkshare.board.BoardActivity
 import com.example.linkshare.board.BoardModel
 import com.example.linkshare.board.BoardRVAdapter
 import com.example.linkshare.board.BoardWriteActivity
 import com.example.linkshare.databinding.FragmentBoardBinding
-import com.example.linkshare.memo.MemoWriteActivity
 import com.example.linkshare.utils.FBRef
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -48,9 +46,11 @@ class BoardFragment : Fragment() {
             startActivity(intent)
         }
 
-        boardRVAdapter.setItemClickListener(object : BoardRVAdapter.OnItemClickListener{
+        boardRVAdapter.setItemClickListener(object : BoardRVAdapter.OnItemClickListener {
             override fun onClick(v: View, position: Int) {
-                Toast.makeText(context, "Click", Toast.LENGTH_LONG).show()
+                val intent = Intent(context, BoardActivity::class.java)
+                intent.putExtra("key", boardKeyList[position])
+                startActivity(intent)
             }
 
         })
