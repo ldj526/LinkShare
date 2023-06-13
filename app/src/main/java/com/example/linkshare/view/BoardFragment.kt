@@ -38,8 +38,6 @@ class BoardFragment : Fragment() {
         binding.boardRV.adapter = boardRVAdapter
         binding.boardRV.layoutManager = LinearLayoutManager(context)
 
-        // getFBBoardData()
-
         return binding.root
     }
 

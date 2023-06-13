@@ -5,10 +5,8 @@ import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
 import android.provider.MediaStore
-import android.text.Layout
 import android.view.LayoutInflater
 import android.widget.Button
-import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
@@ -16,6 +14,7 @@ import com.example.linkshare.R
 import com.example.linkshare.databinding.ActivityMemoUpdateBinding
 import com.example.linkshare.utils.FBAuth
 import com.example.linkshare.utils.FBRef
+import com.example.linkshare.view.BoardFragment
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -31,7 +30,6 @@ class MemoUpdateActivity : AppCompatActivity() {
     private val binding get() = _binding!!
     private lateinit var key: String
     private lateinit var writeUid: String
-    private val TAG = MemoUpdateActivity::class.java.simpleName
     private var isImageUpload = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -54,7 +52,7 @@ class MemoUpdateActivity : AppCompatActivity() {
         }
 
         binding.memoDelete.setOnClickListener {
-            showDialog()
+            deleteDialog()
         }
 
         binding.imageView.setOnClickListener {
@@ -64,18 +62,19 @@ class MemoUpdateActivity : AppCompatActivity() {
         }
     }
 
-    private fun showDialog() {
+    private fun deleteDialog() {
         val mDialogView = LayoutInflater.from(this).inflate(R.layout.custom_dialog, null)
         val mBuilder = AlertDialog.Builder(this).setView(mDialogView).setTitle("삭제 하시겠습니까?")
         val alertDialog = mBuilder.show()
 
-        alertDialog.findViewById<Button>(R.id.removeBtn)?.setOnClickListener {
+        alertDialog.findViewById<Button>(R.id.yesBtn)?.setOnClickListener {
             FBRef.memoList.child(key).removeValue()
+            alertDialog.dismiss()
             finish()
         }
 
-        alertDialog.findViewById<Button>(R.id.cancelBtn)?.setOnClickListener {
-            finish()
+        alertDialog.findViewById<Button>(R.id.noBtn)?.setOnClickListener {
+            alertDialog.dismiss()
         }
     }
 
@@ -156,13 +155,13 @@ class MemoUpdateActivity : AppCompatActivity() {
                     binding.title.setText(dataModel!!.title)
                     binding.content.setText(dataModel!!.content)
                     writeUid = dataModel!!.uid
-                } catch (e:Exception){
+                } catch (e: Exception) {
 
                 }
             }
 
             override fun onCancelled(databaseError: DatabaseError) {
-                Timber.w(TAG, "loadPost:onCancelled", databaseError.toException())
+                Timber.w("loadPost:onCancelled", databaseError.toException())
             }
         }
         FBRef.memoList.child(key).addValueEventListener(postListener)

@@ -48,7 +48,7 @@ class SettingFragment : Fragment() {
             AlertDialog.Builder(requireContext()).setView(mDialogView).setTitle("로그아웃 하시겠습니까?")
         alertDialog = mBuilder.show()
 
-        alertDialog!!.findViewById<Button>(R.id.removeBtn)?.setOnClickListener {
+        alertDialog!!.findViewById<Button>(R.id.yesBtn)?.setOnClickListener {
             auth.signOut()
             val intent = Intent(context, IntroActivity::class.java)
             intent.flags =
@@ -56,7 +56,7 @@ class SettingFragment : Fragment() {
             startActivity(intent)
         }
 
-        alertDialog!!.findViewById<Button>(R.id.cancelBtn)?.setOnClickListener {
+        alertDialog!!.findViewById<Button>(R.id.noBtn)?.setOnClickListener {
             alertDialog!!.dismiss()
         }
     }
