@@ -1,7 +1,10 @@
 package com.example.linkshare.board
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.View
+import android.view.View.OnClickListener
 import android.widget.Button
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -9,6 +12,7 @@ import androidx.core.view.isVisible
 import com.bumptech.glide.Glide
 import com.example.linkshare.R
 import com.example.linkshare.databinding.ActivityBoardBinding
+import com.example.linkshare.memo.MemoModel
 import com.example.linkshare.utils.FBAuth
 import com.example.linkshare.utils.FBRef
 import com.google.android.gms.tasks.OnCompleteListener
@@ -35,8 +39,30 @@ class BoardActivity : AppCompatActivity() {
             deleteDialog()
         }
 
+        binding.ivUpdate.setOnClickListener {
+            updateDialog()
+        }
+
         getBoardData(key)
         getImageData(key)
+    }
+
+    private fun updateDialog() {
+        val mDialogView = LayoutInflater.from(this).inflate(R.layout.custom_dialog, null)
+        val mBuilder = AlertDialog.Builder(this).setView(mDialogView).setTitle("수정 하시겠습니까?")
+        val alertDialog = mBuilder.show()
+
+        alertDialog.findViewById<Button>(R.id.yesBtn)?.setOnClickListener {
+            val intent = Intent(this, BoardUpdateActivity::class.java)
+            intent.putExtra("key", key)
+            startActivity(intent)
+            alertDialog.dismiss()
+            finish()
+        }
+
+        alertDialog.findViewById<Button>(R.id.noBtn)?.setOnClickListener {
+            alertDialog.dismiss()
+        }
     }
 
     private fun deleteDialog() {
