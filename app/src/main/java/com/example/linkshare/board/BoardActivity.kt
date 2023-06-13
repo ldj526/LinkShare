@@ -1,14 +1,15 @@
 package com.example.linkshare.board
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.widget.Button
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import com.bumptech.glide.Glide
 import com.example.linkshare.R
 import com.example.linkshare.databinding.ActivityBoardBinding
+import com.example.linkshare.utils.FBAuth
 import com.example.linkshare.utils.FBRef
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.database.DataSnapshot
@@ -76,12 +77,25 @@ class BoardActivity : AppCompatActivity() {
     private fun getBoardData(key: String) {
         val postListener = object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
-                // 데이터를 하나만 가져오면 되므로 반복문 사용이 필요 없다.
-                val dataModel = dataSnapshot.getValue(BoardModel::class.java)
+                try {
+                    // 데이터를 하나만 가져오면 되므로 반복문 사용이 필요 없다.
+                    val dataModel = dataSnapshot.getValue(BoardModel::class.java)
 
-                binding.title.text = dataModel!!.title
-                binding.time.text = dataModel!!.time
-                binding.content.text = dataModel!!.content
+                    binding.title.text = dataModel!!.title
+                    binding.time.text = dataModel!!.time
+                    binding.content.text = dataModel!!.content
+
+                    val myUid = FBAuth.getUid()
+                    val writeUid = dataModel.uid
+
+                    // 글 쓴 사람이 자신일 경우 수정, 삭제 버튼 보이기
+                    if (myUid == writeUid) {
+                        binding.ivDelete.isVisible = true
+                        binding.ivUpdate.isVisible = true
+                    }
+                } catch (e: Exception) {
+
+                }
             }
 
             override fun onCancelled(databaseError: DatabaseError) {
