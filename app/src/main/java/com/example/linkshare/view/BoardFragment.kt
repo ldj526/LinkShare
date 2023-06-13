@@ -6,9 +6,9 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.linkshare.board.BoardModel
 import com.example.linkshare.board.BoardRVAdapter
 import com.example.linkshare.databinding.FragmentBoardBinding
-import com.example.linkshare.memo.MemoModel
 import com.example.linkshare.utils.FBRef
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -18,8 +18,8 @@ class BoardFragment : Fragment() {
 
     private var _binding: FragmentBoardBinding? = null
     private val binding get() = _binding!!
-    private val memoDataList = mutableListOf<MemoModel>()
-    private val memoKeyList = mutableListOf<String>()
+    private val boardDataList = mutableListOf<BoardModel>()
+    private val boardKeyList = mutableListOf<String>()
     private lateinit var boardRVAdapter: BoardRVAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -34,7 +34,7 @@ class BoardFragment : Fragment() {
         _binding = FragmentBoardBinding.inflate(inflater, container, false)
 
         // RecyclerView 연결
-        boardRVAdapter = BoardRVAdapter(memoDataList)
+        boardRVAdapter = BoardRVAdapter(boardDataList)
         binding.boardRV.adapter = boardRVAdapter
         binding.boardRV.layoutManager = LinearLayoutManager(context)
 
@@ -45,17 +45,17 @@ class BoardFragment : Fragment() {
         val postListener = object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 // 중복 방지
-                memoDataList.clear()
+                boardDataList.clear()
                 // Get Post object and use the values to update the UI
                 for (dataModel in dataSnapshot.children) {
                     // BoardModel 형식의 데이터 받기
-                    val item = dataModel.getValue(MemoModel::class.java)
-                    memoDataList.add(item!!)
-                    memoKeyList.add(dataModel.key.toString())
+                    val item = dataModel.getValue(BoardModel::class.java)
+                    boardDataList.add(item!!)
+                    boardKeyList.add(dataModel.key.toString())
                 }
                 // 최신 글이 가장 위로
-                memoKeyList.reverse()
-                memoDataList.reverse()
+                boardKeyList.reverse()
+                boardDataList.reverse()
                 // Sync
                 boardRVAdapter.notifyDataSetChanged()
             }
