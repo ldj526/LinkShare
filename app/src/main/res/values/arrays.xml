@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="promt_age">카테고리를 선택하세요</string>
+    <string-array name="type">
+        <item>선택</item>
+        <item>음식</item>
+        <item>지역</item>
+        <item>가전</item>
+    </string-array>
+</resources>

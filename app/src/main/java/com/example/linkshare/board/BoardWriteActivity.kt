@@ -6,6 +6,7 @@ import android.graphics.drawable.BitmapDrawable
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.MediaStore
+import android.widget.ArrayAdapter
 import com.example.linkshare.R
 import com.example.linkshare.databinding.ActivityBoardWriteBinding
 import com.example.linkshare.databinding.ActivityMemoWriteBinding
@@ -27,6 +28,15 @@ class BoardWriteActivity : AppCompatActivity() {
         _binding = ActivityBoardWriteBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        val spinnerAdapter = ArrayAdapter.createFromResource(
+            this,
+            R.array.type,
+            android.R.layout.simple_spinner_item
+        )
+
+        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        binding.spCategory.adapter = spinnerAdapter
+
         binding.imageView.setOnClickListener {
             val gallery = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.INTERNAL_CONTENT_URI)
             startActivityForResult(gallery, 100)
@@ -36,14 +46,15 @@ class BoardWriteActivity : AppCompatActivity() {
         binding.writeBtn.setOnClickListener {
             val title = binding.title.text.toString()
             val content = binding.content.text.toString()
+            val category = binding.spCategory.selectedItem.toString()
             val uid = FBAuth.getUid()
             val time = FBAuth.getTime()
 
             val key = FBRef.boardList.push().key.toString()
 
-            FBRef.boardList.child(key).setValue(BoardModel(title, content, uid, time))
+            FBRef.boardList.child(key).setValue(BoardModel(title, content, category, uid, time))
 
-            if(isImageUpload){
+            if (isImageUpload) {
                 imageUpload(key)
             }
             finish()
