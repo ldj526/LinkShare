@@ -17,8 +17,10 @@ class FBAuth {
 
         // 현재 시각 가져오기
         fun getTime(): String {
-            val currentDateTime = Calendar.getInstance().time
-            return SimpleDateFormat("yyyy.MM.dd HH:mm:ss", Locale.KOREA).format(currentDateTime)
+            val formatter = SimpleDateFormat("yy년 MM월 dd일 E요일 HH시 mm분", Locale.KOREA)
+            val calendar = Calendar.getInstance()
+            formatter.timeZone = TimeZone.getTimeZone("Asia/Seoul")
+            return formatter.format(calendar.time)
         }
     }
 }
