@@ -5,8 +5,10 @@ import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
 import android.provider.MediaStore
+import android.widget.ArrayAdapter
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
+import com.example.linkshare.R
 import com.example.linkshare.databinding.ActivityBoardUpdateBinding
 import com.example.linkshare.utils.FBAuth
 import com.example.linkshare.utils.FBRef
@@ -33,8 +35,18 @@ class BoardUpdateActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         key = intent.getStringExtra("key").toString()
+
         getBoardData(key)
         getImageData(key)
+
+        val spinnerAdapter = ArrayAdapter.createFromResource(
+            this,
+            R.array.type,
+            android.R.layout.simple_spinner_item
+        )
+
+        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        binding.spCategory.adapter = spinnerAdapter
 
         binding.updateBtn.setOnClickListener {
             updateBoardData(key)
@@ -111,6 +123,7 @@ class BoardUpdateActivity : AppCompatActivity() {
             BoardModel(
                 binding.title.text.toString(),
                 binding.content.text.toString(),
+                binding.spCategory.selectedItem.toString(),
                 writerUid,
                 FBAuth.getTime()
             )
