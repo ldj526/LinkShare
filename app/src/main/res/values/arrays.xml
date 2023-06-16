@@ -7,4 +7,11 @@
         <item>지역</item>
         <item>가전</item>
     </string-array>
+
+    <string-array name="seeType">
+        <item>전체보기</item>
+        <item>음식</item>
+        <item>지역</item>
+        <item>가전</item>
+    </string-array>
 </resources>

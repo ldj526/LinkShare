@@ -39,6 +39,7 @@ class BoardUpdateActivity : AppCompatActivity() {
         getBoardData(key)
         getImageData(key)
 
+        // Spinner 연결
         val spinnerAdapter = ArrayAdapter.createFromResource(
             this,
             R.array.type,
@@ -123,7 +124,7 @@ class BoardUpdateActivity : AppCompatActivity() {
             BoardModel(
                 binding.title.text.toString(),
                 binding.content.text.toString(),
-                binding.spCategory.selectedItem.toString(),
+                binding.spCategory.selectedItemPosition,
                 writerUid,
                 FBAuth.getTime()
             )

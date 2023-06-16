@@ -5,8 +5,12 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AdapterView
+import android.widget.AdapterView.OnItemSelectedListener
+import android.widget.ArrayAdapter
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.linkshare.R
 import com.example.linkshare.board.BoardActivity
 import com.example.linkshare.board.BoardModel
 import com.example.linkshare.board.BoardRVAdapter
@@ -46,6 +50,7 @@ class BoardFragment : Fragment() {
             startActivity(intent)
         }
 
+        // RecyclerView Click
         boardRVAdapter.setItemClickListener(object : BoardRVAdapter.OnItemClickListener {
             override fun onClick(v: View, position: Int) {
                 val intent = Intent(context, BoardActivity::class.java)
@@ -55,12 +60,69 @@ class BoardFragment : Fragment() {
 
         })
 
-        getFBBoardData()
+        // Spinner 연결
+        val spinnerAdapter = ArrayAdapter.createFromResource(
+            requireContext(),
+            R.array.seeType,
+            android.R.layout.simple_spinner_item
+        )
+
+        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        binding.spCategory.adapter = spinnerAdapter
+
+        binding.spCategory.onItemSelectedListener = object : OnItemSelectedListener {
+            override fun onItemSelected(
+                parent: AdapterView<*>?,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+                if (position == 0) {
+                    getFBBoardDataAll()
+                } else {
+                    getFBBoardData(position)
+                }
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+                TODO("Not yet implemented")
+            }
+        }
 
         return binding.root
     }
 
-    private fun getFBBoardData() {
+    // Category에 맞는 데이터 값 가져오기
+    private fun getFBBoardData(category: Int) {
+        val postListener = object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                // 중복 방지
+                boardDataList.clear()
+                // Get Post object and use the values to update the UI
+                for (dataModel in dataSnapshot.children) {
+                    // BoardModel 형식의 데이터 받기
+                    val item = dataModel.getValue(BoardModel::class.java)
+                    if (item!!.category == category) {
+                        boardDataList.add(item!!)
+                        boardKeyList.add(dataModel.key.toString())
+                    }
+                }
+                // 최신 글이 가장 위로
+                boardKeyList.reverse()
+                boardDataList.reverse()
+                // Sync
+                boardRVAdapter.notifyDataSetChanged()
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {
+                // Getting Post failed, log a message
+            }
+        }
+        FBRef.boardList.addValueEventListener(postListener)
+    }
+
+    // 모든 데이터 값 가져오기
+    private fun getFBBoardDataAll() {
         val postListener = object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 // 중복 방지

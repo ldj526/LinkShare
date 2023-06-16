@@ -109,7 +109,7 @@ class BoardActivity : AppCompatActivity() {
 
                     binding.title.text = dataModel!!.title
                     binding.time.text = dataModel!!.time
-                    binding.category.text = dataModel!!.category
+                    binding.category.text = dataModel!!.category.toString()
                     binding.content.text = dataModel!!.content
 
                     val myUid = FBAuth.getUid()

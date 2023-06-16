@@ -46,7 +46,7 @@ class BoardWriteActivity : AppCompatActivity() {
         binding.writeBtn.setOnClickListener {
             val title = binding.title.text.toString()
             val content = binding.content.text.toString()
-            val category = binding.spCategory.selectedItem.toString()
+            val category = binding.spCategory.selectedItemPosition
             val uid = FBAuth.getUid()
             val time = FBAuth.getTime()
 
