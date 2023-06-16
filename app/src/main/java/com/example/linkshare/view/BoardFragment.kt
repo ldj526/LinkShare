@@ -16,6 +16,7 @@ import com.example.linkshare.board.BoardModel
 import com.example.linkshare.board.BoardRVAdapter
 import com.example.linkshare.board.BoardWriteActivity
 import com.example.linkshare.databinding.FragmentBoardBinding
+import com.example.linkshare.utils.FBAuth
 import com.example.linkshare.utils.FBRef
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -59,6 +60,11 @@ class BoardFragment : Fragment() {
             }
 
         })
+
+        binding.btnMyPost.setOnClickListener {
+            getFBBoardDataEqualUid()
+            binding.spCategory.setSelection(0)
+        }
 
         // Spinner 연결
         val spinnerAdapter = ArrayAdapter.createFromResource(
@@ -133,6 +139,39 @@ class BoardFragment : Fragment() {
                     val item = dataModel.getValue(BoardModel::class.java)
                     boardDataList.add(item!!)
                     boardKeyList.add(dataModel.key.toString())
+                }
+                // 최신 글이 가장 위로
+                boardKeyList.reverse()
+                boardDataList.reverse()
+                // Sync
+                boardRVAdapter.notifyDataSetChanged()
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {
+                // Getting Post failed, log a message
+            }
+        }
+        FBRef.boardList.addValueEventListener(postListener)
+    }
+
+    private fun getFBBoardDataEqualUid() {
+        val postListener = object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                // 중복 방지
+                boardDataList.clear()
+                // Get Post object and use the values to update the UI
+                for (dataModel in dataSnapshot.children) {
+                    // BoardModel 형식의 데이터 받기
+                    val item = dataModel.getValue(BoardModel::class.java)
+
+                    val myUid = FBAuth.getUid()
+                    val writeUid = item!!.uid
+
+                    // 내가 쓴 글 일 경우에만 list에 추가
+                    if (myUid == writeUid) {
+                        boardDataList.add(item!!)
+                        boardKeyList.add(dataModel.key.toString())
+                    }
                 }
                 // 최신 글이 가장 위로
                 boardKeyList.reverse()
