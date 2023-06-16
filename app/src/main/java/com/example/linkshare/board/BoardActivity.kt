@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.OnClickListener
+import android.widget.ArrayAdapter
 import android.widget.Button
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -107,9 +108,17 @@ class BoardActivity : AppCompatActivity() {
                     // 데이터를 하나만 가져오면 되므로 반복문 사용이 필요 없다.
                     val dataModel = dataSnapshot.getValue(BoardModel::class.java)
 
+                    // boardModel의 category position을 문자로 받기 위해 spinneradapter 연결
+                    val spinnerAdapter = ArrayAdapter.createFromResource(
+                        applicationContext,
+                        R.array.type,
+                        android.R.layout.simple_spinner_item
+                    )
+                    val category = spinnerAdapter.getItem(dataModel!!.category)
+
                     binding.title.text = dataModel!!.title
                     binding.time.text = dataModel!!.time
-                    binding.category.text = dataModel!!.category.toString()
+                    binding.category.text = category
                     binding.content.text = dataModel!!.content
 
                     val myUid = FBAuth.getUid()
