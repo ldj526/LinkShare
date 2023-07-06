@@ -9,26 +9,20 @@ import android.widget.AdapterView
 import android.widget.AdapterView.OnItemSelectedListener
 import android.widget.ArrayAdapter
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.linkshare.R
-import com.example.linkshare.board.BoardActivity
-import com.example.linkshare.board.BoardModel
-import com.example.linkshare.board.BoardRVAdapter
-import com.example.linkshare.board.BoardWriteActivity
+import com.example.linkshare.board.*
 import com.example.linkshare.databinding.FragmentBoardBinding
-import com.example.linkshare.utils.FBAuth
-import com.example.linkshare.utils.FBRef
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.ValueEventListener
 
 class BoardFragment : Fragment() {
 
     private var _binding: FragmentBoardBinding? = null
     private val binding get() = _binding!!
     private val boardDataList = mutableListOf<BoardModel>()
-    private val boardKeyList = mutableListOf<String>()
     private lateinit var boardRVAdapter: BoardRVAdapter
+    private val viewModel by lazy { ViewModelProvider(this)[BoardViewModel::class.java] }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -55,10 +49,9 @@ class BoardFragment : Fragment() {
         boardRVAdapter.setItemClickListener(object : BoardRVAdapter.OnItemClickListener {
             override fun onClick(v: View, position: Int) {
                 val intent = Intent(context, BoardActivity::class.java)
-                intent.putExtra("key", boardKeyList[position])
+                intent.putExtra("key", getKeyList()[position])
                 startActivity(intent)
             }
-
         })
 
         binding.btnMyPost.setOnClickListener {
@@ -100,91 +93,31 @@ class BoardFragment : Fragment() {
 
     // Category에 맞는 데이터 값 가져오기
     private fun getFBBoardData(category: Int) {
-        val postListener = object : ValueEventListener {
-            override fun onDataChange(dataSnapshot: DataSnapshot) {
-                // 중복 방지
-                boardDataList.clear()
-                // Get Post object and use the values to update the UI
-                for (dataModel in dataSnapshot.children) {
-                    // BoardModel 형식의 데이터 받기
-                    val item = dataModel.getValue(BoardModel::class.java)
-                    if (item!!.category == category) {
-                        boardDataList.add(item!!)
-                        boardKeyList.add(dataModel.key.toString())
-                    }
-                }
-                // 최신 글이 가장 위로
-                boardKeyList.reverse()
-                boardDataList.reverse()
-                // Sync
-                boardRVAdapter.notifyDataSetChanged()
-            }
-
-            override fun onCancelled(databaseError: DatabaseError) {
-                // Getting Post failed, log a message
-            }
-        }
-        FBRef.boardList.addValueEventListener(postListener)
+        viewModel.getCategoryData(category).observe(viewLifecycleOwner, Observer {
+            boardRVAdapter.setData(it)
+            boardRVAdapter.notifyDataSetChanged()
+        })
     }
 
     // 모든 데이터 값 가져오기
     private fun getFBBoardDataAll() {
-        val postListener = object : ValueEventListener {
-            override fun onDataChange(dataSnapshot: DataSnapshot) {
-                // 중복 방지
-                boardDataList.clear()
-                // Get Post object and use the values to update the UI
-                for (dataModel in dataSnapshot.children) {
-                    // BoardModel 형식의 데이터 받기
-                    val item = dataModel.getValue(BoardModel::class.java)
-                    boardDataList.add(item!!)
-                    boardKeyList.add(dataModel.key.toString())
-                }
-                // 최신 글이 가장 위로
-                boardKeyList.reverse()
-                boardDataList.reverse()
-                // Sync
-                boardRVAdapter.notifyDataSetChanged()
-            }
-
-            override fun onCancelled(databaseError: DatabaseError) {
-                // Getting Post failed, log a message
-            }
-        }
-        FBRef.boardList.addValueEventListener(postListener)
+        viewModel.getAllData().observe(viewLifecycleOwner, Observer {
+            boardRVAdapter.setData(it)
+            boardRVAdapter.notifyDataSetChanged()
+        })
     }
 
+    // 자신의 id값과 일치하는 게시물 가져오기
     private fun getFBBoardDataEqualUid() {
-        val postListener = object : ValueEventListener {
-            override fun onDataChange(dataSnapshot: DataSnapshot) {
-                // 중복 방지
-                boardDataList.clear()
-                // Get Post object and use the values to update the UI
-                for (dataModel in dataSnapshot.children) {
-                    // BoardModel 형식의 데이터 받기
-                    val item = dataModel.getValue(BoardModel::class.java)
+        viewModel.getEqualUidData().observe(viewLifecycleOwner, Observer {
+            boardRVAdapter.setData(it)
+            boardRVAdapter.notifyDataSetChanged()
+        })
+    }
 
-                    val myUid = FBAuth.getUid()
-                    val writeUid = item!!.uid
-
-                    // 내가 쓴 글 일 경우에만 list에 추가
-                    if (myUid == writeUid) {
-                        boardDataList.add(item!!)
-                        boardKeyList.add(dataModel.key.toString())
-                    }
-                }
-                // 최신 글이 가장 위로
-                boardKeyList.reverse()
-                boardDataList.reverse()
-                // Sync
-                boardRVAdapter.notifyDataSetChanged()
-            }
-
-            override fun onCancelled(databaseError: DatabaseError) {
-                // Getting Post failed, log a message
-            }
-        }
-        FBRef.boardList.addValueEventListener(postListener)
+    // 게시판의 key 값 받아오기
+    private fun getKeyList(): MutableList<String> {
+        return viewModel.getKeyList()
     }
 
     override fun onDestroyView() {

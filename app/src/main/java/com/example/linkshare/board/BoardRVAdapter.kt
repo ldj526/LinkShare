@@ -1,20 +1,27 @@
 package com.example.linkshare.board
 
+import android.content.Intent
 import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.example.linkshare.R
 import com.example.linkshare.utils.FBAuth
 
-class BoardRVAdapter(val boardList: MutableList<BoardModel>) :
+class BoardRVAdapter(var boardList: MutableList<BoardModel>) :
     RecyclerView.Adapter<BoardRVAdapter.ViewHolder>() {
+
+    fun setData(data: MutableList<BoardModel>) {
+        boardList = data
+    }
+
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val title = view.findViewById<TextView>(R.id.title)
-        val content = view.findViewById<TextView>(R.id.content)
-        val time = view.findViewById<TextView>(R.id.time)
+        val title: TextView = view.findViewById(R.id.title)
+        val content: TextView = view.findViewById(R.id.content)
+        val time: TextView = view.findViewById(R.id.time)
 
         fun bind(item: BoardModel) {
             title.text = item.title
