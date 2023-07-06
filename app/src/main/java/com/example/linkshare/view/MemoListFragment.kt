@@ -6,18 +6,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.linkshare.databinding.FragmentMemolistBinding
-import com.example.linkshare.memo.MemoModel
-import com.example.linkshare.memo.MemoRVAdapter
-import com.example.linkshare.memo.MemoUpdateActivity
-import com.example.linkshare.memo.MemoWriteActivity
-import com.example.linkshare.utils.FBRef
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.ValueEventListener
-import timber.log.Timber
+import com.example.linkshare.memo.*
 
 class MemoListFragment : Fragment() {
 
@@ -26,7 +19,7 @@ class MemoListFragment : Fragment() {
     private val memoDataList = mutableListOf<MemoModel>()
     private val memoKeyList = mutableListOf<String>()
     private lateinit var memoRVAdapter: MemoRVAdapter
-    private val TAG = MemoListFragment::class.java.simpleName
+    private val viewModel by lazy { ViewModelProvider(this)[MemoViewModel::class.java] }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,7 +40,7 @@ class MemoListFragment : Fragment() {
         memoRVAdapter.setItemClickListener(object : MemoRVAdapter.OnItemClickListener {
             override fun onClick(v: View, position: Int) {
                 val intent = Intent(context, MemoUpdateActivity::class.java)
-                intent.putExtra("key", memoKeyList[position])
+                intent.putExtra("key", getMemoKeyList()[position])
                 startActivity(intent)
             }
         })
@@ -62,31 +55,17 @@ class MemoListFragment : Fragment() {
         return binding.root
     }
 
+    // 자신이 쓴 메모만 가져오기
     private fun getFBBoardData() {
-        val postListener = object : ValueEventListener {
-            override fun onDataChange(dataSnapshot: DataSnapshot) {
-                // 중복 방지
-                memoDataList.clear()
-                // Get Post object and use the values to update the UI
-                for (dataModel in dataSnapshot.children) {
-                    // BoardModel 형식의 데이터 받기
-                    val item = dataModel.getValue(MemoModel::class.java)
-                    memoDataList.add(item!!)
-                    memoKeyList.add(dataModel.key.toString())
-                }
-                // 최신 글이 가장 위로
-                memoKeyList.reverse()
-                memoDataList.reverse()
-                // Syncㅣ
-                memoRVAdapter.notifyDataSetChanged()
-            }
+        viewModel.getFBMemoData().observe(viewLifecycleOwner, Observer {
+            memoRVAdapter.setData(it)
+            memoRVAdapter.notifyDataSetChanged()
+        })
+    }
 
-            override fun onCancelled(databaseError: DatabaseError) {
-                // Getting Post failed, log a message
-                Timber.w(TAG, "loadPost:onCancelled", databaseError.toException())
-            }
-        }
-        FBRef.memoList.addValueEventListener(postListener)
+    // 자신이 쓴 메모의 key 가져오기
+    private fun getMemoKeyList(): MutableList<String> {
+        return viewModel.getMemoKeyList()
     }
 
     override fun onDestroyView() {

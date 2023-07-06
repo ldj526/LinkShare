@@ -6,9 +6,15 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.linkshare.R
+import com.example.linkshare.board.BoardModel
 
-class MemoRVAdapter(val memoList: MutableList<MemoModel>) :
+class MemoRVAdapter(var memoList: MutableList<MemoModel>) :
     RecyclerView.Adapter<MemoRVAdapter.ViewHolder>() {
+
+    fun setData(data: MutableList<MemoModel>) {
+        memoList = data
+    }
+
     inner class ViewHolder(view: View): RecyclerView.ViewHolder(view) {
         val title = view.findViewById<TextView>(R.id.title)
         val content = view.findViewById<TextView>(R.id.content)
