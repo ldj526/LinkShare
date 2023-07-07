@@ -8,9 +8,14 @@ import android.widget.Button
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.example.linkshare.R
 import com.example.linkshare.board.comment.CommentModel
+import com.example.linkshare.board.comment.CommentRVAdapter
+import com.example.linkshare.board.comment.CommentViewModel
 import com.example.linkshare.databinding.ActivityBoardBinding
 import com.example.linkshare.utils.FBAuth
 import com.example.linkshare.utils.FBRef
@@ -26,6 +31,9 @@ class BoardActivity : AppCompatActivity() {
     private var _binding: ActivityBoardBinding? = null
     private val binding get() = _binding!!
     private lateinit var key: String
+    private val commentDataList = mutableListOf<CommentModel>()
+    private lateinit var commentRVAdapter: CommentRVAdapter
+    private val viewModel by lazy { ViewModelProvider(this)[CommentViewModel::class.java] }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,8 +54,23 @@ class BoardActivity : AppCompatActivity() {
             insertComment(key)
         }
 
+        // RecyclerView 연결
+        commentRVAdapter = CommentRVAdapter(commentDataList)
+        binding.commentRV.adapter = commentRVAdapter
+        binding.commentRV.layoutManager = LinearLayoutManager(baseContext)
+
+        getCommentData(key)
+
         getBoardData(key)
         getImageData(key)
+    }
+
+    // Firebase에 있는 댓글 가져오기
+    private fun getCommentData(key: String) {
+        viewModel.getCommentData(key).observe(this, Observer {
+            commentRVAdapter.setData(it)
+            commentRVAdapter.notifyDataSetChanged()
+        })
     }
 
     // Firebase에 댓글 저장
