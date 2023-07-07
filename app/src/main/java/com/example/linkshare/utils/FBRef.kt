@@ -10,5 +10,6 @@ class FBRef {
 
         val memoList = database.getReference("memoList")
         val boardList = database.getReference("boardList")
+        val commentList = database.getReference("commentList")
     }
 }

@@ -3,8 +3,6 @@ package com.example.linkshare.board
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.View
-import android.view.View.OnClickListener
 import android.widget.ArrayAdapter
 import android.widget.Button
 import androidx.appcompat.app.AlertDialog
@@ -12,8 +10,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import com.bumptech.glide.Glide
 import com.example.linkshare.R
+import com.example.linkshare.board.comment.CommentModel
 import com.example.linkshare.databinding.ActivityBoardBinding
-import com.example.linkshare.memo.MemoModel
 import com.example.linkshare.utils.FBAuth
 import com.example.linkshare.utils.FBRef
 import com.google.android.gms.tasks.OnCompleteListener
@@ -44,8 +42,27 @@ class BoardActivity : AppCompatActivity() {
             updateDialog()
         }
 
+        binding.commentBtn.setOnClickListener {
+            insertComment(key)
+        }
+
         getBoardData(key)
         getImageData(key)
+    }
+
+    // Firebase에 댓글 저장
+    private fun insertComment(key: String) {
+        FBRef.commentList
+            .child(key)
+            .push()
+            .setValue(
+                CommentModel(
+                    binding.commentArea.text.toString(),
+                    FBAuth.getUid(), FBAuth.getTime()
+                )
+            )
+
+        binding.commentArea.setText("")
     }
 
     private fun updateDialog() {
