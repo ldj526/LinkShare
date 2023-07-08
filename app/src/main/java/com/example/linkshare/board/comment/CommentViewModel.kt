@@ -3,6 +3,7 @@ package com.example.linkshare.board.comment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.google.android.gms.tasks.Task
 
 class CommentViewModel : ViewModel() {
 
@@ -14,5 +15,9 @@ class CommentViewModel : ViewModel() {
             mutableData.value = it
         }
         return mutableData
+    }
+
+    fun insertComment(key: String, str: String): Task<Void>{
+        return commentRepo.insertComment(key, str)
     }
 }

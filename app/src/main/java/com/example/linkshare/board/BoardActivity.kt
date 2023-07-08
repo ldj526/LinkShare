@@ -51,7 +51,7 @@ class BoardActivity : AppCompatActivity() {
         }
 
         binding.commentBtn.setOnClickListener {
-            insertComment(key)
+            insertComment(key, binding.commentArea.text.toString())
         }
 
         // RecyclerView 연결
@@ -74,17 +74,8 @@ class BoardActivity : AppCompatActivity() {
     }
 
     // Firebase에 댓글 저장
-    private fun insertComment(key: String) {
-        FBRef.commentList
-            .child(key)
-            .push()
-            .setValue(
-                CommentModel(
-                    binding.commentArea.text.toString(),
-                    FBAuth.getUid(), FBAuth.getTime()
-                )
-            )
-
+    private fun insertComment(key: String, str: String) {
+        viewModel.insertComment(key, str)
         binding.commentArea.setText("")
     }
 

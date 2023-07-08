@@ -2,7 +2,9 @@ package com.example.linkshare.board.comment
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.example.linkshare.utils.FBAuth
 import com.example.linkshare.utils.FBRef
+import com.google.android.gms.tasks.Task
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
@@ -36,4 +38,16 @@ class CommentRepo {
         return mutableData
     }
 
+    // Firebase에 댓글 저장
+    fun insertComment(key: String, str: String): Task<Void> {
+        return FBRef.commentList
+            .child(key)
+            .push()
+            .setValue(
+                CommentModel(
+                    str,
+                    FBAuth.getUid(), FBAuth.getTime()
+                )
+            )
+    }
 }
