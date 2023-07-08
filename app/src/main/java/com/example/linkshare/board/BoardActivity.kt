@@ -3,6 +3,7 @@ package com.example.linkshare.board
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.Button
 import androidx.appcompat.app.AlertDialog
@@ -43,7 +44,7 @@ class BoardActivity : AppCompatActivity() {
         key = intent.getStringExtra("key").toString()
 
         binding.ivDelete.setOnClickListener {
-            deleteDialog()
+            deleteBoardDialog()
         }
 
         binding.ivUpdate.setOnClickListener {
@@ -58,6 +59,12 @@ class BoardActivity : AppCompatActivity() {
         commentRVAdapter = CommentRVAdapter(commentDataList)
         binding.commentRV.adapter = commentRVAdapter
         binding.commentRV.layoutManager = LinearLayoutManager(baseContext)
+
+        commentRVAdapter.setItemClickListener(object :CommentRVAdapter.OnItemClickListener{
+            override fun onClick(v: View, position: Int) {
+                deleteCommentDialog()
+            }
+        })
 
         getCommentData(key)
 
@@ -97,7 +104,22 @@ class BoardActivity : AppCompatActivity() {
         }
     }
 
-    private fun deleteDialog() {
+    private fun deleteCommentDialog() {
+        val mDialogView = LayoutInflater.from(this).inflate(R.layout.custom_dialog, null)
+        val mBuilder = AlertDialog.Builder(this).setView(mDialogView).setTitle("삭제 하시겠습니까?")
+        val alertDialog = mBuilder.show()
+
+        alertDialog.findViewById<Button>(R.id.yesBtn)?.setOnClickListener {
+            FBRef.commentList.child(key).removeValue()
+            alertDialog.dismiss()
+        }
+
+        alertDialog.findViewById<Button>(R.id.noBtn)?.setOnClickListener {
+            alertDialog.dismiss()
+        }
+    }
+
+    private fun deleteBoardDialog() {
         val mDialogView = LayoutInflater.from(this).inflate(R.layout.custom_dialog, null)
         val mBuilder = AlertDialog.Builder(this).setView(mDialogView).setTitle("삭제 하시겠습니까?")
         val alertDialog = mBuilder.show()

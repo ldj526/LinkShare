@@ -34,8 +34,8 @@ class CommentRVAdapter(var commentList: MutableList<CommentModel>) :
     }
 
     override fun onBindViewHolder(holder: CommentRVAdapter.ViewHolder, position: Int) {
-        // 리스트 항목 클릭 시 onClick() 호출
-        holder.itemView.setOnClickListener {
+
+        holder.delete.setOnClickListener {
             itemClickListener.onClick(it, position)
         }
 
