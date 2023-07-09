@@ -37,6 +37,15 @@
                         android:textStyle="bold" />
 
                     <ImageView
+                        android:id="@+id/ivShare"
+                        android:layout_width="30dp"
+                        android:layout_height="40dp"
+                        android:layout_margin="10dp"
+                        android:src="@android:drawable/ic_menu_share"
+                        app:layout_constraintEnd_toStartOf="@id/ivUpdate"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <ImageView
                         android:id="@+id/ivUpdate"
                         android:layout_width="30dp"
                         android:layout_height="40dp"

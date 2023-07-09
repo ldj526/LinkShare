@@ -112,6 +112,7 @@ class BoardActivity : AppCompatActivity() {
         alertDialog.findViewById<Button>(R.id.yesBtn)?.setOnClickListener {
             FBRef.commentList.child(key).removeValue()
             alertDialog.dismiss()
+            commentRVAdapter.notifyDataSetChanged()
         }
 
         alertDialog.findViewById<Button>(R.id.noBtn)?.setOnClickListener {
