@@ -1,10 +1,16 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
 
-    <style name="Base.Theme.LinkShare" parent="Theme.AppCompat.Light">
+    <style name="Base.Theme.LinkShare" parent="Theme.MaterialComponents.Light.NoActionBar">
         <item name="windowNoTitle">true</item>
     </style>
 
     <style name="Theme.LinkShare" parent="Base.Theme.LinkShare" />
+    
+    <style name="TextInputLayoutStyle" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="errorEnabled">true</item>
+    </style>
 
     <style name="Theme.LinkShare.Splash" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">@color/white</item>
