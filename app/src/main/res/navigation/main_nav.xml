@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main_nav"
+    app:startDestination="@id/memo_fragment">
+
+    <fragment
+        android:id="@+id/memo_fragment"
+        android:name="com.example.linkshare.MemoFragment"
+        android:label="fragment_memo"
+        tools:layout="@layout/fragment_memo" />
+    <fragment
+        android:id="@+id/board_fragment"
+        android:name="com.example.linkshare.BoardFragment"
+        android:label="fragment_board"
+        tools:layout="@layout/fragment_board" />
+</navigation>
