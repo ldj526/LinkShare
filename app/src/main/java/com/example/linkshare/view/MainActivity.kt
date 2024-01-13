@@ -1,5 +1,6 @@
 package com.example.linkshare.view
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.navigation.findNavController
@@ -20,5 +21,10 @@ class MainActivity : AppCompatActivity() {
         val bottomNavigationView = binding.bottomNavigationView
         val navController = findNavController(R.id.fragment_container_view)
         bottomNavigationView.setupWithNavController(navController)
+
+        binding.btnSetting.setOnClickListener {
+            val intent = Intent(this, SettingActivity::class.java)
+            startActivity(intent)
+        }
     }
 }
