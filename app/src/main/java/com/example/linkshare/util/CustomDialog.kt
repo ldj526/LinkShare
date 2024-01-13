@@ -26,7 +26,6 @@ class CustomDialog(customDialogInterface: CustomDialogInterface, text: String) :
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentCustomDialogBinding.inflate(inflater, container, false)
-        val view = binding.root
 
         // 배경 투명하게
         dialog?.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
@@ -42,11 +41,11 @@ class CustomDialog(customDialogInterface: CustomDialogInterface, text: String) :
             dismiss()
         }
 
-        return view
+        return binding.root
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
+    override fun onDestroyView() {
+        super.onDestroyView()
         _binding = null
     }
 }
