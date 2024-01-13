@@ -1,9 +1,10 @@
-package com.example.linkshare
+package com.example.linkshare.view
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.navigation.findNavController
 import androidx.navigation.ui.setupWithNavController
+import com.example.linkshare.R
 import com.example.linkshare.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
