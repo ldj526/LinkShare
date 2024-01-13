@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "18963882272",
+    "project_id": "linkshare-36f04",
+    "storage_bucket": "linkshare-36f04.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:18963882272:android:9baaf8b3ba68d9210df745",
+        "android_client_info": {
+          "package_name": "com.example.linkshare"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAllMMnpt0WvKjM8qoasGPfapQRrOiOtlA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

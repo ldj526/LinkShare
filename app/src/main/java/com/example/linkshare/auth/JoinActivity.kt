@@ -1,15 +1,21 @@
-package com.example.linkshare
+package com.example.linkshare.auth
 
 import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.linkshare.databinding.ActivityJoinBinding
+import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.auth
+
 
 class JoinActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityJoinBinding
+    private lateinit var auth: FirebaseAuth
     private var emailFlag = false
     private var pwdFlag = false
     private var pwdCheckFlag = false
@@ -19,13 +25,27 @@ class JoinActivity : AppCompatActivity() {
         binding = ActivityJoinBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        // Initialize Firebase Auth
+        auth = Firebase.auth
+
         binding.etEmailLayout.editText?.addTextChangedListener(emailListener)
         binding.etPwdLayout.editText?.addTextChangedListener(pwdListener)
         binding.etPwdCheckLayout.editText?.addTextChangedListener(pwdListener)
         binding.btnJoin.setOnClickListener {
-            val intent = Intent(this, IntroActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-            startActivity(intent)
+            val email = binding.etEmail.text.toString()
+            val pwd = binding.etPwd.text.toString()
+
+            auth.createUserWithEmailAndPassword(email, pwd).addOnCompleteListener(this) { task ->
+                if (task.isSuccessful) {
+                    Toast.makeText(this, "성공", Toast.LENGTH_SHORT).show()
+                    val intent = Intent(this, IntroActivity::class.java)
+                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                    startActivity(intent)
+                } else {
+                    Toast.makeText(this, "실패", Toast.LENGTH_SHORT).show()
+                }
+            }
+
         }
     }
 
@@ -85,7 +105,15 @@ class JoinActivity : AppCompatActivity() {
                         when {
                             binding.etPwdLayout.editText?.text.toString() != ""
                                     && binding.etPwdLayout.editText?.text.toString() != binding.etPwdCheckLayout.editText?.text.toString() -> {
+                                binding.etPwdLayout.error = "비밀번호가 일치하지 않습니다"
                                 binding.etPwdCheckLayout.error = "비밀번호가 일치하지 않습니다"
+                                pwdCheckFlag = false
+                                pwdFlag = true
+                            }
+
+                            s.length < 6 -> {
+                                binding.etPwdLayout.error = "6자리 이상 입력해주세요"
+                                binding.etPwdCheckLayout.error = "6자리 이상 입력해주세요"
                                 pwdCheckFlag = false
                                 pwdFlag = true
                             }

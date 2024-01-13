@@ -1,6 +1,7 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -46,6 +47,12 @@ dependencies {
     // Navigation
     implementation("androidx.navigation:navigation-fragment-ktx:2.7.6")
     implementation("androidx.navigation:navigation-ui-ktx:2.7.6")
+
+    // Import the Firebase BoM
+    implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
+
+    // Add the dependency for the Firebase Authentication library
+    implementation("com.google.firebase:firebase-auth:22.3.0")
 
     implementation("androidx.core:core-ktx:1.9.0")
     implementation("androidx.appcompat:appcompat:1.6.1")
