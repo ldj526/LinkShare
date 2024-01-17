@@ -13,7 +13,10 @@
         android:theme="@style/Theme.LinkShare"
         tools:targetApi="31">
         <activity
-            android:name=".memo.MemoWrite"
+            android:name=".memo.UpdateMemoActivity"
+            android:exported="false" />
+        <activity
+            android:name=".memo.NewMemoActivity"
             android:exported="false" />
         <activity
             android:name=".view.SettingActivity"
