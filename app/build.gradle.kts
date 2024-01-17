@@ -50,6 +50,8 @@ dependencies {
 
     // Import the Firebase BoM
     implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
+    // Add firebase realtime database
+    implementation("com.google.firebase:firebase-database-ktx")
 
     // Add the dependency for the Firebase Authentication library
     implementation("com.google.firebase:firebase-auth:22.3.0")
