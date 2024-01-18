@@ -1,19 +1,23 @@
 package com.example.linkshare.memo
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import com.example.linkshare.auth.IntroActivity
 import com.example.linkshare.databinding.FragmentMemoWriteBinding
+import com.example.linkshare.util.CustomDialog
+import com.example.linkshare.util.CustomDialogInterface
 import com.example.linkshare.util.FBAuth
 import com.example.linkshare.util.FBRef
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
 
-class WriteMemoFragment : Fragment() {
+class WriteMemoFragment : Fragment(), CustomDialogInterface {
 
     private var _binding: FragmentMemoWriteBinding? = null
     private val binding get() = _binding!!
@@ -36,6 +40,7 @@ class WriteMemoFragment : Fragment() {
         _binding = FragmentMemoWriteBinding.inflate(inflater, container, false)
         if (isEditMode) {
             binding.btnSave.text = "수정"
+            binding.btnDelete.visibility = View.VISIBLE
         } else {
             binding.btnSave.text = "저장"
         }
@@ -51,6 +56,10 @@ class WriteMemoFragment : Fragment() {
             requireActivity().finish()
         }
 
+        binding.btnDelete.setOnClickListener {
+            showDialog()
+        }
+
         return binding.root
     }
 
@@ -58,12 +67,16 @@ class WriteMemoFragment : Fragment() {
     private fun getMemoData(key: String) {
         val postListener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                val dataModel = snapshot.getValue(Memo::class.java)
+                try {   // 메모가 삭제 됐을 때 정보가 없으면 에러가 나기 때문에 예외처리
+                    val dataModel = snapshot.getValue(Memo::class.java)
 
-                binding.etTitle.setText(dataModel!!.title)
-                binding.etLink.setText(dataModel.link)
-                binding.etContent.setText(dataModel.content)
-                writeUid = dataModel.uid
+                    binding.etTitle.setText(dataModel!!.title)
+                    binding.etLink.setText(dataModel.link)
+                    binding.etContent.setText(dataModel.content)
+                    writeUid = dataModel.uid
+                } catch (e: Exception) {
+
+                }
             }
 
             override fun onCancelled(error: DatabaseError) {
@@ -91,6 +104,19 @@ class WriteMemoFragment : Fragment() {
             // Firebase database에 추가
             FBRef.memoCategory.push().setValue(Memo(title, content, link, uid, time))
         }
+    }
+
+    // 다이얼로그 생성
+    private fun showDialog() {
+        val dialog = CustomDialog(this, "삭제 하시겠습니까?")
+        // 다이얼로그 창 밖에 클릭 불가
+        dialog.isCancelable = false
+        dialog.show(parentFragmentManager, "DeleteDialog")
+    }
+
+    override fun onClickYesButton() {
+        FBRef.memoCategory.child(key).removeValue()
+        requireActivity().finish()
     }
 
     companion object {
