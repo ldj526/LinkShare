@@ -1,5 +1,7 @@
 package com.example.linkshare.memo
 
+import android.graphics.Bitmap
+import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -14,9 +16,12 @@ import com.example.linkshare.util.CustomDialog
 import com.example.linkshare.util.CustomDialogInterface
 import com.example.linkshare.util.FBAuth
 import com.example.linkshare.util.FBRef
+import com.google.firebase.Firebase
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
+import com.google.firebase.storage.storage
+import java.io.ByteArrayOutputStream
 
 class WriteMemoFragment : Fragment(), CustomDialogInterface {
 
@@ -31,6 +36,7 @@ class WriteMemoFragment : Fragment(), CustomDialogInterface {
         arguments?.let {
             isEditMode = it.getBoolean("isEditMode", false)
             key = it.getString("key", "")
+            Log.d("WriteMemoFragment", "key: $key")
         }
 
         galleryLauncher =
@@ -106,16 +112,43 @@ class WriteMemoFragment : Fragment(), CustomDialogInterface {
         val content = binding.etContent.text.toString()
         val link = binding.etLink.text.toString()
         val time = FBAuth.getTime()
-        if (isEditMode) {
-            // 수정할 때
+        if (isEditMode) {   // 수정할 때
             // key값에 맞는 Firebase database 수정
             FBRef.memoCategory.child(key).setValue(Memo(title, content, link, writeUid, time))
+            imageUpload(key)
         } else {
             // 새 메모를 만들 때
             val uid = FBAuth.getUid()
-
+            val memoKey = FBRef.memoCategory.push().key.toString()
+            Log.d("WriteMemoFragment", "memoKey: $memoKey")
             // Firebase database에 추가
-            FBRef.memoCategory.push().setValue(Memo(title, content, link, uid, time))
+            FBRef.memoCategory.child(memoKey).setValue(Memo(title, content, link, uid, time))
+            imageUpload(memoKey)
+        }
+    }
+
+    // Firebase에 Image Upload
+    private fun imageUpload(key: String) {
+        // Get the data from an ImageView as bytes
+
+        val storage = Firebase.storage
+        // Create a storage reference from our app
+        val storageRef = storage.reference
+        // Create a reference to "mountains.jpg"
+        val mountainsRef = storageRef.child("$key.png")
+
+        val imageView = binding.ivImage
+        val bitmap = (imageView.drawable as BitmapDrawable).bitmap
+        val baos = ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos)
+        val data = baos.toByteArray()
+
+        val uploadTask = mountainsRef.putBytes(data)
+        uploadTask.addOnFailureListener {
+            // Handle unsuccessful uploads
+        }.addOnSuccessListener { taskSnapshot ->
+            // taskSnapshot.metadata contains file metadata such as size, content-type, etc.
+            // ...
         }
     }
 
