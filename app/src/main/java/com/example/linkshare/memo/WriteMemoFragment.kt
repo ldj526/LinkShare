@@ -11,11 +11,13 @@ import android.view.ViewGroup
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
+import com.bumptech.glide.Glide
 import com.example.linkshare.databinding.FragmentMemoWriteBinding
 import com.example.linkshare.util.CustomDialog
 import com.example.linkshare.util.CustomDialogInterface
 import com.example.linkshare.util.FBAuth
 import com.example.linkshare.util.FBRef
+import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.Firebase
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -63,6 +65,7 @@ class WriteMemoFragment : Fragment(), CustomDialogInterface {
         // 저장된 메모를 불러올 경우
         if (key != "") {
             getMemoData(key)
+            getImageData(key)
         }
 
         binding.btnSave.setOnClickListener {
@@ -150,6 +153,25 @@ class WriteMemoFragment : Fragment(), CustomDialogInterface {
             // taskSnapshot.metadata contains file metadata such as size, content-type, etc.
             // ...
         }
+    }
+
+    // Firebase에서 Image 가져오기
+    private fun getImageData(key: String) {
+        // Reference to an image file in Cloud Storage
+        val storageReference = Firebase.storage.reference.child("${key}.png")
+
+        // ImageView in your Activity
+        val imageViewFromFB = binding.ivImage
+
+        storageReference.downloadUrl.addOnCompleteListener(OnCompleteListener { task ->
+            if (task.isSuccessful) {
+                Glide.with(this)
+                    .load(task.result)
+                    .into(imageViewFromFB)
+            } else {
+
+            }
+        })
     }
 
     // 다이얼로그 생성
