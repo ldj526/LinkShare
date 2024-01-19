@@ -1,13 +1,14 @@
 package com.example.linkshare.memo
 
-import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
-import com.example.linkshare.auth.IntroActivity
 import com.example.linkshare.databinding.FragmentMemoWriteBinding
 import com.example.linkshare.util.CustomDialog
 import com.example.linkshare.util.CustomDialogInterface
@@ -24,12 +25,20 @@ class WriteMemoFragment : Fragment(), CustomDialogInterface {
     private var isEditMode: Boolean = false
     private lateinit var key: String
     private lateinit var writeUid: String
+    private lateinit var galleryLauncher: ActivityResultLauncher<String>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         arguments?.let {
             isEditMode = it.getBoolean("isEditMode", false)
             key = it.getString("key", "")
         }
+
+        galleryLauncher =
+            registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+                uri?.let {
+                    binding.ivImage.setImageURI(uri)
+                }
+            }
         super.onCreate(savedInstanceState)
     }
 
@@ -58,6 +67,10 @@ class WriteMemoFragment : Fragment(), CustomDialogInterface {
 
         binding.btnDelete.setOnClickListener {
             showDialog()
+        }
+
+        binding.ivImage.setOnClickListener {
+            galleryLauncher.launch("image/*")
         }
 
         return binding.root
