@@ -58,6 +58,9 @@ dependencies {
     // Add the dependency for the Firebase Authentication library
     implementation("com.google.firebase:firebase-auth:22.3.0")
 
+    // Glide
+    implementation ("com.github.bumptech.glide:glide:4.16.0")
+
     implementation("androidx.core:core-ktx:1.9.0")
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("com.google.android.material:material:1.11.0")
