@@ -171,8 +171,8 @@ class WriteMemoFragment : Fragment(), CustomDialogInterface {
         val imageViewFromFB = binding.ivImage
 
         storageReference.downloadUrl.addOnCompleteListener(OnCompleteListener { task ->
-            if (task.isSuccessful) {
-                Glide.with(this)
+            if (task.isSuccessful && isAdded) {
+                Glide.with(requireContext())
                     .load(task.result)
                     .into(imageViewFromFB)
             } else {
