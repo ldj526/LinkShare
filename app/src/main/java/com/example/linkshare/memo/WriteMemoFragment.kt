@@ -1,5 +1,6 @@
 package com.example.linkshare.memo
 
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
@@ -17,6 +18,7 @@ import com.example.linkshare.util.CustomDialog
 import com.example.linkshare.util.CustomDialogInterface
 import com.example.linkshare.util.FBAuth
 import com.example.linkshare.util.FBRef
+import com.example.linkshare.view.MapViewActivity
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.Firebase
 import com.google.firebase.database.DataSnapshot
@@ -80,6 +82,11 @@ class WriteMemoFragment : Fragment(), CustomDialogInterface {
 
         binding.ivImage.setOnClickListener {
             galleryLauncher.launch("image/*")
+        }
+
+        binding.btnMap.setOnClickListener {
+            val intent = Intent(activity, MapViewActivity::class.java)
+            startActivity(intent)
         }
 
         return binding.root
