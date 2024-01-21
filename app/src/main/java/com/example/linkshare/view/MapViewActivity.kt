@@ -1,12 +1,24 @@
 package com.example.linkshare.view
 
+import android.content.Context
 import android.location.Geocoder
 import android.os.Build
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
+import android.widget.ArrayAdapter
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.linkshare.R
 import com.example.linkshare.databinding.ActivityMapViewBinding
+import com.example.linkshare.util.LocalInfo
+import com.example.linkshare.util.LocalSearchResponse
+import com.example.linkshare.util.LocalSearchService
 import com.google.firebase.annotations.concurrent.UiThread
 import com.naver.maps.geometry.LatLng
 import com.naver.maps.map.LocationTrackingMode
@@ -15,6 +27,11 @@ import com.naver.maps.map.NaverMap
 import com.naver.maps.map.OnMapReadyCallback
 import com.naver.maps.map.overlay.Marker
 import com.naver.maps.map.util.FusedLocationSource
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 import java.util.Locale
 
 class MapViewActivity : AppCompatActivity(), OnMapReadyCallback {
@@ -37,6 +54,56 @@ class MapViewActivity : AppCompatActivity(), OnMapReadyCallback {
 
         mapFragment.getMapAsync(this)
         locationSource = FusedLocationSource(this, LOCATION_PERMISSION_REQUEST_CODE)
+
+        val retrofit = Retrofit.Builder()
+            .baseUrl("https://openapi.naver.com/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+
+        val service = retrofit.create(LocalSearchService::class.java)
+
+        binding.autoCompleteTextView.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: Editable?) {
+                val query = s.toString()
+                if (query.isNotEmpty()) {
+                    val call = service.searchLocal("CLIENT_ID", "CLEINT_SECRET", query)
+                    call.enqueue(object : Callback<LocalSearchResponse> {
+                        override fun onResponse(call: Call<LocalSearchResponse>, response: Response<LocalSearchResponse>) {
+                            if (response.isSuccessful) {
+                                val items = response.body()?.items ?: listOf()
+                                // Adapter 연결
+                                val adapter = object : ArrayAdapter<LocalInfo>(this@MapViewActivity, R.layout.place_item, items) {
+                                    override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+                                        val view = convertView ?: LayoutInflater.from(context).inflate(R.layout.place_item, parent, false)
+                                        val item = getItem(position)
+                                        view.findViewById<TextView>(R.id.tv_place_name).text = item?.title?.replace(Regex("<[^>]*>"), "")
+                                        view.findViewById<TextView>(R.id.tv_road_address).text = item?.roadAddress?.replace(Regex("<[^>]*>"), "")
+                                        return view
+                                    }
+                                }
+                                binding.autoCompleteTextView.setAdapter(adapter)
+                                binding.autoCompleteTextView.showDropDown()
+                            }
+                        }
+
+                        override fun onFailure(call: Call<LocalSearchResponse>, t: Throwable) {
+                            // 오류 처리
+                        }
+                    })
+                }
+            }
+        })
+
+        binding.autoCompleteTextView.setOnItemClickListener { parent, view, position, id ->
+            val selectedItem = parent.adapter.getItem(position) as LocalInfo
+            val selectedTitle = selectedItem.title.replace(Regex("<[^>]*>"), "")
+            binding.autoCompleteTextView.setText(selectedTitle)
+            // 선택 후 키보드 숨김
+            val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            imm.hideSoftInputFromWindow(binding.autoCompleteTextView.windowToken, 0)
+        }
     }
 
     override fun onRequestPermissionsResult(
