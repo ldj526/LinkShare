@@ -21,6 +21,7 @@ import com.example.linkshare.util.LocalSearchResponse
 import com.example.linkshare.util.LocalSearchService
 import com.google.firebase.annotations.concurrent.UiThread
 import com.naver.maps.geometry.LatLng
+import com.naver.maps.map.CameraUpdate
 import com.naver.maps.map.LocationTrackingMode
 import com.naver.maps.map.MapFragment
 import com.naver.maps.map.NaverMap
@@ -68,7 +69,7 @@ class MapViewActivity : AppCompatActivity(), OnMapReadyCallback {
             override fun afterTextChanged(s: Editable?) {
                 val query = s.toString()
                 if (query.isNotEmpty()) {
-                    val call = service.searchLocal("CLIENT_ID", "CLEINT_SECRET", query)
+                    val call = service.searchLocal("CLIENT_ID", "CLIENT_SECRET", query)
                     call.enqueue(object : Callback<LocalSearchResponse> {
                         override fun onResponse(call: Call<LocalSearchResponse>, response: Response<LocalSearchResponse>) {
                             if (response.isSuccessful) {
@@ -98,6 +99,14 @@ class MapViewActivity : AppCompatActivity(), OnMapReadyCallback {
 
         binding.autoCompleteTextView.setOnItemClickListener { parent, view, position, id ->
             val selectedItem = parent.adapter.getItem(position) as LocalInfo
+            // 좌표 값 가져오기
+            val latLng = LatLng(selectedItem.mapy.toDouble() / 1E7, selectedItem.mapx.toDouble() / 1E7)
+            getMarker(latLng.latitude, latLng.longitude)
+
+            // 해당 좌표로 카메라 이동
+            val cameraUpdate = CameraUpdate.scrollTo(latLng)
+            naverMap.moveCamera(cameraUpdate)
+
             val selectedTitle = selectedItem.title.replace(Regex("<[^>]*>"), "")
             binding.autoCompleteTextView.setText(selectedTitle)
             // 선택 후 키보드 숨김
@@ -130,12 +139,12 @@ class MapViewActivity : AppCompatActivity(), OnMapReadyCallback {
         naverMap.uiSettings.isZoomControlEnabled = false
 
         naverMap.setOnMapLongClickListener { pointF, latLng ->
-            marker(latLng.latitude, latLng.longitude)
+            getMarker(latLng.latitude, latLng.longitude)
         }
     }
 
     // 마커 생성
-    private fun marker(latitude: Double, longitude: Double) {
+    private fun getMarker(latitude: Double, longitude: Double) {
         marker.position = LatLng(latitude, longitude)
         marker.map = naverMap
 
