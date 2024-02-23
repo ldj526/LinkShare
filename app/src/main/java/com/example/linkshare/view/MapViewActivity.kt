@@ -19,6 +19,7 @@ import com.example.linkshare.databinding.ActivityMapViewBinding
 import com.example.linkshare.util.LocalInfo
 import com.example.linkshare.util.LocalSearchResponse
 import com.example.linkshare.util.LocalSearchService
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.firebase.annotations.concurrent.UiThread
 import com.naver.maps.geometry.LatLng
 import com.naver.maps.map.CameraUpdate
@@ -53,6 +54,11 @@ class MapViewActivity : AppCompatActivity(), OnMapReadyCallback {
                 sfm.beginTransaction().add(R.id.map_fragment, it).commit()
             }
 
+        val sheetBehavior = BottomSheetBehavior.from(binding.include.bottomSheet)
+        sheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+        sheetBehavior.peekHeight = 500
+        sheetBehavior.isDraggable = true
+
         mapFragment.getMapAsync(this)
         locationSource = FusedLocationSource(this, LOCATION_PERMISSION_REQUEST_CODE)
 
@@ -69,7 +75,7 @@ class MapViewActivity : AppCompatActivity(), OnMapReadyCallback {
             override fun afterTextChanged(s: Editable?) {
                 val query = s.toString()
                 if (query.isNotEmpty()) {
-                    val call = service.searchLocal("CLIENT_ID", "CLIENT_SECRET", query)
+                    val call = service.searchLocal("Client_Id", "client_secret", query)
                     call.enqueue(object : Callback<LocalSearchResponse> {
                         override fun onResponse(call: Call<LocalSearchResponse>, response: Response<LocalSearchResponse>) {
                             if (response.isSuccessful) {

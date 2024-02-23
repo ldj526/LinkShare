@@ -18,4 +18,12 @@
         <item name="postSplashScreenTheme">@style/Theme.LinkShare</item>
         <item name="windowSplashScreenAnimationDuration">1000</item>
     </style>
+
+    <style name="RoundCornerBottomSheetDialogTheme" parent="Theme.Design.Light.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/RoundCornerModalStyle</item>
+    </style>
+
+    <style name="RoundCornerModalStyle" parent="Widget.Design.BottomSheet.Modal">
+        <item name="android:background">@drawable/white_round_top_border</item>
+    </style>
 </resources>
