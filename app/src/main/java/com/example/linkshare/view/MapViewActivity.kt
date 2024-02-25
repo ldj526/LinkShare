@@ -6,8 +6,11 @@ import android.content.Intent
 import android.location.Geocoder
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -21,6 +24,7 @@ import com.example.linkshare.databinding.ActivityMapViewBinding
 import com.example.linkshare.util.LocalInfo
 import com.example.linkshare.util.LocalSearchResponse
 import com.example.linkshare.util.LocalSearchService
+import com.example.linkshare.util.RetrofitClient
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.firebase.annotations.concurrent.UiThread
 import com.naver.maps.geometry.LatLng
@@ -34,8 +38,6 @@ import com.naver.maps.map.util.FusedLocationSource
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 import java.util.Locale
 
 class MapViewActivity : AppCompatActivity(), OnMapReadyCallback {
@@ -44,6 +46,9 @@ class MapViewActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var locationSource: FusedLocationSource
     private lateinit var naverMap: NaverMap
     private val marker = Marker()
+    private var searchHandler = Handler(Looper.getMainLooper())
+    private var lastQueryString: String? = null
+    private lateinit var retrofitService: LocalSearchService
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -63,43 +68,18 @@ class MapViewActivity : AppCompatActivity(), OnMapReadyCallback {
         mapFragment.getMapAsync(this)
         locationSource = FusedLocationSource(this, LOCATION_PERMISSION_REQUEST_CODE)
 
-        val retrofit = Retrofit.Builder()
-            .baseUrl("https://openapi.naver.com/")
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-
-        val service = retrofit.create(LocalSearchService::class.java)
+        retrofitService = RetrofitClient.instance.create(LocalSearchService::class.java)
 
         binding.autoCompleteTextView.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
             override fun afterTextChanged(s: Editable?) {
                 val query = s.toString()
-                if (query.isNotEmpty()) {
-                    val call = service.searchLocal("clientid", "clientsecret", query)
-                    call.enqueue(object : Callback<LocalSearchResponse> {
-                        override fun onResponse(call: Call<LocalSearchResponse>, response: Response<LocalSearchResponse>) {
-                            if (response.isSuccessful) {
-                                val items = response.body()?.items ?: listOf()
-                                // Adapter 연결
-                                val adapter = object : ArrayAdapter<LocalInfo>(this@MapViewActivity, R.layout.place_item, items) {
-                                    override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-                                        val view = convertView ?: LayoutInflater.from(context).inflate(R.layout.place_item, parent, false)
-                                        val item = getItem(position)
-                                        view.findViewById<TextView>(R.id.tv_place_name).text = item?.title?.replace(Regex("<[^>]*>"), "")
-                                        view.findViewById<TextView>(R.id.tv_road_address).text = item?.roadAddress?.replace(Regex("<[^>]*>"), "")
-                                        return view
-                                    }
-                                }
-                                binding.autoCompleteTextView.setAdapter(adapter)
-                                binding.autoCompleteTextView.showDropDown()
-                            }
-                        }
-
-                        override fun onFailure(call: Call<LocalSearchResponse>, t: Throwable) {
-                            // 오류 처리
-                        }
-                    })
+                if (query.isNotEmpty() && query != lastQueryString) {
+                    searchHandler.removeCallbacksAndMessages(null)
+                    searchHandler.postDelayed({
+                        performSearch(query)
+                    }, 500)
                 }
             }
         })
@@ -159,6 +139,34 @@ class MapViewActivity : AppCompatActivity(), OnMapReadyCallback {
         naverMap.setOnMapLongClickListener { pointF, latLng ->
             getMarker(latLng.latitude, latLng.longitude)
         }
+    }
+
+    private fun performSearch(query: String) {
+        lastQueryString = query
+        val call = retrofitService.searchLocal("clientid", "clientsecret", query)
+        call.enqueue(object : Callback<LocalSearchResponse> {
+            override fun onResponse(call: Call<LocalSearchResponse>, response: Response<LocalSearchResponse>) {
+                if (response.isSuccessful) {
+                    val items = response.body()?.items ?: listOf()
+                    // Adapter 연결
+                    val adapter = object : ArrayAdapter<LocalInfo>(this@MapViewActivity, R.layout.place_item, items) {
+                        override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+                            val view = convertView ?: LayoutInflater.from(context).inflate(R.layout.place_item, parent, false)
+                            val item = getItem(position)
+                            view.findViewById<TextView>(R.id.tv_place_name).text = item?.title?.replace(Regex("<[^>]*>"), "")
+                            view.findViewById<TextView>(R.id.tv_road_address).text = item?.roadAddress?.replace(Regex("<[^>]*>"), "")
+                            return view
+                        }
+                    }
+                    binding.autoCompleteTextView.setAdapter(adapter)
+                    binding.autoCompleteTextView.showDropDown()
+                }
+            }
+
+            override fun onFailure(call: Call<LocalSearchResponse>, t: Throwable) {
+                // 오류 처리
+            }
+        })
     }
 
     // 마커 생성
