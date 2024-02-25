@@ -1,5 +1,6 @@
 package com.example.linkshare.memo
 
+import android.app.Activity
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
@@ -35,6 +36,13 @@ class WriteMemoFragment : Fragment(), CustomDialogInterface {
     private lateinit var key: String
     private lateinit var writeUid: String
     private lateinit var galleryLauncher: ActivityResultLauncher<String>
+    private val startForResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val title = result.data?.getStringExtra("title")
+            // 결과를 받아 TextView에 설정
+            binding.tvMap.text = title
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         arguments?.let {
@@ -84,9 +92,9 @@ class WriteMemoFragment : Fragment(), CustomDialogInterface {
             galleryLauncher.launch("image/*")
         }
 
-        binding.btnMap.setOnClickListener {
+        binding.tvMap.setOnClickListener {
             val intent = Intent(activity, MapViewActivity::class.java)
-            startActivity(intent)
+            startForResult.launch(intent)
         }
 
         return binding.root
