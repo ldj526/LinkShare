@@ -1,6 +1,8 @@
 package com.example.linkshare.view
 
+import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.location.Geocoder
 import android.os.Build
 import android.os.Bundle
@@ -56,7 +58,6 @@ class MapViewActivity : AppCompatActivity(), OnMapReadyCallback {
 
         val sheetBehavior = BottomSheetBehavior.from(binding.include.bottomSheet)
         sheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
-        sheetBehavior.peekHeight = 500
         sheetBehavior.isDraggable = true
 
         mapFragment.getMapAsync(this)
@@ -75,7 +76,7 @@ class MapViewActivity : AppCompatActivity(), OnMapReadyCallback {
             override fun afterTextChanged(s: Editable?) {
                 val query = s.toString()
                 if (query.isNotEmpty()) {
-                    val call = service.searchLocal("Client_Id", "client_secret", query)
+                    val call = service.searchLocal("clientid", "clientsecret", query)
                     call.enqueue(object : Callback<LocalSearchResponse> {
                         override fun onResponse(call: Call<LocalSearchResponse>, response: Response<LocalSearchResponse>) {
                             if (response.isSuccessful) {
@@ -118,6 +119,17 @@ class MapViewActivity : AppCompatActivity(), OnMapReadyCallback {
             // 선택 후 키보드 숨김
             val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
             imm.hideSoftInputFromWindow(binding.autoCompleteTextView.windowToken, 0)
+
+            binding.include.tvName.text = selectedTitle
+            binding.include.tvCategory.text = selectedItem.category
+            // 버튼 클릭 시 업체명과 도로명주소 Memo로 데이터 전달
+            binding.include.btnSelect.setOnClickListener {
+                val data = Intent().apply {
+                    putExtra("title", "$selectedTitle (${selectedItem.roadAddress})")
+                }
+                setResult(Activity.RESULT_OK, data)
+                finish()
+            }
         }
     }
 
