@@ -19,6 +19,7 @@ import android.widget.ArrayAdapter
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.example.linkshare.BuildConfig
 import com.example.linkshare.R
 import com.example.linkshare.databinding.ActivityMapViewBinding
 import com.example.linkshare.util.LocalInfo
@@ -49,6 +50,8 @@ class MapViewActivity : AppCompatActivity(), OnMapReadyCallback {
     private var searchHandler = Handler(Looper.getMainLooper())
     private var lastQueryString: String? = null
     private lateinit var retrofitService: LocalSearchService
+    private val clientId = BuildConfig.NAVER_CLIENT_ID
+    private val clientSecret = BuildConfig.NAVER_CLIENT_SECRET
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -139,17 +142,32 @@ class MapViewActivity : AppCompatActivity(), OnMapReadyCallback {
         naverMap.setOnMapLongClickListener { pointF, latLng ->
             getMarker(latLng.latitude, latLng.longitude)
         }
+
+        // 심볼 클릭했을 때 마커 찍히는 기능
+        naverMap.setOnSymbolClickListener { symbol ->
+            getMarker(symbol.position.latitude, symbol.position.longitude)
+            true
+        }
     }
 
     private fun performSearch(query: String) {
         lastQueryString = query
-        val call = retrofitService.searchLocal("clientid", "clientsecret", query)
+        val call = retrofitService.searchLocal(clientId, clientSecret, query)
         call.enqueue(object : Callback<LocalSearchResponse> {
             override fun onResponse(call: Call<LocalSearchResponse>, response: Response<LocalSearchResponse>) {
                 if (response.isSuccessful) {
                     val items = response.body()?.items ?: listOf()
+
+                    // 장소명에 키워드가 포함된 항목 필터링
+                    val titleMatches = items.filter { it.title.contains(query, true) }
+
+                    // 도로명주소에 키워드가 포함된 항목 필터링
+                    val addressMatches = items.filter { it.roadAddress.contains(query, true) && !it.title.contains(query, true) }
+
+                    // 두 결과를 합침 (장소명 매칭 결과를 우선으로)
+                    val combinedResults = titleMatches + addressMatches
                     // Adapter 연결
-                    val adapter = object : ArrayAdapter<LocalInfo>(this@MapViewActivity, R.layout.place_item, items) {
+                    val adapter = object : ArrayAdapter<LocalInfo>(this@MapViewActivity, R.layout.place_item, combinedResults) {
                         override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
                             val view = convertView ?: LayoutInflater.from(context).inflate(R.layout.place_item, parent, false)
                             val item = getItem(position)

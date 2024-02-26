@@ -22,7 +22,7 @@
 
         <meta-data
             android:name="com.naver.maps.map.CLIENT_ID"
-            android:value="value" />
+            android:value="${NAVER_MAP_CLIENT_ID}" />
 
         <activity
             android:name=".memo.UpdateMemoActivity"
