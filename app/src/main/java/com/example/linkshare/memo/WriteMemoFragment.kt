@@ -110,6 +110,7 @@ class WriteMemoFragment : Fragment(), CustomDialogInterface {
                     binding.etTitle.setText(dataModel!!.title)
                     binding.etLink.setText(dataModel.link)
                     binding.etContent.setText(dataModel.content)
+                    binding.tvMap.text = dataModel.location
                     writeUid = dataModel.uid
                 } catch (e: Exception) {
 
@@ -129,10 +130,11 @@ class WriteMemoFragment : Fragment(), CustomDialogInterface {
         val title = binding.etTitle.text.toString()
         val content = binding.etContent.text.toString()
         val link = binding.etLink.text.toString()
+        val location = binding.tvMap.text.toString()
         val time = FBAuth.getTime()
         if (isEditMode) {   // 수정할 때
             // key값에 맞는 Firebase database 수정
-            FBRef.memoCategory.child(key).setValue(Memo(title, content, link, writeUid, time))
+            FBRef.memoCategory.child(key).setValue(Memo(title, content, link, location, writeUid, time))
             imageUpload(key)
         } else {
             // 새 메모를 만들 때
@@ -140,7 +142,7 @@ class WriteMemoFragment : Fragment(), CustomDialogInterface {
             val memoKey = FBRef.memoCategory.push().key.toString()
             Log.d("WriteMemoFragment", "memoKey: $memoKey")
             // Firebase database에 추가
-            FBRef.memoCategory.child(memoKey).setValue(Memo(title, content, link, uid, time))
+            FBRef.memoCategory.child(memoKey).setValue(Memo(title, content, link, location, uid, time))
             imageUpload(memoKey)
         }
     }
