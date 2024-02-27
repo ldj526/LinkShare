@@ -10,10 +10,12 @@ import com.example.linkshare.R
 class BoardRVAdapter(val boardList: MutableList<Board>) :
     RecyclerView.Adapter<BoardRVAdapter.ViewHolder>() {
 
+    private lateinit var itemClickListener: OnItemClickListener
+
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val title = itemView.findViewById<TextView>(R.id.tv_title)
-        val link = itemView.findViewById<TextView>(R.id.tv_link)
-        val time = itemView.findViewById<TextView>(R.id.tv_time)
+        val title = itemView.findViewById<TextView>(R.id.tv_board_title)
+        val link = itemView.findViewById<TextView>(R.id.tv_board_link)
+        val time = itemView.findViewById<TextView>(R.id.tv_board_time)
 
         fun bind(board: Board) {
             title.text = board.title
@@ -44,9 +46,6 @@ class BoardRVAdapter(val boardList: MutableList<Board>) :
     fun setItemClickListener(onItemClickListener: OnItemClickListener) {
         this.itemClickListener = onItemClickListener
     }
-
-    // setItemClickListener로 설정한 함수 실행
-    private lateinit var itemClickListener: OnItemClickListener
 
     override fun getItemCount(): Int = boardList.size
 }

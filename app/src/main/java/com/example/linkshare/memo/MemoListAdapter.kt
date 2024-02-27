@@ -13,9 +13,9 @@ class MemoListAdapter(val memoList: MutableList<Memo>): RecyclerView.Adapter<Mem
 
     inner class ViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) {
 
-        val title = itemView.findViewById<TextView>(R.id.tv_title)
-        val link = itemView.findViewById<TextView>(R.id.tv_link)
-        val time = itemView.findViewById<TextView>(R.id.tv_time)
+        val title = itemView.findViewById<TextView>(R.id.tv_memo_title)
+        val link = itemView.findViewById<TextView>(R.id.tv_memo_link)
+        val time = itemView.findViewById<TextView>(R.id.tv_memo_time)
 
         fun bind(memo: Memo) {
             title.text = memo.title
