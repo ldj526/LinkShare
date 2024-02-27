@@ -13,6 +13,7 @@ import com.example.linkshare.memo.Memo
 import com.example.linkshare.memo.MemoListAdapter
 import com.example.linkshare.memo.NewMemoActivity
 import com.example.linkshare.memo.UpdateMemoActivity
+import com.example.linkshare.util.FBAuth
 import com.example.linkshare.util.FBRef
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -64,8 +65,15 @@ class MemoFragment : Fragment() {
                 for (dataModel in snapshot.children) {
                     // Memo 형식의 데이터 받기
                     val item = dataModel.getValue(Memo::class.java)
-                    memoList.add(item!!)
-                    memoKeyList.add(dataModel.key.toString())
+
+                    val myUid = FBAuth.getUid()
+                    val writeUid = item!!.uid
+
+                    // 내가 쓴 메모만 보여주기
+                    if (myUid == writeUid) {
+                        memoList.add(item)
+                        memoKeyList.add(dataModel.key.toString())
+                    }
                 }
                 // 최신 글이 가장 위로
                 memoList.reverse()
