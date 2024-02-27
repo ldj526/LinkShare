@@ -14,7 +14,8 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
-import com.example.linkshare.databinding.FragmentWriteMemoBinding
+import com.example.linkshare.board.Board
+import com.example.linkshare.databinding.FragmentWriteBoardBinding
 import com.example.linkshare.util.CustomDialog
 import com.example.linkshare.util.CustomDialogInterface
 import com.example.linkshare.util.FBAuth
@@ -28,9 +29,9 @@ import com.google.firebase.database.ValueEventListener
 import com.google.firebase.storage.storage
 import java.io.ByteArrayOutputStream
 
-class WriteMemoFragment : Fragment(), CustomDialogInterface {
+class WriteBoardFragment : Fragment(), CustomDialogInterface {
 
-    private var _binding: FragmentWriteMemoBinding? = null
+    private var _binding: FragmentWriteBoardBinding? = null
     private val binding get() = _binding!!
     private var isEditMode: Boolean = false
     private lateinit var key: String
@@ -53,7 +54,6 @@ class WriteMemoFragment : Fragment(), CustomDialogInterface {
         arguments?.let {
             isEditMode = it.getBoolean("isEditMode", false)
             key = it.getString("key", "")
-            Log.d("WriteMemoFragment", "key: $key")
         }
 
         galleryLauncher =
@@ -69,7 +69,7 @@ class WriteMemoFragment : Fragment(), CustomDialogInterface {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentWriteMemoBinding.inflate(inflater, container, false)
+        _binding = FragmentWriteBoardBinding.inflate(inflater, container, false)
         if (isEditMode) {
             binding.btnSave.text = "수정"
             binding.btnDelete.visibility = View.VISIBLE
@@ -79,12 +79,12 @@ class WriteMemoFragment : Fragment(), CustomDialogInterface {
 
         // 저장된 메모를 불러올 경우
         if (key != "") {
-            getMemoData(key)
+            getBoardData(key)
             getImageData(key)
         }
 
         binding.btnSave.setOnClickListener {
-            saveMemo()
+            saveBoard()
             // 해당 Activity 종료
             requireActivity().finish()
         }
@@ -110,11 +110,11 @@ class WriteMemoFragment : Fragment(), CustomDialogInterface {
     }
 
     // Firebase에서 데이터 값 가져오기
-    private fun getMemoData(key: String) {
+    private fun getBoardData(key: String) {
         val postListener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 try {   // 메모가 삭제 됐을 때 정보가 없으면 에러가 나기 때문에 예외처리
-                    val dataModel = snapshot.getValue(Memo::class.java)
+                    val dataModel = snapshot.getValue(Board::class.java)
 
                     binding.etTitle.setText(dataModel!!.title)
                     binding.etLink.setText(dataModel.link)
@@ -129,15 +129,15 @@ class WriteMemoFragment : Fragment(), CustomDialogInterface {
             }
 
             override fun onCancelled(error: DatabaseError) {
-                Log.d("MemoFragment", "실패")
+                Log.d("BoardFragment", "실패")
             }
 
         }
-        FBRef.memoCategory.child(key).addValueEventListener(postListener)
+        FBRef.boardCategory.child(key).addValueEventListener(postListener)
     }
 
-    // 새 메모 / 수정 에 따른 메모 저장
-    private fun saveMemo() {
+    // 새 게시글 / 수정 에 따른 게시글 저장
+    private fun saveBoard() {
         val title = binding.etTitle.text.toString()
         val content = binding.etContent.text.toString()
         val link = binding.etLink.text.toString()
@@ -145,16 +145,16 @@ class WriteMemoFragment : Fragment(), CustomDialogInterface {
         val time = FBAuth.getTime()
         if (isEditMode) {   // 수정할 때
             // key값에 맞는 Firebase database 수정
-            FBRef.memoCategory.child(key).setValue(Memo(title, content, link, location, latitude, longitude, writeUid, time))
+            FBRef.boardCategory.child(key).setValue(Memo(title, content, link, location, latitude, longitude, writeUid, time))
             imageUpload(key)
         } else {
             // 새 메모를 만들 때
             val uid = FBAuth.getUid()
-            val memoKey = FBRef.memoCategory.push().key.toString()
-            Log.d("WriteMemoFragment", "memoKey: $memoKey")
+            val boardKey = FBRef.boardCategory.push().key.toString()
+            Log.d("WriteMemoFragment", "memoKey: $boardKey")
             // Firebase database에 추가
-            FBRef.memoCategory.child(memoKey).setValue(Memo(title, content, link, location, latitude, longitude, uid, time))
-            imageUpload(memoKey)
+            FBRef.boardCategory.child(boardKey).setValue(Memo(title, content, link, location, latitude, longitude, uid, time))
+            imageUpload(boardKey)
         }
     }
 
@@ -211,14 +211,14 @@ class WriteMemoFragment : Fragment(), CustomDialogInterface {
     }
 
     override fun onClickYesButton() {
-        FBRef.memoCategory.child(key).removeValue()
+        FBRef.boardCategory.child(key).removeValue()
         requireActivity().finish()
     }
 
     companion object {
         @JvmStatic
         fun newInstance(isEditMode: Boolean, key: String) =
-            WriteMemoFragment().apply {
+            WriteBoardFragment().apply {
                 arguments = Bundle().apply {
                     putBoolean("isEditMode", isEditMode)
                     putString("key", key)
