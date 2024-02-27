@@ -10,14 +10,12 @@ import android.os.Handler
 import android.os.Looper
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.ArrayAdapter
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.linkshare.BuildConfig
 import com.example.linkshare.R
@@ -92,6 +90,7 @@ class MapViewActivity : AppCompatActivity(), OnMapReadyCallback {
             // 좌표 값 가져오기
             val latLng = LatLng(selectedItem.mapy.toDouble() / 1E7, selectedItem.mapx.toDouble() / 1E7)
             getMarker(latLng.latitude, latLng.longitude)
+            getAddress(latLng.latitude, latLng.longitude)
 
             // 해당 좌표로 카메라 이동
             val cameraUpdate = CameraUpdate.scrollTo(latLng)
@@ -103,16 +102,8 @@ class MapViewActivity : AppCompatActivity(), OnMapReadyCallback {
             val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
             imm.hideSoftInputFromWindow(binding.autoCompleteTextView.windowToken, 0)
 
-            binding.include.tvName.text = selectedTitle
+            sendMapDate(selectedTitle, latLng.latitude, latLng.longitude, selectedItem.roadAddress)
             binding.include.tvCategory.text = selectedItem.category
-            // 버튼 클릭 시 업체명과 도로명주소 Memo로 데이터 전달
-            binding.include.btnSelect.setOnClickListener {
-                val data = Intent().apply {
-                    putExtra("title", "$selectedTitle (${selectedItem.roadAddress})")
-                }
-                setResult(Activity.RESULT_OK, data)
-                finish()
-            }
         }
     }
 
@@ -139,14 +130,48 @@ class MapViewActivity : AppCompatActivity(), OnMapReadyCallback {
         naverMap.uiSettings.isLocationButtonEnabled = true
         naverMap.uiSettings.isZoomControlEnabled = false
 
+        // Intent에서 경도, 위도, 제목 데이터 추출 및 처리
+        intent?.run {
+            getDoubleExtra("longitude", 0.0).takeIf { it != 0.0 }?.let { longitude ->
+                getDoubleExtra("latitude", 0.0).takeIf { it != 0.0 }?.let { latitude ->
+                    // 마커 생성 및 카메라 이동
+                    getMarker(latitude, longitude)
+                    naverMap.moveCamera(CameraUpdate.scrollTo(LatLng(latitude, longitude)))
+                }
+            }
+            getStringExtra("title")?.substringBeforeLast("(")?.trimEnd()?.let { title ->
+                binding.include.tvName.text = title
+                binding.include.tvCategory.visibility = View.GONE
+            }
+        }
+
         naverMap.setOnMapLongClickListener { pointF, latLng ->
             getMarker(latLng.latitude, latLng.longitude)
+            getAddress(latLng.latitude, latLng.longitude)
         }
 
         // 심볼 클릭했을 때 마커 찍히는 기능
         naverMap.setOnSymbolClickListener { symbol ->
             getMarker(symbol.position.latitude, symbol.position.longitude)
+            getAddress(symbol.position.latitude, symbol.position.longitude, symbol.caption)
             true
+        }
+    }
+
+    // MemoActivity로 데이터 전송
+    private fun sendMapDate(address: String, latitude: Double, longitude: Double, roadAddress: String = "") {
+        binding.include.tvName.text = address
+
+        // 버튼 클릭 시 업체명과 도로명주소 Memo로 데이터 전달
+        binding.include.btnSelect.setOnClickListener {
+            val title = if (roadAddress.isNotBlank()) "$address ($roadAddress)" else address
+            val data = Intent().apply {
+                putExtra("title", title)
+                putExtra("latitude", latitude)
+                putExtra("longitude", longitude)
+            }
+            setResult(Activity.RESULT_OK, data)
+            finish()
         }
     }
 
@@ -191,12 +216,10 @@ class MapViewActivity : AppCompatActivity(), OnMapReadyCallback {
     private fun getMarker(latitude: Double, longitude: Double) {
         marker.position = LatLng(latitude, longitude)
         marker.map = naverMap
-
-        getAddress(latitude, longitude)
     }
 
     // Geocoder로 주소 가져오기
-    private fun getAddress(latitude: Double, longitude: Double) {
+    private fun getAddress(latitude: Double, longitude: Double, placeTitle: String = "") {
         val geocoder = Geocoder(applicationContext, Locale.KOREAN)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -204,21 +227,18 @@ class MapViewActivity : AppCompatActivity(), OnMapReadyCallback {
                 latitude, longitude, 1
             ) { address ->
                 if (address.size != 0) {
-                    toast(address[0].getAddressLine(0))
+                    val addressString = placeTitle.ifBlank { address[0].getAddressLine(0) }
+                    sendMapDate(addressString, latitude, longitude)
+                    binding.include.tvCategory.visibility = View.GONE
                 }
             }
         } else {
             val addresses = geocoder.getFromLocation(latitude, longitude, 1)
             if (addresses != null) {
-                toast(addresses[0].getAddressLine(0))
+                val addressString = placeTitle.ifBlank { addresses[0].getAddressLine(0) }
+                sendMapDate(addressString, latitude, longitude)
+                binding.include.tvCategory.visibility = View.GONE
             }
-        }
-    }
-
-    // Toast Message
-    private fun toast(text: String) {
-        runOnUiThread {
-            Toast.makeText(applicationContext, text, Toast.LENGTH_SHORT).show()
         }
     }
 

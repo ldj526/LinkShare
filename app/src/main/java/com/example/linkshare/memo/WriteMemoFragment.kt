@@ -36,13 +36,18 @@ class WriteMemoFragment : Fragment(), CustomDialogInterface {
     private lateinit var key: String
     private lateinit var writeUid: String
     private lateinit var galleryLauncher: ActivityResultLauncher<String>
-    private val startForResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            val title = result.data?.getStringExtra("title")
-            // 결과를 받아 TextView에 설정
-            binding.tvMap.text = title
+    private var latitude: Double? = 0.0
+    private var longitude: Double? = 0.0
+    private val startForResult =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                // 결과를 받아 TextView에 설정
+                binding.tvMap.text = result.data?.getStringExtra("title")
+                // 결과를 받아 변수에 설정
+                latitude = result.data?.getDoubleExtra("latitude", 0.0) ?: 0.0
+                longitude = result.data?.getDoubleExtra("longitude", 0.0) ?: 0.0
+            }
         }
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         arguments?.let {
@@ -93,7 +98,11 @@ class WriteMemoFragment : Fragment(), CustomDialogInterface {
         }
 
         binding.tvMap.setOnClickListener {
-            val intent = Intent(activity, MapViewActivity::class.java)
+            val intent = Intent(activity, MapViewActivity::class.java).apply {
+                putExtra("latitude", latitude)
+                putExtra("longitude", longitude)
+                putExtra("title", binding.tvMap.text)
+            }
             startForResult.launch(intent)
         }
 
@@ -111,6 +120,8 @@ class WriteMemoFragment : Fragment(), CustomDialogInterface {
                     binding.etLink.setText(dataModel.link)
                     binding.etContent.setText(dataModel.content)
                     binding.tvMap.text = dataModel.location
+                    latitude = dataModel.latitude
+                    longitude = dataModel.longitude
                     writeUid = dataModel.uid
                 } catch (e: Exception) {
 
@@ -134,7 +145,7 @@ class WriteMemoFragment : Fragment(), CustomDialogInterface {
         val time = FBAuth.getTime()
         if (isEditMode) {   // 수정할 때
             // key값에 맞는 Firebase database 수정
-            FBRef.memoCategory.child(key).setValue(Memo(title, content, link, location, writeUid, time))
+            FBRef.memoCategory.child(key).setValue(Memo(title, content, link, location, latitude, longitude, writeUid, time))
             imageUpload(key)
         } else {
             // 새 메모를 만들 때
@@ -142,7 +153,7 @@ class WriteMemoFragment : Fragment(), CustomDialogInterface {
             val memoKey = FBRef.memoCategory.push().key.toString()
             Log.d("WriteMemoFragment", "memoKey: $memoKey")
             // Firebase database에 추가
-            FBRef.memoCategory.child(memoKey).setValue(Memo(title, content, link, location, uid, time))
+            FBRef.memoCategory.child(memoKey).setValue(Memo(title, content, link, location, latitude, longitude, uid, time))
             imageUpload(memoKey)
         }
     }
