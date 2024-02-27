@@ -17,6 +17,12 @@
         android:theme="@style/Theme.LinkShare"
         tools:targetApi="31">
         <activity
+            android:name=".board.UpdateBoardActivity"
+            android:exported="false" />
+        <activity
+            android:name=".board.NewBoardActivity"
+            android:exported="false" />
+        <activity
             android:name=".view.MapViewActivity"
             android:exported="false" />
 
