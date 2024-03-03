@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.linkshare.board.Board
+import com.example.linkshare.board.BoardActivity
 import com.example.linkshare.board.BoardRVAdapter
 import com.example.linkshare.board.NewBoardActivity
 import com.example.linkshare.board.UpdateBoardActivity
@@ -38,7 +39,7 @@ class BoardFragment : Fragment() {
 
         boardRVAdapter.setItemClickListener(object : BoardRVAdapter.OnItemClickListener {
             override fun onClick(v: View, position: Int) {
-                val intent = Intent(context, UpdateBoardActivity::class.java)
+                val intent = Intent(context, BoardActivity::class.java)
                 intent.putExtra("key", boardKeyList[position])   // key 값 전달
                 startActivity(intent)
             }
