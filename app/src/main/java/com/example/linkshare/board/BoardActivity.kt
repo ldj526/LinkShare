@@ -1,14 +1,18 @@
 package com.example.linkshare.board
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.view.View
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
 import com.example.linkshare.databinding.ActivityBoardBinding
 import com.example.linkshare.util.CustomDialog
 import com.example.linkshare.util.CustomDialogInterface
 import com.example.linkshare.util.FBRef
+import com.example.linkshare.view.MapViewActivity
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.Firebase
 import com.google.firebase.database.DataSnapshot
@@ -21,6 +25,15 @@ class BoardActivity : AppCompatActivity(), CustomDialogInterface {
     private lateinit var binding: ActivityBoardBinding
     private lateinit var key: String
     private lateinit var writeUid: String
+    private var latitude: Double? = 0.0
+    private var longitude: Double? = 0.0
+    private val startForResult =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                // 결과를 받아 TextView에 설정
+                binding.tvMap.text = result.data?.getStringExtra("title")
+            }
+        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,6 +56,20 @@ class BoardActivity : AppCompatActivity(), CustomDialogInterface {
         binding.ivDelete.setOnClickListener {
             showDialog()
         }
+
+        // 뒤로가기 버튼 클릭 시
+        binding.ivBack.setOnClickListener {
+            finish()
+        }
+
+        binding.tvMap.setOnClickListener {
+            val intent = Intent(this, MapActivity::class.java).apply {
+                putExtra("latitude", latitude)
+                putExtra("longitude", longitude)
+                putExtra("title", binding.tvMap.text)
+            }
+            startForResult.launch(intent)
+        }
     }
 
     // Firebase에서 데이터 값 가져오기
@@ -56,6 +83,12 @@ class BoardActivity : AppCompatActivity(), CustomDialogInterface {
                     binding.tvLink.text = dataModel.link
                     binding.tvTime.text = dataModel.time
                     binding.tvContent.text = dataModel.content
+                    binding.tvMap.apply {
+                        text = dataModel.location
+                        visibility = if (text.isEmpty()) View.GONE else View.VISIBLE
+                    }
+                    latitude = dataModel.latitude
+                    longitude = dataModel.longitude
                     writeUid = dataModel.uid
                 } catch (e: Exception) {
 
