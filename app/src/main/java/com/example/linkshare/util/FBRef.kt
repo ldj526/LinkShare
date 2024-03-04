@@ -9,5 +9,6 @@ class FBRef {
 
         val memoCategory = database.getReference("memoList")
         val boardCategory = database.getReference("boardList")
+        val commentCategory = database.getReference("commentList")
     }
 }
