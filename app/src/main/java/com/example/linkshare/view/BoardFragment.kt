@@ -14,6 +14,7 @@ import com.example.linkshare.board.BoardRVAdapter
 import com.example.linkshare.board.NewBoardActivity
 import com.example.linkshare.board.UpdateBoardActivity
 import com.example.linkshare.databinding.FragmentBoardBinding
+import com.example.linkshare.util.FBAuth
 import com.example.linkshare.util.FBRef
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -52,6 +53,16 @@ class BoardFragment : Fragment() {
 
         getFBBoardData()
 
+        // 전체보기 클릭 시
+        binding.btnAll.setOnClickListener {
+            getFBBoardData()
+        }
+
+        // 내 글 보기 클릭 시
+        binding.btnMy.setOnClickListener {
+            getFBBoardDataEqualUid()
+        }
+
         return binding.root
     }
 
@@ -77,6 +88,40 @@ class BoardFragment : Fragment() {
 
             override fun onCancelled(error: DatabaseError) {
                 Log.d("BoardFragment", "실패")
+            }
+        }
+        FBRef.boardCategory.addValueEventListener(postListener)
+    }
+
+    // Firebase에서 내가 쓴 게시글 목록만 가져오기
+    private fun getFBBoardDataEqualUid() {
+        val postListener = object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                // 중복 방지
+                boardList.clear()
+                // Get Post object and use the values to update the UI
+                for (dataModel in dataSnapshot.children) {
+                    // BoardModel 형식의 데이터 받기
+                    val item = dataModel.getValue(Board::class.java)
+
+                    val myUid = FBAuth.getUid()
+                    val writeUid = item!!.uid
+
+                    // 내가 쓴 글 일 경우에만 list에 추가
+                    if (myUid == writeUid) {
+                        boardList.add(item)
+                        boardKeyList.add(dataModel.key.toString())
+                    }
+                }
+                // 최신 글이 가장 위로
+                boardKeyList.reverse()
+                boardList.reverse()
+                // Sync
+                boardRVAdapter.notifyDataSetChanged()
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {
+                // Getting Post failed, log a message
             }
         }
         FBRef.boardCategory.addValueEventListener(postListener)
