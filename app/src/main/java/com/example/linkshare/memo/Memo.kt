@@ -8,5 +8,6 @@ data class Memo(
     val latitude: Double? = 0.0,
     val longitude: Double? = 0.0,
     val uid: String = "",
-    val time: String = ""
+    val time: String = "",
+    val shareUid: String = ""
 )
