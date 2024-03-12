@@ -10,9 +10,9 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.linkshare.databinding.FragmentMemoBinding
 import com.example.linkshare.memo.Memo
+import com.example.linkshare.memo.MemoActivity
 import com.example.linkshare.memo.MemoListAdapter
 import com.example.linkshare.memo.NewMemoActivity
-import com.example.linkshare.memo.UpdateMemoActivity
 import com.example.linkshare.util.FBAuth
 import com.example.linkshare.util.FBRef
 import com.google.firebase.database.DataSnapshot
@@ -38,7 +38,7 @@ class MemoFragment : Fragment() {
 
         memoAdapter.setItemClickListener(object : MemoListAdapter.OnItemClickListener {
             override fun onClick(v: View, position: Int) {
-                val intent = Intent(context, UpdateMemoActivity::class.java)
+                val intent = Intent(context, MemoActivity::class.java)
                 intent.putExtra("key", memoKeyList[position])   // key 값 전달
                 startActivity(intent)
             }

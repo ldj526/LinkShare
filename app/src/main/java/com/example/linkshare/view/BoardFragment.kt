@@ -8,12 +8,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.linkshare.board.Board
 import com.example.linkshare.board.BoardActivity
 import com.example.linkshare.board.BoardRVAdapter
-import com.example.linkshare.board.NewBoardActivity
-import com.example.linkshare.board.UpdateBoardActivity
 import com.example.linkshare.databinding.FragmentBoardBinding
+import com.example.linkshare.memo.Memo
 import com.example.linkshare.util.FBAuth
 import com.example.linkshare.util.FBRef
 import com.google.firebase.database.DataSnapshot
@@ -24,8 +22,8 @@ class BoardFragment : Fragment() {
 
     private var _binding: FragmentBoardBinding? = null
     private val binding get() = _binding!!
-    private val boardList = mutableListOf<Board>()
-    private val boardKeyList = mutableListOf<String>()
+    private val memoList = mutableListOf<Memo>()
+    private val memoKeyList = mutableListOf<String>()
     private lateinit var boardRVAdapter: BoardRVAdapter
 
     override fun onCreateView(
@@ -34,22 +32,17 @@ class BoardFragment : Fragment() {
     ): View {
         _binding = FragmentBoardBinding.inflate(inflater, container, false)
 
-        boardRVAdapter = BoardRVAdapter(boardList)
+        boardRVAdapter = BoardRVAdapter(memoList)
         binding.rvBoard.adapter = boardRVAdapter
         binding.rvBoard.layoutManager = LinearLayoutManager(context)
 
         boardRVAdapter.setItemClickListener(object : BoardRVAdapter.OnItemClickListener {
             override fun onClick(v: View, position: Int) {
                 val intent = Intent(context, BoardActivity::class.java)
-                intent.putExtra("key", boardKeyList[position])   // key 값 전달
+                intent.putExtra("key", memoKeyList[position])   // key 값 전달
                 startActivity(intent)
             }
         })
-
-        binding.fabNewBoard.setOnClickListener {
-            val intent = Intent(context, NewBoardActivity::class.java)
-            startActivity(intent)
-        }
 
         getFBBoardData()
 
@@ -71,17 +64,17 @@ class BoardFragment : Fragment() {
         val postListener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 // 중복 방지
-                boardList.clear()
+                memoList.clear()
                 // Get Post object and use the values to update the UI
                 for (dataModel in snapshot.children) {
                     // Memo 형식의 데이터 받기
-                    val item = dataModel.getValue(Board::class.java)
-                    boardList.add(item!!)
-                    boardKeyList.add(dataModel.key.toString())
+                    val item = dataModel.getValue(Memo::class.java)
+                    memoList.add(item!!)
+                    memoKeyList.add(dataModel.key.toString())
                 }
                 // 최신 글이 가장 위로
-                boardList.reverse()
-                boardKeyList.reverse()
+                memoList.reverse()
+                memoKeyList.reverse()
                 // Sync
                 boardRVAdapter.notifyDataSetChanged()
             }
@@ -90,7 +83,7 @@ class BoardFragment : Fragment() {
                 Log.d("BoardFragment", "실패")
             }
         }
-        FBRef.boardCategory.addValueEventListener(postListener)
+        FBRef.memoCategory.addValueEventListener(postListener)
     }
 
     // Firebase에서 내가 쓴 게시글 목록만 가져오기
@@ -98,24 +91,24 @@ class BoardFragment : Fragment() {
         val postListener = object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 // 중복 방지
-                boardList.clear()
+                memoList.clear()
                 // Get Post object and use the values to update the UI
                 for (dataModel in dataSnapshot.children) {
                     // BoardModel 형식의 데이터 받기
-                    val item = dataModel.getValue(Board::class.java)
+                    val item = dataModel.getValue(Memo::class.java)
 
                     val myUid = FBAuth.getUid()
                     val writeUid = item!!.uid
 
                     // 내가 쓴 글 일 경우에만 list에 추가
                     if (myUid == writeUid) {
-                        boardList.add(item)
-                        boardKeyList.add(dataModel.key.toString())
+                        memoList.add(item)
+                        memoKeyList.add(dataModel.key.toString())
                     }
                 }
                 // 최신 글이 가장 위로
-                boardKeyList.reverse()
-                boardList.reverse()
+                memoKeyList.reverse()
+                memoList.reverse()
                 // Sync
                 boardRVAdapter.notifyDataSetChanged()
             }
@@ -124,7 +117,7 @@ class BoardFragment : Fragment() {
                 // Getting Post failed, log a message
             }
         }
-        FBRef.boardCategory.addValueEventListener(postListener)
+        FBRef.memoCategory.addValueEventListener(postListener)
     }
 
     override fun onDestroyView() {

@@ -6,8 +6,9 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.linkshare.R
+import com.example.linkshare.memo.Memo
 
-class BoardRVAdapter(val boardList: MutableList<Board>) :
+class BoardRVAdapter(val memoList: MutableList<Memo>) :
     RecyclerView.Adapter<BoardRVAdapter.ViewHolder>() {
 
     private lateinit var itemClickListener: OnItemClickListener
@@ -17,10 +18,10 @@ class BoardRVAdapter(val boardList: MutableList<Board>) :
         val link = itemView.findViewById<TextView>(R.id.tv_board_link)
         val time = itemView.findViewById<TextView>(R.id.tv_board_time)
 
-        fun bind(board: Board) {
-            title.text = board.title
-            link.text = board.link
-            time.text = board.time
+        fun bind(memo: Memo) {
+            title.text = memo.title
+            link.text = memo.link
+            time.text = memo.time
         }
     }
 
@@ -34,7 +35,7 @@ class BoardRVAdapter(val boardList: MutableList<Board>) :
         holder.itemView.setOnClickListener {
             itemClickListener.onClick(it, position)
         }
-        holder.bind(boardList[position])
+        holder.bind(memoList[position])
     }
 
     // 리스너 인터페이스
@@ -47,5 +48,5 @@ class BoardRVAdapter(val boardList: MutableList<Board>) :
         this.itemClickListener = onItemClickListener
     }
 
-    override fun getItemCount(): Int = boardList.size
+    override fun getItemCount(): Int = memoList.size
 }
