@@ -128,26 +128,4 @@
         </LinearLayout>
     </ScrollView>
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:layout_alignParentBottom="true"
-        android:background="@color/white">
-
-        <EditText
-            android:id="@+id/et_comment"
-            android:layout_width="320dp"
-            android:layout_height="match_parent"
-            android:layout_marginLeft="10dp"
-            android:background="@android:color/transparent"
-            android:hint="댓글을 입력해주세요" />
-
-        <ImageView
-            android:id="@+id/btn_comment"
-            android:src="@android:drawable/ic_menu_edit"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_margin="10dp"/>
-    </LinearLayout>
-
 </RelativeLayout>

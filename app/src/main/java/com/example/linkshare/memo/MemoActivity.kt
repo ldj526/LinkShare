@@ -1,4 +1,4 @@
-package com.example.linkshare.board
+package com.example.linkshare.memo
 
 import android.app.Activity
 import android.content.Intent
@@ -8,13 +8,9 @@ import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
-import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
-import com.example.linkshare.comment.Comment
-import com.example.linkshare.comment.CommentRVAdapter
-import com.example.linkshare.databinding.ActivityBoardBinding
-import com.example.linkshare.memo.Memo
-import com.example.linkshare.memo.UpdateMemoActivity
+import com.example.linkshare.board.MapActivity
+import com.example.linkshare.databinding.ActivityMemoBinding
 import com.example.linkshare.util.CustomDialog
 import com.example.linkshare.util.CustomDialogInterface
 import com.example.linkshare.util.FBAuth
@@ -26,14 +22,11 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.storage.storage
 
-class BoardActivity : AppCompatActivity(), CustomDialogInterface {
+class MemoActivity : AppCompatActivity(), CustomDialogInterface {
 
-    private lateinit var binding: ActivityBoardBinding
+    private lateinit var binding: ActivityMemoBinding
     private lateinit var key: String
     private lateinit var writeUid: String
-    private val commentList = mutableListOf<Comment>()
-    private val commentKeyList = mutableListOf<String>()
-    private lateinit var commentRVAdapter: CommentRVAdapter
     private var latitude: Double? = 0.0
     private var longitude: Double? = 0.0
     private val startForResult =
@@ -46,19 +39,12 @@ class BoardActivity : AppCompatActivity(), CustomDialogInterface {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityBoardBinding.inflate(layoutInflater)
+        binding = ActivityMemoBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         key = intent.getStringExtra("key").toString()
-
-        // comment RecyclerView 연결
-        commentRVAdapter = CommentRVAdapter(commentList)
-        binding.rvComment.adapter = commentRVAdapter
-        binding.rvComment.layoutManager = LinearLayoutManager(this)
-
-        getBoardData(key)
+        getMemoData(key)
         getImageData(key)
-        getCommentData(key)
 
         // 수정 버튼 클릭 시
         binding.ivUpdate.setOnClickListener {
@@ -77,11 +63,6 @@ class BoardActivity : AppCompatActivity(), CustomDialogInterface {
             finish()
         }
 
-        // 댓글 입력 버튼 클릭 시
-        binding.btnComment.setOnClickListener {
-            insertComment(key)
-        }
-
         binding.tvMap.setOnClickListener {
             val intent = Intent(this, MapActivity::class.java).apply {
                 putExtra("latitude", latitude)
@@ -92,50 +73,15 @@ class BoardActivity : AppCompatActivity(), CustomDialogInterface {
         }
     }
 
-    // Firebase에 댓글 내용 입력
-    private fun insertComment(key: String) {
-        FBRef.commentCategory.child(key).push().setValue(
-            Comment(
-                binding.etComment.text.toString(),
-                FBAuth.getUid(), FBAuth.getTime()
-            )
-        )
-
-        // 댓글 입력 후 빈 공간으로 해주기 위함
-        binding.etComment.setText("")
-    }
-
-    // Firebase에서 댓글 데이터 가져오기
-    private fun getCommentData(key: String) {
-        val postListener = object : ValueEventListener {
-            override fun onDataChange(dataSnapshot: DataSnapshot) {
-                // Get Post object and use the values to update the UI
-                // 중복되는 데이터가 생기므로 기존에 있던 데이터들을 삭제해준다.
-                commentList.clear()
-                for (dataModel in dataSnapshot.children) {
-                    // CommentModel 형식의 데이터 받기
-                    val item = dataModel.getValue(Comment::class.java)
-                    commentList.add(item!!)
-                    commentKeyList.add(dataModel.key.toString())
-                }
-                commentRVAdapter.notifyDataSetChanged()
-            }
-
-            override fun onCancelled(databaseError: DatabaseError) {
-                // Getting Post failed, log a message
-            }
-        }
-        FBRef.commentCategory.child(key).addValueEventListener(postListener)
-    }
-
     // Firebase에서 데이터 값 가져오기
-    private fun getBoardData(key: String) {
+    private fun getMemoData(key: String) {
         val postListener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 try {   // 메모가 삭제 됐을 때 정보가 없으면 에러가 나기 때문에 예외처리
                     val dataModel = snapshot.getValue(Memo::class.java)
-
+                    Log.d("MemoActivity", "실행")
                     binding.tvTitle.text = dataModel!!.title
+                    Log.d("MemoActivity", "${dataModel.title}")
                     binding.tvLink.text = dataModel.link
                     binding.tvTime.text = dataModel.time
                     binding.tvContent.text = dataModel.content
