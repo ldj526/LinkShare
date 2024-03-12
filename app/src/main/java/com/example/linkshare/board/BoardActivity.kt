@@ -2,6 +2,8 @@ package com.example.linkshare.board
 
 import android.app.Activity
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -25,6 +27,7 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.storage.storage
+import java.io.ByteArrayOutputStream
 
 class BoardActivity : AppCompatActivity(), CustomDialogInterface {
 
@@ -89,6 +92,10 @@ class BoardActivity : AppCompatActivity(), CustomDialogInterface {
                 putExtra("title", binding.tvMap.text)
             }
             startForResult.launch(intent)
+        }
+
+        binding.ivShare.setOnClickListener {
+            shareMemo()
         }
     }
 
@@ -191,6 +198,43 @@ class BoardActivity : AppCompatActivity(), CustomDialogInterface {
         // 다이얼로그 창 밖에 클릭 불가
         dialog.isCancelable = false
         dialog.show(supportFragmentManager, "DeleteDialog")
+    }
+
+    // 작성된 글 내 개인메모로 가져오기
+    private fun shareMemo() {
+        val title = binding.tvTitle.text.toString()
+        val content = binding.tvContent.text.toString()
+        val link = binding.tvLink.text.toString()
+        val location = binding.tvMap.text.toString()
+        val currentUid = FBAuth.getUid()
+        val time = FBAuth.getTime()
+        FBRef.boardCategory.push().setValue(Memo(title, content, link, location, latitude, longitude, writeUid, time, currentUid))
+        imageUpload(key)
+    }
+
+    // Firebase에 Image Upload
+    private fun imageUpload(key: String) {
+        // Get the data from an ImageView as bytes
+
+        val storage = Firebase.storage
+        // Create a storage reference from our app
+        val storageRef = storage.reference
+        // Create a reference to "mountains.jpg"
+        val mountainsRef = storageRef.child("$key.png")
+
+        val imageView = binding.ivImage
+        val bitmap = (imageView.drawable as BitmapDrawable).bitmap
+        val baos = ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos)
+        val data = baos.toByteArray()
+
+        val uploadTask = mountainsRef.putBytes(data)
+        uploadTask.addOnFailureListener {
+            // Handle unsuccessful uploads
+        }.addOnSuccessListener { taskSnapshot ->
+            // taskSnapshot.metadata contains file metadata such as size, content-type, etc.
+            // ...
+        }
     }
 
     override fun onClickYesButton() {

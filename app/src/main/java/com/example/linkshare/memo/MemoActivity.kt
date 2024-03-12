@@ -79,9 +79,7 @@ class MemoActivity : AppCompatActivity(), CustomDialogInterface {
             override fun onDataChange(snapshot: DataSnapshot) {
                 try {   // 메모가 삭제 됐을 때 정보가 없으면 에러가 나기 때문에 예외처리
                     val dataModel = snapshot.getValue(Memo::class.java)
-                    Log.d("MemoActivity", "실행")
                     binding.tvTitle.text = dataModel!!.title
-                    Log.d("MemoActivity", "${dataModel.title}")
                     binding.tvLink.text = dataModel.link
                     binding.tvTime.text = dataModel.time
                     binding.tvContent.text = dataModel.content

@@ -50,36 +50,29 @@ class MemoFragment : Fragment() {
             startActivity(intent)
         }
 
-        getFBMemoData()
+        getFBData()
 
         return binding.root
     }
 
-    // Firebase database로부터 data 가져오기
+    // Firebase database로부터 memoCategory 가져오기
     private fun getFBMemoData() {
         val postListener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                // 중복 방지
-                memoList.clear()
                 // Get Post object and use the values to update the UI
                 for (dataModel in snapshot.children) {
                     // Memo 형식의 데이터 받기
                     val item = dataModel.getValue(Memo::class.java)
 
                     val myUid = FBAuth.getUid()
-                    val writeUid = item!!.uid
-
-                    // 내가 쓴 메모만 보여주기
-                    if (myUid == writeUid) {
-                        memoList.add(item)
-                        memoKeyList.add(dataModel.key.toString())
+                    item?.let {
+                        if (it.uid == myUid) {
+                            memoList.add(item)
+                            memoKeyList.add(dataModel.key.toString())
+                        }
                     }
                 }
-                // 최신 글이 가장 위로
-                memoList.reverse()
-                memoKeyList.reverse()
-                // Sync
-                memoAdapter.notifyDataSetChanged()
+                updateUI()
             }
 
             override fun onCancelled(error: DatabaseError) {
@@ -87,6 +80,51 @@ class MemoFragment : Fragment() {
             }
         }
         FBRef.memoCategory.addValueEventListener(postListener)
+    }
+
+    // Firebase database로부터 boardCategory 가져오기
+    private fun getFBBoardData() {
+        val postListener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                // Get Post object and use the values to update the UI
+                for (dataModel in snapshot.children) {
+                    // Memo 형식의 데이터 받기
+                    val item = dataModel.getValue(Memo::class.java)
+
+                    val myUid = FBAuth.getUid()
+                    item?.let {
+                        if (it.shareUid == myUid) {
+                            memoList.add(item)
+                            memoKeyList.add(dataModel.key.toString())
+                        }
+                    }
+                }
+                updateUI()
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.d("MemoFragment", "실패")
+            }
+        }
+        FBRef.boardCategory.addValueEventListener(postListener)
+    }
+
+    // Firebase database로부터 data 가져오기
+    private fun getFBData() {
+        // 중복 방지
+        memoList.clear()
+        // 데이터 가져오기
+        getFBMemoData()
+        getFBBoardData()
+    }
+
+    // UI update
+    private fun updateUI() {
+        // 최신 글을 위로
+        memoList.sortByDescending { it.time }
+        memoKeyList.sortByDescending { it }
+        // Sync
+        memoAdapter.notifyDataSetChanged()
     }
 
     override fun onDestroyView() {
