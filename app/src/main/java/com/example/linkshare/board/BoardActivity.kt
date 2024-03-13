@@ -208,7 +208,7 @@ class BoardActivity : AppCompatActivity(), CustomDialogInterface {
         val location = binding.tvMap.text.toString()
         val currentUid = FBAuth.getUid()
         val time = FBAuth.getTime()
-        FBRef.boardCategory.push().setValue(Memo(title, content, link, location, latitude, longitude, writeUid, time, currentUid))
+        FBRef.boardCategory.push().setValue(Memo(key, title, content, link, location, latitude, longitude, writeUid, time, currentUid))
         imageUpload(key)
     }
 

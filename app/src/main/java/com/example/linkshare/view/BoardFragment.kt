@@ -7,11 +7,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.linkshare.board.BoardActivity
 import com.example.linkshare.board.BoardRVAdapter
 import com.example.linkshare.databinding.FragmentBoardBinding
 import com.example.linkshare.memo.Memo
+import com.example.linkshare.memo.MemoViewModel
 import com.example.linkshare.util.FBAuth
 import com.example.linkshare.util.FBRef
 import com.google.firebase.database.DataSnapshot
@@ -25,6 +27,7 @@ class BoardFragment : Fragment() {
     private val memoList = mutableListOf<Memo>()
     private val memoKeyList = mutableListOf<String>()
     private lateinit var boardRVAdapter: BoardRVAdapter
+    private val boardViewModel by lazy { ViewModelProvider(this)[MemoViewModel::class.java] }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -36,88 +39,28 @@ class BoardFragment : Fragment() {
         binding.rvBoard.adapter = boardRVAdapter
         binding.rvBoard.layoutManager = LinearLayoutManager(context)
 
-        boardRVAdapter.setItemClickListener(object : BoardRVAdapter.OnItemClickListener {
-            override fun onClick(v: View, position: Int) {
-                val intent = Intent(context, BoardActivity::class.java)
-                intent.putExtra("key", memoKeyList[position])   // key 값 전달
-                startActivity(intent)
-            }
-        })
+        val uid = FBAuth.getUid()
+        boardViewModel.getAllUserWrittenData()
 
-        getFBBoardData()
+        boardViewModel.allUserWrittenData.observe(viewLifecycleOwner) {
+            boardRVAdapter.setBoardData(it)
+        }
+
+        boardViewModel.userWrittenData.observe(viewLifecycleOwner) {
+            boardRVAdapter.setBoardData(it)
+        }
 
         // 전체보기 클릭 시
         binding.btnAll.setOnClickListener {
-            getFBBoardData()
+            boardViewModel.getAllUserWrittenData()
         }
 
         // 내 글 보기 클릭 시
         binding.btnMy.setOnClickListener {
-            getFBBoardDataEqualUid()
+            boardViewModel.getUserWrittenData(uid)
         }
 
         return binding.root
-    }
-
-    // Firebase database로부터 data 가져오기
-    private fun getFBBoardData() {
-        val postListener = object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                // 중복 방지
-                memoList.clear()
-                // Get Post object and use the values to update the UI
-                for (dataModel in snapshot.children) {
-                    // Memo 형식의 데이터 받기
-                    val item = dataModel.getValue(Memo::class.java)
-                    memoList.add(item!!)
-                    memoKeyList.add(dataModel.key.toString())
-                }
-                // 최신 글이 가장 위로
-                memoList.reverse()
-                memoKeyList.reverse()
-                // Sync
-                boardRVAdapter.notifyDataSetChanged()
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                Log.d("BoardFragment", "실패")
-            }
-        }
-        FBRef.memoCategory.addValueEventListener(postListener)
-    }
-
-    // Firebase에서 내가 쓴 게시글 목록만 가져오기
-    private fun getFBBoardDataEqualUid() {
-        val postListener = object : ValueEventListener {
-            override fun onDataChange(dataSnapshot: DataSnapshot) {
-                // 중복 방지
-                memoList.clear()
-                // Get Post object and use the values to update the UI
-                for (dataModel in dataSnapshot.children) {
-                    // BoardModel 형식의 데이터 받기
-                    val item = dataModel.getValue(Memo::class.java)
-
-                    val myUid = FBAuth.getUid()
-                    val writeUid = item!!.uid
-
-                    // 내가 쓴 글 일 경우에만 list에 추가
-                    if (myUid == writeUid) {
-                        memoList.add(item)
-                        memoKeyList.add(dataModel.key.toString())
-                    }
-                }
-                // 최신 글이 가장 위로
-                memoKeyList.reverse()
-                memoList.reverse()
-                // Sync
-                boardRVAdapter.notifyDataSetChanged()
-            }
-
-            override fun onCancelled(databaseError: DatabaseError) {
-                // Getting Post failed, log a message
-            }
-        }
-        FBRef.memoCategory.addValueEventListener(postListener)
     }
 
     override fun onDestroyView() {

@@ -1,5 +1,6 @@
 package com.example.linkshare.board
 
+import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -7,11 +8,15 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.linkshare.R
 import com.example.linkshare.memo.Memo
+import com.example.linkshare.memo.MemoActivity
 
-class BoardRVAdapter(val memoList: MutableList<Memo>) :
+class BoardRVAdapter(var memoList: MutableList<Memo>) :
     RecyclerView.Adapter<BoardRVAdapter.ViewHolder>() {
 
-    private lateinit var itemClickListener: OnItemClickListener
+    fun setBoardData(data: MutableList<Memo>) {
+        memoList = data
+        notifyDataSetChanged()
+    }
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val title = itemView.findViewById<TextView>(R.id.tv_board_title)
@@ -32,20 +37,13 @@ class BoardRVAdapter(val memoList: MutableList<Memo>) :
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        val memo = memoList[position]
         holder.itemView.setOnClickListener {
-            itemClickListener.onClick(it, position)
+            val intent = Intent(it.context, MemoActivity::class.java)
+            intent.putExtra("key", memo.key)   // key 값 전달
+            it.context.startActivity(intent)
         }
         holder.bind(memoList[position])
-    }
-
-    // 리스너 인터페이스
-    interface OnItemClickListener {
-        fun onClick(v: View, position: Int)
-    }
-
-    // 외부에서 클릭 시 이벤트 설정
-    fun setItemClickListener(onItemClickListener: OnItemClickListener) {
-        this.itemClickListener = onItemClickListener
     }
 
     override fun getItemCount(): Int = memoList.size

@@ -145,7 +145,7 @@ class WriteMemoFragment : Fragment(), CustomDialogInterface {
         val time = FBAuth.getTime()
         if (isEditMode) {   // 수정할 때
             // key값에 맞는 Firebase database 수정
-            FBRef.memoCategory.child(key).setValue(Memo(title, content, link, location, latitude, longitude, writeUid, time))
+            FBRef.memoCategory.child(key).setValue(Memo(key, title, content, link, location, latitude, longitude, writeUid, time))
             imageUpload(key)
         } else {
             // 새 메모를 만들 때
@@ -153,7 +153,7 @@ class WriteMemoFragment : Fragment(), CustomDialogInterface {
             val memoKey = FBRef.memoCategory.push().key.toString()
             Log.d("WriteMemoFragment", "memoKey: $memoKey")
             // Firebase database에 추가
-            FBRef.memoCategory.child(memoKey).setValue(Memo(title, content, link, location, latitude, longitude, uid, time))
+            FBRef.memoCategory.child(memoKey).setValue(Memo(memoKey, title, content, link, location, latitude, longitude, uid, time))
             imageUpload(memoKey)
         }
     }
