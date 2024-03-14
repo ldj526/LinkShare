@@ -9,17 +9,10 @@ import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
 import com.example.linkshare.databinding.FragmentCustomDialogBinding
 
-class CustomDialog(customDialogInterface: CustomDialogInterface, text: String) : DialogFragment() {
+class CustomDialog(private val text: String, private val onYesClicked: (()->Unit)? = null) : DialogFragment() {
 
     private var _binding: FragmentCustomDialogBinding? = null
     private val binding get() = _binding!!
-    private var text: String? = null
-    private var customDialogInterface: CustomDialogInterface? = null
-
-    init {
-        this.text = text
-        this.customDialogInterface = customDialogInterface
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -37,7 +30,7 @@ class CustomDialog(customDialogInterface: CustomDialogInterface, text: String) :
         }
 
         binding.btnYes.setOnClickListener {
-            this.customDialogInterface?.onClickYesButton()
+            onYesClicked?.invoke()
             dismiss()
         }
 
@@ -48,8 +41,4 @@ class CustomDialog(customDialogInterface: CustomDialogInterface, text: String) :
         super.onDestroyView()
         _binding = null
     }
-}
-
-interface CustomDialogInterface {
-    fun onClickYesButton()
 }
