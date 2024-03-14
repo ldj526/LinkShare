@@ -23,8 +23,6 @@ import com.example.linkshare.util.CustomDialog
 import com.example.linkshare.util.CustomDialogInterface
 import com.example.linkshare.util.FBAuth
 import com.example.linkshare.util.FBRef
-import com.google.firebase.Firebase
-import com.google.firebase.storage.storage
 import java.io.ByteArrayOutputStream
 
 class BoardActivity : AppCompatActivity(), CustomDialogInterface {
@@ -58,35 +56,11 @@ class BoardActivity : AppCompatActivity(), CustomDialogInterface {
         binding.rvComment.adapter = commentRVAdapter
         binding.rvComment.layoutManager = LinearLayoutManager(this)
 
-        memoViewModel.getMemoDataForUpdate(key)
+        memoViewModel.getPostData(key)
         memoViewModel.memoData.observe(this) { memo ->
-            memo?.let {
-                binding.tvTitle.text = it.title
-                binding.tvLink.text = it.link
-                binding.tvTime.text = it.time
-                binding.tvContent.text = it.content
-                binding.tvMap.apply {
-                    text = it.location
-                    visibility = if (text.isEmpty()) View.GONE else View.VISIBLE
-                }
-                latitude = it.latitude
-                longitude = it.longitude
-                writeUid = it.uid
-                val myUid = FBAuth.getUid()
-
-                // 글 쓴 사람이 자신일 경우 수정, 삭제 버튼 보이기
-                if (myUid == writeUid) {
-                    binding.ivDelete.visibility = View.VISIBLE
-                    binding.ivUpdate.visibility = View.VISIBLE
-                    binding.ivShare.visibility = View.GONE
-                } else {
-                    binding.ivDelete.visibility = View.GONE
-                    binding.ivUpdate.visibility = View.GONE
-                    binding.ivShare.visibility = View.VISIBLE
-                }
-            }
+            updateBoardData(memo)
         }
-        memoViewModel.getImageUrlForUpdate(key)
+        memoViewModel.getImageUrl(key)
         memoViewModel.imageUrl.observe(this) { url ->
             url?.let {
                 Glide.with(this).load(it).into(binding.ivImage)
@@ -140,24 +114,7 @@ class BoardActivity : AppCompatActivity(), CustomDialogInterface {
         }
 
         binding.ivShare.setOnClickListener {
-            val memo = Memo(key, binding.tvTitle.text.toString(),
-                binding.tvContent.text.toString(),
-                binding.tvLink.text.toString(),
-                binding.tvMap.text.toString(), latitude, longitude,
-                writeUid, FBAuth.getTime(), FBAuth.getUid())
-
-            val imageView = binding.ivImage.drawable
-
-            val data: ByteArray? = if (imageView is BitmapDrawable) {
-                val bitmap = imageView.bitmap
-                val baos = ByteArrayOutputStream()
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos)
-                baos.toByteArray()
-            } else {
-                null // 이미지가 없을 경우 null로 처리
-            }
-
-            memoViewModel.saveMemo(memo, data, FBRef.boardCategory, false)
+            shareMemo()
         }
     }
 
@@ -167,6 +124,59 @@ class BoardActivity : AppCompatActivity(), CustomDialogInterface {
         // 다이얼로그 창 밖에 클릭 불가
         dialog.isCancelable = false
         dialog.show(supportFragmentManager, "DeleteDialog")
+    }
+
+    // 메모를 내 개인메모 목록으로 가져가기
+    private fun shareMemo() {
+        val memo = Memo(
+            key, binding.tvTitle.text.toString(),
+            binding.tvContent.text.toString(),
+            binding.tvLink.text.toString(),
+            binding.tvMap.text.toString(), latitude, longitude,
+            writeUid, FBAuth.getTime(), FBAuth.getUid()
+        )
+
+        val imageView = binding.ivImage.drawable
+
+        val data: ByteArray? = if (imageView is BitmapDrawable) {
+            val bitmap = imageView.bitmap
+            val baos = ByteArrayOutputStream()
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos)
+            baos.toByteArray()
+        } else {
+            null // 이미지가 없을 경우 null로 처리
+        }
+
+        memoViewModel.saveMemo(memo, data, FBRef.boardCategory, false)
+    }
+
+    // 글의 데이터를 불러와 UI에 대입
+    private fun updateBoardData(memo: Memo?) {
+        memo?.let {
+            binding.tvTitle.text = it.title
+            binding.tvLink.text = it.link
+            binding.tvTime.text = it.time
+            binding.tvContent.text = it.content
+            binding.tvMap.apply {
+                text = it.location
+                visibility = if (text.isEmpty()) View.GONE else View.VISIBLE
+            }
+            latitude = it.latitude
+            longitude = it.longitude
+            writeUid = it.uid
+            adjustBoardViewVisibility(writeUid)
+        }
+    }
+
+    // UI Visibility 조절
+    private fun adjustBoardViewVisibility(memoWriteUid: String) {
+        val myUid = FBAuth.getUid()
+        val isMyMemo = myUid == memoWriteUid
+
+        // 글 쓴 사람이 자신일 경우 수정, 삭제 버튼 보이기
+        binding.ivDelete.visibility = if (isMyMemo) View.VISIBLE else View.GONE
+        binding.ivUpdate.visibility = if (isMyMemo) View.VISIBLE else View.GONE
+        binding.ivShare.visibility = if (isMyMemo) View.GONE else View.VISIBLE
     }
 
     override fun onClickYesButton() {

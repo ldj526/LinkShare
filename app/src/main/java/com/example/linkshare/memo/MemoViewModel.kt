@@ -4,7 +4,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.linkshare.comment.Comment
 import com.google.firebase.database.DatabaseReference
 import kotlinx.coroutines.launch
 
@@ -53,17 +52,18 @@ class MemoViewModel : ViewModel() {
         }
     }
 
-    // 수정화면에서 데이터 가져오기
-    fun getMemoDataForUpdate(key: String) {
+    // 메모, 게시글에서 볼 데이터를 받아오는 기능
+    fun getPostData(key: String) {
         viewModelScope.launch {
-            _memoData.postValue(memoRepo.getMemoDataForUpdate(key))
+            val memoData = memoRepo.getMemoDataByKey(key)
+            _memoData.postValue(memoData!!)
         }
     }
 
-    // 수정화면에서 이미지 가져오기
-    fun getImageUrlForUpdate(key: String) {
+    // 이미지 url 받아오는 기능
+    fun getImageUrl(key: String) {
         viewModelScope.launch {
-            _imageUrl.postValue(memoRepo.getImageUrlForUpdate(key))
+            _imageUrl.postValue(memoRepo.getImageUrl(key))
         }
     }
 
