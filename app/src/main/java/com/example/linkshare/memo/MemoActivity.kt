@@ -8,6 +8,7 @@ import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
+import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
 import com.example.linkshare.board.MapActivity
 import com.example.linkshare.databinding.ActivityMemoBinding
@@ -36,6 +37,7 @@ class MemoActivity : AppCompatActivity(), CustomDialogInterface {
                 binding.tvMap.text = result.data?.getStringExtra("title")
             }
         }
+    private val memoViewModel by lazy { ViewModelProvider(this)[MemoViewModel::class.java] }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,8 +45,35 @@ class MemoActivity : AppCompatActivity(), CustomDialogInterface {
         setContentView(binding.root)
 
         key = intent.getStringExtra("key").toString()
-        getMemoData(key)
-        getImageData(key)
+
+        memoViewModel.getMemoDataForUpdate(key)
+        memoViewModel.memoData.observe(this) { memo ->
+            memo?.let {
+                binding.tvTitle.text = it.title
+                binding.tvLink.text = it.link
+                binding.tvContent.text = it.content
+                binding.tvMap.apply {
+                    text = it.location
+                    visibility = if (text.isEmpty()) View.GONE else View.VISIBLE
+                }
+                latitude = it.latitude
+                longitude = it.longitude
+                writeUid = it.uid
+                val myUid = FBAuth.getUid()
+
+                // 글 쓴 사람이 자신일 경우 수정, 삭제 버튼 보이기
+                if (myUid == writeUid) {
+                    binding.ivDelete.isVisible = true
+                    binding.ivUpdate.isVisible = true
+                }
+            }
+        }
+        memoViewModel.getImageUrlForUpdate(key)
+        memoViewModel.imageUrl.observe(this) { url ->
+            url?.let {
+                Glide.with(this).load(it).into(binding.ivImage)
+            }
+        }
 
         // 수정 버튼 클릭 시
         binding.ivUpdate.setOnClickListener {
@@ -71,62 +100,6 @@ class MemoActivity : AppCompatActivity(), CustomDialogInterface {
             }
             startForResult.launch(intent)
         }
-    }
-
-    // Firebase에서 데이터 값 가져오기
-    private fun getMemoData(key: String) {
-        val postListener = object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                try {   // 메모가 삭제 됐을 때 정보가 없으면 에러가 나기 때문에 예외처리
-                    val dataModel = snapshot.getValue(Memo::class.java)
-                    binding.tvTitle.text = dataModel!!.title
-                    binding.tvLink.text = dataModel.link
-                    binding.tvTime.text = dataModel.time
-                    binding.tvContent.text = dataModel.content
-                    binding.tvMap.apply {
-                        text = dataModel.location
-                        visibility = if (text.isEmpty()) View.GONE else View.VISIBLE
-                    }
-                    latitude = dataModel.latitude
-                    longitude = dataModel.longitude
-                    writeUid = dataModel.uid
-                    val myUid = FBAuth.getUid()
-
-                    // 글 쓴 사람이 자신일 경우 수정, 삭제 버튼 보이기
-                    if (myUid == writeUid) {
-                        binding.ivDelete.isVisible = true
-                        binding.ivUpdate.isVisible = true
-                    }
-                } catch (e: Exception) {
-
-                }
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                Log.d("BoardFragment", "실패")
-            }
-
-        }
-        FBRef.memoCategory.child(key).addValueEventListener(postListener)
-    }
-
-    // Firebase에서 Image 가져오기
-    private fun getImageData(key: String) {
-        // Reference to an image file in Cloud Storage
-        val storageReference = Firebase.storage.reference.child("${key}.png")
-
-        // ImageView in your Activity
-        val imageViewFromFB = binding.ivImage
-
-        storageReference.downloadUrl.addOnCompleteListener(OnCompleteListener { task ->
-            if (task.isSuccessful) {
-                Glide.with(applicationContext)
-                    .load(task.result)
-                    .into(imageViewFromFB)
-            } else {
-
-            }
-        })
     }
 
     // 다이얼로그 생성
