@@ -60,14 +60,24 @@ class MemoRepo {
         memoList
     }
 
-    // 수정화면에서 데이터를 가져오기 위함.
-    suspend fun getMemoDataForUpdate(key: String): Memo? = withContext(Dispatchers.IO) {
-        val snapshot = FBRef.memoCategory.child(key).get().await()
-        snapshot.getValue(Memo::class.java)
+    // 메모, 게시글에서 볼 데이터를 key값 기반으로 받아오는 기능
+    suspend fun getMemoDataByKey(key: String): Memo? = withContext(Dispatchers.IO) {
+        val memoSnapshot = FBRef.memoCategory.child(key).get().await()
+        val boardSnapshot = FBRef.boardCategory.child(key).get().await()
+
+        // memoCategory에서 데이터 찾은 경우
+        memoSnapshot.getValue(Memo::class.java)?.let {
+            return@withContext it
+        }
+        // boardCategory에서 데이터 찾은 경우
+        boardSnapshot.getValue(Memo::class.java)?.let {
+            return@withContext it
+        }
+        null
     }
 
-    // 수정화면에서 이미지만 가져오기
-    suspend fun getImageUrlForUpdate(key: String): String? = withContext(Dispatchers.IO) {
+    // 이미지 url 받아오는 기능
+    suspend fun getImageUrl(key: String): String? = withContext(Dispatchers.IO) {
         val storageRef = Firebase.storage.reference.child("${key}.png")
         try {
             storageRef.downloadUrl.await().toString()

@@ -22,12 +22,6 @@ import com.example.linkshare.util.CustomDialogInterface
 import com.example.linkshare.util.FBAuth
 import com.example.linkshare.util.FBRef
 import com.example.linkshare.view.MapViewActivity
-import com.google.android.gms.tasks.OnCompleteListener
-import com.google.firebase.Firebase
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.ValueEventListener
-import com.google.firebase.storage.storage
 import java.io.ByteArrayOutputStream
 
 class WriteMemoFragment : Fragment(), CustomDialogInterface {
@@ -82,7 +76,7 @@ class WriteMemoFragment : Fragment(), CustomDialogInterface {
 
         // 저장된 메모를 불러올 경우
         if (key != "") {
-            memoViewModel.getMemoDataForUpdate(key)
+            memoViewModel.getPostData(key)
             memoViewModel.memoData.observe(viewLifecycleOwner) { memo ->
                 memo?.let {
                     binding.etTitle.setText(it.title)
@@ -94,7 +88,7 @@ class WriteMemoFragment : Fragment(), CustomDialogInterface {
                     writeUid = it.uid
                 }
             }
-            memoViewModel.getImageUrlForUpdate(key)
+            memoViewModel.getImageUrl(key)
             memoViewModel.imageUrl.observe(viewLifecycleOwner) { url ->
                 url?.let {
                     Glide.with(this).load(it).into(binding.ivImage)
