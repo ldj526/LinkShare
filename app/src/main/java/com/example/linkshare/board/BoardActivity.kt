@@ -140,7 +140,24 @@ class BoardActivity : AppCompatActivity(), CustomDialogInterface {
         }
 
         binding.ivShare.setOnClickListener {
-            shareMemo()
+            val memo = Memo(key, binding.tvTitle.text.toString(),
+                binding.tvContent.text.toString(),
+                binding.tvLink.text.toString(),
+                binding.tvMap.text.toString(), latitude, longitude,
+                writeUid, FBAuth.getTime(), FBAuth.getUid())
+
+            val imageView = binding.ivImage.drawable
+
+            val data: ByteArray? = if (imageView is BitmapDrawable) {
+                val bitmap = imageView.bitmap
+                val baos = ByteArrayOutputStream()
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos)
+                baos.toByteArray()
+            } else {
+                null // 이미지가 없을 경우 null로 처리
+            }
+
+            memoViewModel.saveMemo(memo, data, FBRef.boardCategory, false)
         }
     }
 
@@ -150,43 +167,6 @@ class BoardActivity : AppCompatActivity(), CustomDialogInterface {
         // 다이얼로그 창 밖에 클릭 불가
         dialog.isCancelable = false
         dialog.show(supportFragmentManager, "DeleteDialog")
-    }
-
-    // 작성된 글 내 개인메모로 가져오기
-    private fun shareMemo() {
-        val title = binding.tvTitle.text.toString()
-        val content = binding.tvContent.text.toString()
-        val link = binding.tvLink.text.toString()
-        val location = binding.tvMap.text.toString()
-        val currentUid = FBAuth.getUid()
-        val time = FBAuth.getTime()
-        FBRef.boardCategory.push().setValue(Memo(key, title, content, link, location, latitude, longitude, writeUid, time, currentUid))
-        imageUpload(key)
-    }
-
-    // Firebase에 Image Upload
-    private fun imageUpload(key: String) {
-        // Get the data from an ImageView as bytes
-
-        val storage = Firebase.storage
-        // Create a storage reference from our app
-        val storageRef = storage.reference
-        // Create a reference to "mountains.jpg"
-        val mountainsRef = storageRef.child("$key.png")
-
-        val imageView = binding.ivImage
-        val bitmap = (imageView.drawable as BitmapDrawable).bitmap
-        val baos = ByteArrayOutputStream()
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos)
-        val data = baos.toByteArray()
-
-        val uploadTask = mountainsRef.putBytes(data)
-        uploadTask.addOnFailureListener {
-            // Handle unsuccessful uploads
-        }.addOnSuccessListener { taskSnapshot ->
-            // taskSnapshot.metadata contains file metadata such as size, content-type, etc.
-            // ...
-        }
     }
 
     override fun onClickYesButton() {

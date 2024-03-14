@@ -2,6 +2,7 @@ package com.example.linkshare.memo
 
 import com.example.linkshare.util.FBRef
 import com.google.firebase.Firebase
+import com.google.firebase.database.DatabaseReference
 import com.google.firebase.storage.storage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
@@ -76,10 +77,10 @@ class MemoRepo {
     }
 
     // 메모 저장
-    suspend fun saveMemo(memo:Memo, imageData: ByteArray?, isEditMode: Boolean): Boolean = withContext(Dispatchers.IO) {
-        val key = if (isEditMode) memo.key else FBRef.memoCategory.push().key!!
+    suspend fun saveMemo(memo:Memo, imageData: ByteArray?, category: DatabaseReference, isEditMode: Boolean): Boolean = withContext(Dispatchers.IO) {
+        val key = if (isEditMode) memo.key else category.push().key!!
         val storageRef = Firebase.storage.reference.child("$key.png")
-        val memoRef = FBRef.memoCategory.child(key)
+        val memoRef = category.child(key)
 
         try {
             // 이미지가 있는 경우

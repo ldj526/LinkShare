@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.linkshare.comment.Comment
+import com.google.firebase.database.DatabaseReference
 import kotlinx.coroutines.launch
 
 class MemoViewModel : ViewModel() {
@@ -67,9 +68,9 @@ class MemoViewModel : ViewModel() {
     }
 
     // 메모 저장하기
-    fun saveMemo(memo: Memo, imageData: ByteArray?, isEditMode: Boolean) {
+    fun saveMemo(memo: Memo, imageData: ByteArray?, category: DatabaseReference, isEditMode: Boolean) {
         viewModelScope.launch {
-            val result = memoRepo.saveMemo(memo, imageData, isEditMode)
+            val result = memoRepo.saveMemo(memo, imageData, category, isEditMode)
             _saveStatus.value = result
         }
     }

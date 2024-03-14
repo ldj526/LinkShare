@@ -129,7 +129,7 @@ class WriteMemoFragment : Fragment(), CustomDialogInterface {
                 null // 이미지가 없을 경우 null로 처리
             }
 
-            memoViewModel.saveMemo(memo, data, isEditMode)
+            memoViewModel.saveMemo(memo, data, FBRef.memoCategory, isEditMode)
         }
 
         binding.btnDelete.setOnClickListener {
