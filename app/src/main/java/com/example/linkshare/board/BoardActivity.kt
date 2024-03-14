@@ -5,16 +5,16 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
-import android.util.Log
 import android.view.View
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.example.linkshare.comment.Comment
 import com.example.linkshare.comment.CommentRVAdapter
+import com.example.linkshare.comment.CommentViewModel
 import com.example.linkshare.databinding.ActivityBoardBinding
 import com.example.linkshare.memo.Memo
 import com.example.linkshare.memo.MemoViewModel
@@ -23,11 +23,7 @@ import com.example.linkshare.util.CustomDialog
 import com.example.linkshare.util.CustomDialogInterface
 import com.example.linkshare.util.FBAuth
 import com.example.linkshare.util.FBRef
-import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.Firebase
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.ValueEventListener
 import com.google.firebase.storage.storage
 import java.io.ByteArrayOutputStream
 
@@ -37,7 +33,6 @@ class BoardActivity : AppCompatActivity(), CustomDialogInterface {
     private lateinit var key: String
     private lateinit var writeUid: String
     private val commentList = mutableListOf<Comment>()
-    private val commentKeyList = mutableListOf<String>()
     private lateinit var commentRVAdapter: CommentRVAdapter
     private var latitude: Double? = 0.0
     private var longitude: Double? = 0.0
@@ -49,6 +44,7 @@ class BoardActivity : AppCompatActivity(), CustomDialogInterface {
             }
         }
     private val memoViewModel by lazy { ViewModelProvider(this)[MemoViewModel::class.java] }
+    private val commentViewModel by lazy { ViewModelProvider(this)[CommentViewModel::class.java] }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -97,7 +93,18 @@ class BoardActivity : AppCompatActivity(), CustomDialogInterface {
             }
         }
 
-        getCommentData(key)
+        commentViewModel.getCommentData(key)
+        commentViewModel.commentData.observe(this) {comments ->
+            commentRVAdapter.setCommentData(comments)
+        }
+
+        commentViewModel.commentStatus.observe(this) { success ->
+            if (success){
+                Toast.makeText(this, "댓글 작성 성공", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(this, "댓글 작성 실패", Toast.LENGTH_SHORT).show()
+            }
+        }
 
         // 수정 버튼 클릭 시
         binding.ivUpdate.setOnClickListener {
@@ -118,7 +125,9 @@ class BoardActivity : AppCompatActivity(), CustomDialogInterface {
 
         // 댓글 입력 버튼 클릭 시
         binding.btnComment.setOnClickListener {
-            insertComment(key)
+            val comment = Comment(binding.etComment.text.toString(), FBAuth.getUid(), FBAuth.getTime())
+            commentViewModel.insertComment(comment, key)
+            binding.etComment.setText("")
         }
 
         binding.tvMap.setOnClickListener {
@@ -133,42 +142,6 @@ class BoardActivity : AppCompatActivity(), CustomDialogInterface {
         binding.ivShare.setOnClickListener {
             shareMemo()
         }
-    }
-
-    // Firebase에 댓글 내용 입력
-    private fun insertComment(key: String) {
-        FBRef.commentCategory.child(key).push().setValue(
-            Comment(
-                binding.etComment.text.toString(),
-                FBAuth.getUid(), FBAuth.getTime()
-            )
-        )
-
-        // 댓글 입력 후 빈 공간으로 해주기 위함
-        binding.etComment.setText("")
-    }
-
-    // Firebase에서 댓글 데이터 가져오기
-    private fun getCommentData(key: String) {
-        val postListener = object : ValueEventListener {
-            override fun onDataChange(dataSnapshot: DataSnapshot) {
-                // Get Post object and use the values to update the UI
-                // 중복되는 데이터가 생기므로 기존에 있던 데이터들을 삭제해준다.
-                commentList.clear()
-                for (dataModel in dataSnapshot.children) {
-                    // CommentModel 형식의 데이터 받기
-                    val item = dataModel.getValue(Comment::class.java)
-                    commentList.add(item!!)
-                    commentKeyList.add(dataModel.key.toString())
-                }
-                commentRVAdapter.notifyDataSetChanged()
-            }
-
-            override fun onCancelled(databaseError: DatabaseError) {
-                // Getting Post failed, log a message
-            }
-        }
-        FBRef.commentCategory.child(key).addValueEventListener(postListener)
     }
 
     // 다이얼로그 생성
