@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.linkshare.comment.Comment
 import kotlinx.coroutines.launch
 
 class MemoViewModel : ViewModel() {
@@ -20,10 +21,10 @@ class MemoViewModel : ViewModel() {
     private val _saveStatus = MutableLiveData<Boolean>()
     val saveStatus: LiveData<Boolean> = _saveStatus
 
-    private val _memoData = MutableLiveData<Memo?>()
+    private val _memoData = MutableLiveData<Memo>()
     val memoData: LiveData<Memo?> = _memoData
 
-    private val _imageUrl = MutableLiveData<String?>()
+    private val _imageUrl = MutableLiveData<String>()
     val imageUrl: LiveData<String?> = _imageUrl
 
     // 내가 작성하고 공유받은 메모들 가져오기

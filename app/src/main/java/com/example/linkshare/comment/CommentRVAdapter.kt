@@ -9,8 +9,13 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.linkshare.R
 import com.example.linkshare.util.FBAuth
 
-class CommentRVAdapter(val commentList: MutableList<Comment>) :
+class CommentRVAdapter(var commentList: MutableList<Comment>) :
     RecyclerView.Adapter<CommentRVAdapter.ViewHolder>() {
+
+    fun setCommentData(data: MutableList<Comment>) {
+        commentList = data
+        notifyDataSetChanged()
+    }
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val title = itemView.findViewById<TextView>(R.id.tv_comment_title)
