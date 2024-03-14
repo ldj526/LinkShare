@@ -27,6 +27,9 @@ class MemoViewModel : ViewModel() {
     private val _imageUrl = MutableLiveData<String>()
     val imageUrl: LiveData<String?> = _imageUrl
 
+    private val _deleteStatus = MutableLiveData<Boolean>()
+    val deleteStatus: LiveData<Boolean> = _deleteStatus
+
     // 내가 작성하고 공유받은 메모들 가져오기
     fun getUserWrittenAndSharedData(uid: String) {
         viewModelScope.launch {
@@ -72,6 +75,14 @@ class MemoViewModel : ViewModel() {
         viewModelScope.launch {
             val result = memoRepo.saveMemo(memo, imageData, category, isEditMode)
             _saveStatus.value = result
+        }
+    }
+
+    // 메모 삭제
+    fun deleteMemo(key: String) {
+        viewModelScope.launch {
+            val result = memoRepo.deleteMemo(key)
+            _deleteStatus.value = result
         }
     }
 }

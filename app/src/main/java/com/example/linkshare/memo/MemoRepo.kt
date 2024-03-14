@@ -109,4 +109,14 @@ class MemoRepo {
             false
         }
     }
+
+    // 메모 삭제
+    suspend fun deleteMemo(key: String): Boolean = withContext(Dispatchers.IO) {
+        try {
+            FBRef.memoCategory.child(key).removeValue().await()
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
 }
