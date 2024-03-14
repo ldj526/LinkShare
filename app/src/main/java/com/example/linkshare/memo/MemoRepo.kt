@@ -1,6 +1,8 @@
 package com.example.linkshare.memo
 
 import com.example.linkshare.util.FBRef
+import com.google.firebase.Firebase
+import com.google.firebase.storage.storage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
@@ -51,9 +53,33 @@ class MemoRepo {
         for (dataModel in snapshot.children) {
             // Memo 형식의 데이터 받기
             val item = dataModel.getValue(Memo::class.java)
-            memoList.add(item!!)
+            item?.let { memoList.add(it) }
         }
         memoList.sortByDescending { it.time }
         memoList
+    }
+
+    // 메모 저장
+    suspend fun saveMemo(memo:Memo, imageData: ByteArray?, isEditMode: Boolean): Boolean = withContext(Dispatchers.IO) {
+        val key = if (isEditMode) memo.key else FBRef.memoCategory.push().key!!
+        val storageRef = Firebase.storage.reference.child("$key.png")
+        val memoRef = FBRef.memoCategory.child(key)
+
+        try {
+            // 이미지가 있는 경우
+            imageData?.let {
+                val uploadTask = storageRef.putBytes(it).await()
+                val downloadUrl = storageRef.downloadUrl.await().toString()
+                val updateMemo = memo.copy(key = key, imageUrl = downloadUrl)
+                memoRef.setValue(updateMemo).await()
+            } ?: run {
+                // 이미지가 없는 경우
+                val updatedMemo = memo.copy(key = key)
+                memoRef.setValue(updatedMemo).await()
+            }
+            true
+        } catch (e: Exception) {
+            false
+        }
     }
 }

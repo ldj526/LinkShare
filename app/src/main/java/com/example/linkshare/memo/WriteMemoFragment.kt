@@ -10,9 +10,11 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
 import com.example.linkshare.databinding.FragmentWriteMemoBinding
 import com.example.linkshare.util.CustomDialog
@@ -48,6 +50,7 @@ class WriteMemoFragment : Fragment(), CustomDialogInterface {
                 longitude = result.data?.getDoubleExtra("longitude", 0.0) ?: 0.0
             }
         }
+    private val memoViewModel by lazy { ViewModelProvider(this)[MemoViewModel::class.java] }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         arguments?.let {
@@ -83,10 +86,34 @@ class WriteMemoFragment : Fragment(), CustomDialogInterface {
             getImageData(key)
         }
 
+        memoViewModel.saveStatus.observe(viewLifecycleOwner) {success ->
+            if (success){
+                Toast.makeText(requireContext(), "메모 저장 성공", Toast.LENGTH_SHORT).show()
+                requireActivity().finish()
+            } else {
+                Toast.makeText(requireContext(), "메모 저장 실패", Toast.LENGTH_SHORT).show()
+            }
+        }
+
         binding.btnSave.setOnClickListener {
-            saveMemo()
-            // 해당 Activity 종료
-            requireActivity().finish()
+            val memo = Memo(key, binding.etTitle.text.toString(),
+                binding.etContent.text.toString(),
+                binding.etLink.text.toString(),
+                binding.tvMap.text.toString(), latitude, longitude,
+                if (isEditMode) writeUid else FBAuth.getUid(), FBAuth.getTime())
+
+            val imageView = binding.ivImage.drawable
+
+            val data: ByteArray? = if (imageView is BitmapDrawable) {
+                val bitmap = imageView.bitmap
+                val baos = ByteArrayOutputStream()
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos)
+                baos.toByteArray()
+            } else {
+                null // 이미지가 없을 경우 null로 처리
+            }
+
+            memoViewModel.saveMemo(memo, data, isEditMode)
         }
 
         binding.btnDelete.setOnClickListener {
@@ -134,53 +161,6 @@ class WriteMemoFragment : Fragment(), CustomDialogInterface {
 
         }
         FBRef.memoCategory.child(key).addValueEventListener(postListener)
-    }
-
-    // 새 메모 / 수정 에 따른 메모 저장
-    private fun saveMemo() {
-        val title = binding.etTitle.text.toString()
-        val content = binding.etContent.text.toString()
-        val link = binding.etLink.text.toString()
-        val location = binding.tvMap.text.toString()
-        val time = FBAuth.getTime()
-        if (isEditMode) {   // 수정할 때
-            // key값에 맞는 Firebase database 수정
-            FBRef.memoCategory.child(key).setValue(Memo(key, title, content, link, location, latitude, longitude, writeUid, time))
-            imageUpload(key)
-        } else {
-            // 새 메모를 만들 때
-            val uid = FBAuth.getUid()
-            val memoKey = FBRef.memoCategory.push().key.toString()
-            Log.d("WriteMemoFragment", "memoKey: $memoKey")
-            // Firebase database에 추가
-            FBRef.memoCategory.child(memoKey).setValue(Memo(memoKey, title, content, link, location, latitude, longitude, uid, time))
-            imageUpload(memoKey)
-        }
-    }
-
-    // Firebase에 Image Upload
-    private fun imageUpload(key: String) {
-        // Get the data from an ImageView as bytes
-
-        val storage = Firebase.storage
-        // Create a storage reference from our app
-        val storageRef = storage.reference
-        // Create a reference to "mountains.jpg"
-        val mountainsRef = storageRef.child("$key.png")
-
-        val imageView = binding.ivImage
-        val bitmap = (imageView.drawable as BitmapDrawable).bitmap
-        val baos = ByteArrayOutputStream()
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos)
-        val data = baos.toByteArray()
-
-        val uploadTask = mountainsRef.putBytes(data)
-        uploadTask.addOnFailureListener {
-            // Handle unsuccessful uploads
-        }.addOnSuccessListener { taskSnapshot ->
-            // taskSnapshot.metadata contains file metadata such as size, content-type, etc.
-            // ...
-        }
     }
 
     // Firebase에서 Image 가져오기
