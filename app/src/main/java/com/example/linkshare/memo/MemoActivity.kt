@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
@@ -45,6 +46,14 @@ class MemoActivity : AppCompatActivity() {
         memoViewModel.imageUrl.observe(this) { url ->
             url?.let {
                 Glide.with(this).load(it).into(binding.ivImage)
+            }
+        }
+        memoViewModel.deleteStatus.observe(this) { isSuccess ->
+            if (isSuccess) {
+                Toast.makeText(this, "삭제 성공", Toast.LENGTH_SHORT).show()
+                finish()
+            } else {
+                Toast.makeText(this, "삭제 실패", Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -103,8 +112,7 @@ class MemoActivity : AppCompatActivity() {
     // 삭제 다이얼로그 생성
     private fun showDeleteDialog() {
         val dialog = CustomDialog("삭제 하시겠습니까?", onYesClicked = {
-            FBRef.memoCategory.child(key).removeValue()
-            finish()
+            memoViewModel.deleteMemo(key)
         })
         // 다이얼로그 창 밖에 클릭 불가
         dialog.isCancelable = false
