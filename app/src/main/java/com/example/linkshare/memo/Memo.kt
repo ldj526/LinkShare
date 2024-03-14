@@ -1,7 +1,7 @@
 package com.example.linkshare.memo
 
 data class Memo(
-    val key: String? = null,
+    val key: String = "",
     val title: String = "",
     val content: String = "",
     val link: String = "",
@@ -10,5 +10,6 @@ data class Memo(
     val longitude: Double? = 0.0,
     val uid: String = "",
     val time: String = "",
-    val shareUid: String? = null
+    val shareUid: String? = null,
+    val imageUrl: String? = null
 )

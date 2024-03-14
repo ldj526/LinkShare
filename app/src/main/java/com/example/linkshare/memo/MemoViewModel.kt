@@ -17,6 +17,9 @@ class MemoViewModel : ViewModel() {
     private val _allUserWrittenData = MutableLiveData<MutableList<Memo>>()
     val allUserWrittenData: LiveData<MutableList<Memo>> = _allUserWrittenData
 
+    private val _saveStatus = MutableLiveData<Boolean>()
+    val saveStatus: LiveData<Boolean> = _saveStatus
+
     // 내가 작성하고 공유받은 메모들 가져오기
     fun getUserWrittenAndSharedData(uid: String) {
         viewModelScope.launch {
@@ -39,6 +42,13 @@ class MemoViewModel : ViewModel() {
         viewModelScope.launch {
             val memoData = memoRepo.getAllMemoData()
             _allUserWrittenData.postValue(memoData)
+        }
+    }
+
+    fun saveMemo(memo: Memo, imageData: ByteArray?, isEditMode: Boolean) {
+        viewModelScope.launch {
+            val result = memoRepo.saveMemo(memo, imageData, isEditMode)
+            _saveStatus.value = result
         }
     }
 }

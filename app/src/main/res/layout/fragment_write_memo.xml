@@ -58,8 +58,7 @@
                 android:id="@+id/iv_image"
                 android:layout_width="match_parent"
                 android:layout_height="200dp"
-                android:layout_marginTop="20dp"
-                android:src="@android:drawable/ic_input_add" />
+                android:layout_marginTop="20dp" />
 
             <TextView
                 android:id="@+id/tv_map"
