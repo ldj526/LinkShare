@@ -20,12 +20,11 @@ import com.example.linkshare.memo.Memo
 import com.example.linkshare.memo.MemoViewModel
 import com.example.linkshare.memo.UpdateMemoActivity
 import com.example.linkshare.util.CustomDialog
-import com.example.linkshare.util.CustomDialogInterface
 import com.example.linkshare.util.FBAuth
 import com.example.linkshare.util.FBRef
 import java.io.ByteArrayOutputStream
 
-class BoardActivity : AppCompatActivity(), CustomDialogInterface {
+class BoardActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityBoardBinding
     private lateinit var key: String
@@ -82,14 +81,12 @@ class BoardActivity : AppCompatActivity(), CustomDialogInterface {
 
         // 수정 버튼 클릭 시
         binding.ivUpdate.setOnClickListener {
-            val intent = Intent(this, UpdateMemoActivity::class.java)
-            intent.putExtra("key", key)   // key 값 전달
-            startActivity(intent)
+            showUpdateDialog()
         }
 
         // 삭제 버튼 클릭 시
         binding.ivDelete.setOnClickListener {
-            showDialog()
+            showDeleteDialog()
         }
 
         // 뒤로가기 버튼 클릭 시
@@ -114,16 +111,41 @@ class BoardActivity : AppCompatActivity(), CustomDialogInterface {
         }
 
         binding.ivShare.setOnClickListener {
-            shareMemo()
+            showShareDialog()
         }
     }
 
-    // 다이얼로그 생성
-    private fun showDialog() {
-        val dialog = CustomDialog(this, "삭제 하시겠습니까?")
+    // 삭제 다이얼로그 생성
+    private fun showDeleteDialog() {
+        val dialog = CustomDialog("삭제 하시겠습니까?", onYesClicked = {
+            FBRef.memoCategory.child(key).removeValue()
+            finish()
+        })
         // 다이얼로그 창 밖에 클릭 불가
         dialog.isCancelable = false
         dialog.show(supportFragmentManager, "DeleteDialog")
+    }
+
+    // 수정 다이얼로그 생성
+    private fun showUpdateDialog() {
+        val dialog = CustomDialog("수정 하시겠습니까?", onYesClicked = {
+            val intent = Intent(this, UpdateMemoActivity::class.java)
+            intent.putExtra("key", key)   // key 값 전달
+            startActivity(intent)
+        })
+        // 다이얼로그 창 밖에 클릭 불가
+        dialog.isCancelable = false
+        dialog.show(supportFragmentManager, "UpdateDialog")
+    }
+
+    // 공유 다이얼로그 생성
+    private fun showShareDialog() {
+        val dialog = CustomDialog("개인 메모로 공유하시겠습니까?", onYesClicked = {
+            shareMemo()
+        })
+        // 다이얼로그 창 밖에 클릭 불가
+        dialog.isCancelable = false
+        dialog.show(supportFragmentManager, "ShareDialog")
     }
 
     // 메모를 내 개인메모 목록으로 가져가기
@@ -177,10 +199,5 @@ class BoardActivity : AppCompatActivity(), CustomDialogInterface {
         binding.ivDelete.visibility = if (isMyMemo) View.VISIBLE else View.GONE
         binding.ivUpdate.visibility = if (isMyMemo) View.VISIBLE else View.GONE
         binding.ivShare.visibility = if (isMyMemo) View.GONE else View.VISIBLE
-    }
-
-    override fun onClickYesButton() {
-        FBRef.memoCategory.child(key).removeValue()
-        finish()
     }
 }

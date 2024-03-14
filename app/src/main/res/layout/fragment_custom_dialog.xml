@@ -6,6 +6,7 @@
     android:gravity="center"
     android:minWidth="300dp"
     android:orientation="vertical"
+    android:background="#FFFFFF"
     android:padding="20dp">
 
     <TextView

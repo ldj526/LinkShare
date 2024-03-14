@@ -18,13 +18,12 @@ import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
 import com.example.linkshare.databinding.FragmentWriteMemoBinding
 import com.example.linkshare.util.CustomDialog
-import com.example.linkshare.util.CustomDialogInterface
 import com.example.linkshare.util.FBAuth
 import com.example.linkshare.util.FBRef
 import com.example.linkshare.view.MapViewActivity
 import java.io.ByteArrayOutputStream
 
-class WriteMemoFragment : Fragment(), CustomDialogInterface {
+class WriteMemoFragment : Fragment() {
 
     private var _binding: FragmentWriteMemoBinding? = null
     private val binding get() = _binding!!
@@ -127,7 +126,7 @@ class WriteMemoFragment : Fragment(), CustomDialogInterface {
         }
 
         binding.btnDelete.setOnClickListener {
-            showDialog()
+            showDeleteDialog()
         }
 
         binding.ivImage.setOnClickListener {
@@ -147,16 +146,14 @@ class WriteMemoFragment : Fragment(), CustomDialogInterface {
     }
 
     // 다이얼로그 생성
-    private fun showDialog() {
-        val dialog = CustomDialog(this, "삭제 하시겠습니까?")
+    private fun showDeleteDialog() {
+        val dialog = CustomDialog("삭제 하시겠습니까?", onYesClicked = {
+            FBRef.memoCategory.child(key).removeValue()
+            requireActivity().finish()
+        })
         // 다이얼로그 창 밖에 클릭 불가
         dialog.isCancelable = false
         dialog.show(parentFragmentManager, "DeleteDialog")
-    }
-
-    override fun onClickYesButton() {
-        FBRef.memoCategory.child(key).removeValue()
-        requireActivity().finish()
     }
 
     companion object {

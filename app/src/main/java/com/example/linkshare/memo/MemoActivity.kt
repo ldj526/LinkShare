@@ -11,11 +11,10 @@ import com.bumptech.glide.Glide
 import com.example.linkshare.board.MapActivity
 import com.example.linkshare.databinding.ActivityMemoBinding
 import com.example.linkshare.util.CustomDialog
-import com.example.linkshare.util.CustomDialogInterface
 import com.example.linkshare.util.FBAuth
 import com.example.linkshare.util.FBRef
 
-class MemoActivity : AppCompatActivity(), CustomDialogInterface {
+class MemoActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMemoBinding
     private lateinit var key: String
@@ -51,14 +50,12 @@ class MemoActivity : AppCompatActivity(), CustomDialogInterface {
 
         // 수정 버튼 클릭 시
         binding.ivUpdate.setOnClickListener {
-            val intent = Intent(this, UpdateMemoActivity::class.java)
-            intent.putExtra("key", key)   // key 값 전달
-            startActivity(intent)
+            showUpdateDialog()
         }
 
         // 삭제 버튼 클릭 시
         binding.ivDelete.setOnClickListener {
-            showDialog()
+            showDeleteDialog()
         }
 
         // 뒤로가기 버튼 클릭 시
@@ -103,16 +100,26 @@ class MemoActivity : AppCompatActivity(), CustomDialogInterface {
         binding.ivUpdate.visibility = if (isMyMemo) View.VISIBLE else View.GONE
     }
 
-    // 다이얼로그 생성
-    private fun showDialog() {
-        val dialog = CustomDialog(this, "삭제 하시겠습니까?")
+    // 삭제 다이얼로그 생성
+    private fun showDeleteDialog() {
+        val dialog = CustomDialog("삭제 하시겠습니까?", onYesClicked = {
+            FBRef.memoCategory.child(key).removeValue()
+            finish()
+        })
         // 다이얼로그 창 밖에 클릭 불가
         dialog.isCancelable = false
         dialog.show(supportFragmentManager, "DeleteDialog")
     }
 
-    override fun onClickYesButton() {
-        FBRef.memoCategory.child(key).removeValue()
-        finish()
+    // 수정 다이얼로그 생성
+    private fun showUpdateDialog() {
+        val dialog = CustomDialog("수정 하시겠습니까?", onYesClicked = {
+            val intent = Intent(this, UpdateMemoActivity::class.java)
+            intent.putExtra("key", key)   // key 값 전달
+            startActivity(intent)
+        })
+        // 다이얼로그 창 밖에 클릭 불가
+        dialog.isCancelable = false
+        dialog.show(supportFragmentManager, "UpdateDialog")
     }
 }
