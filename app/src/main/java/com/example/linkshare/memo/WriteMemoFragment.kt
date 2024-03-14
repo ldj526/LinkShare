@@ -82,8 +82,24 @@ class WriteMemoFragment : Fragment(), CustomDialogInterface {
 
         // 저장된 메모를 불러올 경우
         if (key != "") {
-            getMemoData(key)
-            getImageData(key)
+            memoViewModel.getMemoDataForUpdate(key)
+            memoViewModel.memoData.observe(viewLifecycleOwner) { memo ->
+                memo?.let {
+                    binding.etTitle.setText(it.title)
+                    binding.etLink.setText(it.link)
+                    binding.etContent.setText(it.content)
+                    binding.tvMap.text = it.location
+                    latitude = it.latitude
+                    longitude = it.longitude
+                    writeUid = it.uid
+                }
+            }
+            memoViewModel.getImageUrlForUpdate(key)
+            memoViewModel.imageUrl.observe(viewLifecycleOwner) { url ->
+                url?.let {
+                    Glide.with(this).load(it).into(binding.ivImage)
+                }
+            }
         }
 
         memoViewModel.saveStatus.observe(viewLifecycleOwner) {success ->
@@ -134,52 +150,6 @@ class WriteMemoFragment : Fragment(), CustomDialogInterface {
         }
 
         return binding.root
-    }
-
-    // Firebase에서 데이터 값 가져오기
-    private fun getMemoData(key: String) {
-        val postListener = object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                try {   // 메모가 삭제 됐을 때 정보가 없으면 에러가 나기 때문에 예외처리
-                    val dataModel = snapshot.getValue(Memo::class.java)
-
-                    binding.etTitle.setText(dataModel!!.title)
-                    binding.etLink.setText(dataModel.link)
-                    binding.etContent.setText(dataModel.content)
-                    binding.tvMap.text = dataModel.location
-                    latitude = dataModel.latitude
-                    longitude = dataModel.longitude
-                    writeUid = dataModel.uid
-                } catch (e: Exception) {
-
-                }
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                Log.d("MemoFragment", "실패")
-            }
-
-        }
-        FBRef.memoCategory.child(key).addValueEventListener(postListener)
-    }
-
-    // Firebase에서 Image 가져오기
-    private fun getImageData(key: String) {
-        // Reference to an image file in Cloud Storage
-        val storageReference = Firebase.storage.reference.child("${key}.png")
-
-        // ImageView in your Activity
-        val imageViewFromFB = binding.ivImage
-
-        storageReference.downloadUrl.addOnCompleteListener(OnCompleteListener { task ->
-            if (task.isSuccessful && isAdded) {
-                Glide.with(requireContext())
-                    .load(task.result)
-                    .into(imageViewFromFB)
-            } else {
-
-            }
-        })
     }
 
     // 다이얼로그 생성

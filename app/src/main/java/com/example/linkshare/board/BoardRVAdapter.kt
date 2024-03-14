@@ -39,7 +39,7 @@ class BoardRVAdapter(var memoList: MutableList<Memo>) :
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val memo = memoList[position]
         holder.itemView.setOnClickListener {
-            val intent = Intent(it.context, MemoActivity::class.java)
+            val intent = Intent(it.context, BoardActivity::class.java)
             intent.putExtra("key", memo.key)   // key 값 전달
             it.context.startActivity(intent)
         }

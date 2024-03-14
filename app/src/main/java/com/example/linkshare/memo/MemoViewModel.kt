@@ -20,6 +20,12 @@ class MemoViewModel : ViewModel() {
     private val _saveStatus = MutableLiveData<Boolean>()
     val saveStatus: LiveData<Boolean> = _saveStatus
 
+    private val _memoData = MutableLiveData<Memo?>()
+    val memoData: LiveData<Memo?> = _memoData
+
+    private val _imageUrl = MutableLiveData<String?>()
+    val imageUrl: LiveData<String?> = _imageUrl
+
     // 내가 작성하고 공유받은 메모들 가져오기
     fun getUserWrittenAndSharedData(uid: String) {
         viewModelScope.launch {
@@ -45,6 +51,21 @@ class MemoViewModel : ViewModel() {
         }
     }
 
+    // 수정화면에서 데이터 가져오기
+    fun getMemoDataForUpdate(key: String) {
+        viewModelScope.launch {
+            _memoData.postValue(memoRepo.getMemoDataForUpdate(key))
+        }
+    }
+
+    // 수정화면에서 이미지 가져오기
+    fun getImageUrlForUpdate(key: String) {
+        viewModelScope.launch {
+            _imageUrl.postValue(memoRepo.getImageUrlForUpdate(key))
+        }
+    }
+
+    // 메모 저장하기
     fun saveMemo(memo: Memo, imageData: ByteArray?, isEditMode: Boolean) {
         viewModelScope.launch {
             val result = memoRepo.saveMemo(memo, imageData, isEditMode)

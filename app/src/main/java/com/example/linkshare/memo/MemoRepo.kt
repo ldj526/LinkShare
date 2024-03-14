@@ -59,6 +59,22 @@ class MemoRepo {
         memoList
     }
 
+    // 수정화면에서 데이터를 가져오기 위함.
+    suspend fun getMemoDataForUpdate(key: String): Memo? = withContext(Dispatchers.IO) {
+        val snapshot = FBRef.memoCategory.child(key).get().await()
+        snapshot.getValue(Memo::class.java)
+    }
+
+    // 수정화면에서 이미지만 가져오기
+    suspend fun getImageUrlForUpdate(key: String): String? = withContext(Dispatchers.IO) {
+        val storageRef = Firebase.storage.reference.child("${key}.png")
+        try {
+            storageRef.downloadUrl.await().toString()
+        } catch (e: Exception) {
+            null
+        }
+    }
+
     // 메모 저장
     suspend fun saveMemo(memo:Memo, imageData: ByteArray?, isEditMode: Boolean): Boolean = withContext(Dispatchers.IO) {
         val key = if (isEditMode) memo.key else FBRef.memoCategory.push().key!!

@@ -10,12 +10,14 @@ import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.example.linkshare.comment.Comment
 import com.example.linkshare.comment.CommentRVAdapter
 import com.example.linkshare.databinding.ActivityBoardBinding
 import com.example.linkshare.memo.Memo
+import com.example.linkshare.memo.MemoViewModel
 import com.example.linkshare.memo.UpdateMemoActivity
 import com.example.linkshare.util.CustomDialog
 import com.example.linkshare.util.CustomDialogInterface
@@ -46,6 +48,7 @@ class BoardActivity : AppCompatActivity(), CustomDialogInterface {
                 binding.tvMap.text = result.data?.getStringExtra("title")
             }
         }
+    private val memoViewModel by lazy { ViewModelProvider(this)[MemoViewModel::class.java] }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -59,8 +62,41 @@ class BoardActivity : AppCompatActivity(), CustomDialogInterface {
         binding.rvComment.adapter = commentRVAdapter
         binding.rvComment.layoutManager = LinearLayoutManager(this)
 
-        getBoardData(key)
-        getImageData(key)
+        memoViewModel.getMemoDataForUpdate(key)
+        memoViewModel.memoData.observe(this) { memo ->
+            memo?.let {
+                binding.tvTitle.text = it.title
+                binding.tvLink.text = it.link
+                binding.tvTime.text = it.time
+                binding.tvContent.text = it.content
+                binding.tvMap.apply {
+                    text = it.location
+                    visibility = if (text.isEmpty()) View.GONE else View.VISIBLE
+                }
+                latitude = it.latitude
+                longitude = it.longitude
+                writeUid = it.uid
+                val myUid = FBAuth.getUid()
+
+                // 글 쓴 사람이 자신일 경우 수정, 삭제 버튼 보이기
+                if (myUid == writeUid) {
+                    binding.ivDelete.visibility = View.VISIBLE
+                    binding.ivUpdate.visibility = View.VISIBLE
+                    binding.ivShare.visibility = View.GONE
+                } else {
+                    binding.ivDelete.visibility = View.GONE
+                    binding.ivUpdate.visibility = View.GONE
+                    binding.ivShare.visibility = View.VISIBLE
+                }
+            }
+        }
+        memoViewModel.getImageUrlForUpdate(key)
+        memoViewModel.imageUrl.observe(this) { url ->
+            url?.let {
+                Glide.with(this).load(it).into(binding.ivImage)
+            }
+        }
+
         getCommentData(key)
 
         // 수정 버튼 클릭 시
@@ -133,63 +169,6 @@ class BoardActivity : AppCompatActivity(), CustomDialogInterface {
             }
         }
         FBRef.commentCategory.child(key).addValueEventListener(postListener)
-    }
-
-    // Firebase에서 데이터 값 가져오기
-    private fun getBoardData(key: String) {
-        val postListener = object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                try {   // 메모가 삭제 됐을 때 정보가 없으면 에러가 나기 때문에 예외처리
-                    val dataModel = snapshot.getValue(Memo::class.java)
-
-                    binding.tvTitle.text = dataModel!!.title
-                    binding.tvLink.text = dataModel.link
-                    binding.tvTime.text = dataModel.time
-                    binding.tvContent.text = dataModel.content
-                    binding.tvMap.apply {
-                        text = dataModel.location
-                        visibility = if (text.isEmpty()) View.GONE else View.VISIBLE
-                    }
-                    latitude = dataModel.latitude
-                    longitude = dataModel.longitude
-                    writeUid = dataModel.uid
-                    val myUid = FBAuth.getUid()
-
-                    // 글 쓴 사람이 자신일 경우 수정, 삭제 버튼 보이기
-                    if (myUid == writeUid) {
-                        binding.ivDelete.isVisible = true
-                        binding.ivUpdate.isVisible = true
-                    }
-                } catch (e: Exception) {
-
-                }
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                Log.d("BoardFragment", "실패")
-            }
-
-        }
-        FBRef.memoCategory.child(key).addValueEventListener(postListener)
-    }
-
-    // Firebase에서 Image 가져오기
-    private fun getImageData(key: String) {
-        // Reference to an image file in Cloud Storage
-        val storageReference = Firebase.storage.reference.child("${key}.png")
-
-        // ImageView in your Activity
-        val imageViewFromFB = binding.ivImage
-
-        storageReference.downloadUrl.addOnCompleteListener(OnCompleteListener { task ->
-            if (task.isSuccessful) {
-                Glide.with(applicationContext)
-                    .load(task.result)
-                    .into(imageViewFromFB)
-            } else {
-
-            }
-        })
     }
 
     // 다이얼로그 생성
