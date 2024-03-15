@@ -96,6 +96,7 @@ class MemoActivity : AppCompatActivity() {
             }
             latitude = it.latitude
             longitude = it.longitude
+            binding.tvTime.text = it.time
             writeUid = it.uid
             category = it.category
             adjustMemoViewVisibility(writeUid, it.shareUid)

@@ -2,6 +2,7 @@ package com.example.linkshare.memo
 
 import android.util.Log
 import com.example.linkshare.util.FBRef
+import com.example.linkshare.util.ShareResult
 import com.google.firebase.Firebase
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.storage.storage
@@ -88,11 +89,45 @@ class MemoRepo {
         }
     }
 
+    // Firebase에 이미 공유되어 있는지 확인
+    private suspend fun isMemoAlreadyShared(memo: Memo): Boolean = withContext(Dispatchers.IO) {
+        val snapshot = FBRef.boardCategory.child(memo.key).get().await()
+        snapshot.getValue(Memo::class.java)?.let {
+            return@withContext it.shareUid == memo.shareUid
+        } ?: return@withContext false
+    }
+
+    // 메모 공유
+    suspend fun shareMemo(memo:Memo, imageData: ByteArray?): ShareResult = withContext(Dispatchers.IO) {
+        if (isMemoAlreadyShared(memo)) {
+            return@withContext ShareResult.ALREADY_SHARED
+        }
+        val storageRef = Firebase.storage.reference.child("${memo.key}.png")
+        val memoRef = FBRef.boardCategory.child(memo.key)
+
+        try {
+            // 이미지가 있는 경우
+            imageData?.let {
+                val uploadTask = storageRef.putBytes(it).await()
+                val downloadUrl = storageRef.downloadUrl.await().toString()
+                val updateMemo = memo.copy(key = memo.key, imageUrl = downloadUrl)
+                memoRef.setValue(updateMemo).await()
+            } ?: run {
+                // 이미지가 없는 경우
+                val updatedMemo = memo.copy(key = memo.key)
+                memoRef.setValue(updatedMemo).await()
+            }
+            ShareResult.SUCCESS
+        } catch (e: Exception) {
+            ShareResult.FAILURE
+        }
+    }
+
     // 메모 저장
-    suspend fun saveMemo(memo:Memo, imageData: ByteArray?, category: DatabaseReference, isEditMode: Boolean): Boolean = withContext(Dispatchers.IO) {
-        val key = if (isEditMode) memo.key else category.push().key!!
+    suspend fun saveMemo(memo:Memo, imageData: ByteArray?, isEditMode: Boolean): Boolean = withContext(Dispatchers.IO) {
+        val key = if (isEditMode) memo.key else FBRef.memoCategory.push().key!!
         val storageRef = Firebase.storage.reference.child("$key.png")
-        val memoRef = category.child(key)
+        val memoRef = FBRef.memoCategory.child(key)
 
         try {
             // 이미지가 있는 경우

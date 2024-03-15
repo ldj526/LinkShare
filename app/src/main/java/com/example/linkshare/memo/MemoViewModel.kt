@@ -5,6 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.linkshare.util.ShareResult
 import com.google.firebase.database.DatabaseReference
 import kotlinx.coroutines.launch
 
@@ -31,8 +32,8 @@ class MemoViewModel : ViewModel() {
     private val _deleteStatus = MutableLiveData<Boolean>()
     val deleteStatus: LiveData<Boolean> = _deleteStatus
 
-    private val _shareStatus = MutableLiveData<Boolean>()
-    val shareStatus: LiveData<Boolean> = _shareStatus
+    private val _shareStatus = MutableLiveData<ShareResult>()
+    val shareStatus: LiveData<ShareResult> = _shareStatus
 
     // 내가 작성하고 공유받은 메모들 가져오기
     fun getUserWrittenAndSharedData(uid: String) {
@@ -76,17 +77,17 @@ class MemoViewModel : ViewModel() {
     }
 
     // 메모 저장하기
-    fun saveMemo(memo: Memo, imageData: ByteArray?, category: DatabaseReference, isEditMode: Boolean) {
+    fun saveMemo(memo: Memo, imageData: ByteArray?, isEditMode: Boolean) {
         viewModelScope.launch {
-            val result = memoRepo.saveMemo(memo, imageData, category, isEditMode)
+            val result = memoRepo.saveMemo(memo, imageData, isEditMode)
             _saveStatus.value = result
         }
     }
 
     // 메모 공유하기
-    fun shareMemo(memo: Memo, imageData: ByteArray?, category: DatabaseReference, isEditMode: Boolean) {
+    fun shareMemo(memo: Memo, imageData: ByteArray?) {
         viewModelScope.launch {
-            val result = memoRepo.saveMemo(memo, imageData, category, isEditMode)
+            val result = memoRepo.shareMemo(memo, imageData)
             _shareStatus.value = result
         }
     }
