@@ -33,6 +33,7 @@ class WriteMemoFragment : Fragment() {
     private lateinit var galleryLauncher: ActivityResultLauncher<String>
     private var latitude: Double? = 0.0
     private var longitude: Double? = 0.0
+    private var category = ""
     private val startForResult =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
@@ -85,6 +86,7 @@ class WriteMemoFragment : Fragment() {
                     latitude = it.latitude
                     longitude = it.longitude
                     writeUid = it.uid
+                    category = it.category
                 }
             }
             memoViewModel.getImageUrl(key)
@@ -109,7 +111,7 @@ class WriteMemoFragment : Fragment() {
                 binding.etContent.text.toString(),
                 binding.etLink.text.toString(),
                 binding.tvMap.text.toString(), latitude, longitude,
-                if (isEditMode) writeUid else FBAuth.getUid(), FBAuth.getTime())
+                if (isEditMode) writeUid else FBAuth.getUid(), FBAuth.getTime(), "memo")
 
             val imageView = binding.ivImage.drawable
 

@@ -33,6 +33,7 @@ class BoardActivity : AppCompatActivity() {
     private lateinit var commentRVAdapter: CommentRVAdapter
     private var latitude: Double? = 0.0
     private var longitude: Double? = 0.0
+    private var category = ""
     private val startForResult =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
@@ -71,6 +72,13 @@ class BoardActivity : AppCompatActivity() {
                 finish()
             } else {
                 Toast.makeText(this, "삭제 실패", Toast.LENGTH_SHORT).show()
+            }
+        }
+        memoViewModel.shareStatus.observe(this) { isSuccess ->
+            if (isSuccess) {
+                Toast.makeText(this, "공유 성공", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(this, "공유 실패", Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -126,7 +134,7 @@ class BoardActivity : AppCompatActivity() {
     // 삭제 다이얼로그 생성
     private fun showDeleteDialog() {
         val dialog = CustomDialog("삭제 하시겠습니까?", onYesClicked = {
-            memoViewModel.deleteMemo(key)
+            memoViewModel.deleteMemo(FBRef.memoCategory, key)
         })
         // 다이얼로그 창 밖에 클릭 불가
         dialog.isCancelable = false
@@ -162,7 +170,7 @@ class BoardActivity : AppCompatActivity() {
             binding.tvContent.text.toString(),
             binding.tvLink.text.toString(),
             binding.tvMap.text.toString(), latitude, longitude,
-            writeUid, FBAuth.getTime(), FBAuth.getUid()
+            writeUid, FBAuth.getTime(), "board", FBAuth.getUid()
         )
 
         val imageView = binding.ivImage.drawable
@@ -176,7 +184,7 @@ class BoardActivity : AppCompatActivity() {
             null // 이미지가 없을 경우 null로 처리
         }
 
-        memoViewModel.saveMemo(memo, data, FBRef.boardCategory, false)
+        memoViewModel.shareMemo(memo, data, FBRef.boardCategory, false)
     }
 
     // 글의 데이터를 불러와 UI에 대입
@@ -193,6 +201,7 @@ class BoardActivity : AppCompatActivity() {
             latitude = it.latitude
             longitude = it.longitude
             writeUid = it.uid
+            category = it.category
             adjustBoardViewVisibility(writeUid)
         }
     }

@@ -1,5 +1,6 @@
 package com.example.linkshare.memo
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -30,12 +31,16 @@ class MemoViewModel : ViewModel() {
     private val _deleteStatus = MutableLiveData<Boolean>()
     val deleteStatus: LiveData<Boolean> = _deleteStatus
 
+    private val _shareStatus = MutableLiveData<Boolean>()
+    val shareStatus: LiveData<Boolean> = _shareStatus
+
     // 내가 작성하고 공유받은 메모들 가져오기
     fun getUserWrittenAndSharedData(uid: String) {
         viewModelScope.launch {
             val memoData = memoRepo.getMemoData(uid)
             val boardData = memoRepo.getBoardData(uid)
             _userWrittenAndSharedData.postValue((memoData + boardData).toMutableList())
+            Log.d("memoData", "ViewModel에서 getUserWirtten ~ :$_userWrittenAndSharedData")
         }
     }
 
@@ -78,10 +83,18 @@ class MemoViewModel : ViewModel() {
         }
     }
 
-    // 메모 삭제
-    fun deleteMemo(key: String) {
+    // 메모 공유하기
+    fun shareMemo(memo: Memo, imageData: ByteArray?, category: DatabaseReference, isEditMode: Boolean) {
         viewModelScope.launch {
-            val result = memoRepo.deleteMemo(key)
+            val result = memoRepo.saveMemo(memo, imageData, category, isEditMode)
+            _shareStatus.value = result
+        }
+    }
+
+    // 메모 삭제
+    fun deleteMemo(category: DatabaseReference, key: String) {
+        viewModelScope.launch {
+            val result = memoRepo.deleteMemo(category, key)
             _deleteStatus.value = result
         }
     }

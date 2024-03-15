@@ -1,6 +1,7 @@
 package com.example.linkshare.memo
 
 import android.content.Intent
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,6 +14,7 @@ class MemoRVAdapter(var memoList: MutableList<Memo>) :
 
     fun setMemoData(data: MutableList<Memo>) {
         memoList = data
+        Log.d("memoData", "setData: $memoList")
         notifyDataSetChanged()
     }
 
@@ -34,6 +36,7 @@ class MemoRVAdapter(var memoList: MutableList<Memo>) :
         holder.itemView.setOnClickListener {
             val intent = Intent(it.context, MemoActivity::class.java)
             intent.putExtra("key", memo.key)   // key 값 전달
+            intent.putExtra("category", memo.category)  // category 값 전달
             it.context.startActivity(intent)
         }
         holder.bind(memoList[position])
