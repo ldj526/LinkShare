@@ -33,9 +33,8 @@ class MemoFragment : Fragment() {
         binding.rvMemo.layoutManager = LinearLayoutManager(context)
 
         val uid = FBAuth.getUid()
-        memoViewModel.getUserWrittenAndSharedData(uid)
 
-        memoViewModel.userWrittenAndSharedData.observe(viewLifecycleOwner) { memos ->
+        memoViewModel.getUserWrittenAndSharedData(uid).observe(viewLifecycleOwner) { memos ->
             memoAdapter.setMemoData(memos)
         }
 

@@ -1,24 +1,17 @@
 package com.example.linkshare.view
 
-import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.linkshare.board.BoardActivity
 import com.example.linkshare.board.BoardRVAdapter
 import com.example.linkshare.databinding.FragmentBoardBinding
 import com.example.linkshare.memo.Memo
 import com.example.linkshare.memo.MemoViewModel
 import com.example.linkshare.util.FBAuth
-import com.example.linkshare.util.FBRef
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.ValueEventListener
 
 class BoardFragment : Fragment() {
 
@@ -40,13 +33,8 @@ class BoardFragment : Fragment() {
         binding.rvBoard.layoutManager = LinearLayoutManager(context)
 
         val uid = FBAuth.getUid()
-        boardViewModel.getAllUserWrittenData()
 
-        boardViewModel.allUserWrittenData.observe(viewLifecycleOwner) {
-            boardRVAdapter.setBoardData(it)
-        }
-
-        boardViewModel.userWrittenData.observe(viewLifecycleOwner) {
+        boardViewModel.getAllUserWrittenData().observe(viewLifecycleOwner) {
             boardRVAdapter.setBoardData(it)
         }
 
