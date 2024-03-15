@@ -22,6 +22,7 @@ class MemoActivity : AppCompatActivity() {
     private lateinit var writeUid: String
     private var latitude: Double? = 0.0
     private var longitude: Double? = 0.0
+    private var category = ""
     private val startForResult =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
@@ -37,6 +38,7 @@ class MemoActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         key = intent.getStringExtra("key").toString()
+        category = intent.getStringExtra("category").toString()
 
         memoViewModel.getPostData(key)
         memoViewModel.memoData.observe(this) { memo ->
@@ -95,24 +97,27 @@ class MemoActivity : AppCompatActivity() {
             latitude = it.latitude
             longitude = it.longitude
             writeUid = it.uid
-            adjustMemoViewVisibility(writeUid)
+            category = it.category
+            adjustMemoViewVisibility(writeUid, it.shareUid)
         }
     }
 
     // UI Visibility 조절
-    private fun adjustMemoViewVisibility(memoWriteUid: String) {
+    private fun adjustMemoViewVisibility(memoWriteUid: String, shareUid: String?) {
         val myUid = FBAuth.getUid()
         val isMyMemo = myUid == memoWriteUid
+        val isSharedMemo = myUid == (shareUid ?: "")
 
         // 글 쓴 사람이 자신일 경우 수정, 삭제 버튼 보이기
-        binding.ivDelete.visibility = if (isMyMemo) View.VISIBLE else View.GONE
+        binding.ivDelete.visibility = if (isMyMemo || isSharedMemo) View.VISIBLE else View.GONE
         binding.ivUpdate.visibility = if (isMyMemo) View.VISIBLE else View.GONE
     }
 
     // 삭제 다이얼로그 생성
     private fun showDeleteDialog() {
         val dialog = CustomDialog("삭제 하시겠습니까?", onYesClicked = {
-            memoViewModel.deleteMemo(key)
+            if (category == "memo") memoViewModel.deleteMemo(FBRef.memoCategory, key)
+            else if (category == "board") memoViewModel.deleteMemo(FBRef.boardCategory, key)
         })
         // 다이얼로그 창 밖에 클릭 불가
         dialog.isCancelable = false

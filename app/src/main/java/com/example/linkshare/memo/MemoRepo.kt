@@ -1,5 +1,6 @@
 package com.example.linkshare.memo
 
+import android.util.Log
 import com.example.linkshare.util.FBRef
 import com.google.firebase.Firebase
 import com.google.firebase.database.DatabaseReference
@@ -43,6 +44,7 @@ class MemoRepo {
             }
         }
         memoList.sortByDescending { it.time }
+        Log.d("memoData", "Repo에서 getBoardData: $memoList")
         memoList
     }
 
@@ -111,9 +113,9 @@ class MemoRepo {
     }
 
     // 메모 삭제
-    suspend fun deleteMemo(key: String): Boolean = withContext(Dispatchers.IO) {
+    suspend fun deleteMemo(category: DatabaseReference, key: String): Boolean = withContext(Dispatchers.IO) {
         try {
-            FBRef.memoCategory.child(key).removeValue().await()
+            category.child(key).removeValue().await()
             true
         } catch (e: Exception) {
             false

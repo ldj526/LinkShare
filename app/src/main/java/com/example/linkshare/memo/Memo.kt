@@ -10,6 +10,7 @@ data class Memo(
     val longitude: Double? = 0.0,
     val uid: String = "",
     val time: String = "",
+    val category: String = "",
     val shareUid: String? = null,
     val imageUrl: String? = null
 )
