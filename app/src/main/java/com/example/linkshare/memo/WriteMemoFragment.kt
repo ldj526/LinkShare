@@ -20,6 +20,7 @@ import com.example.linkshare.databinding.FragmentWriteMemoBinding
 import com.example.linkshare.util.CustomDialog
 import com.example.linkshare.util.FBAuth
 import com.example.linkshare.util.FBRef
+import com.example.linkshare.view.MainActivity
 import com.example.linkshare.view.MapViewActivity
 import java.io.ByteArrayOutputStream
 
@@ -30,6 +31,7 @@ class WriteMemoFragment : Fragment() {
     private var isEditMode: Boolean = false
     private lateinit var key: String
     private lateinit var writeUid: String
+    private lateinit var time: String
     private lateinit var galleryLauncher: ActivityResultLauncher<String>
     private var latitude: Double? = 0.0
     private var longitude: Double? = 0.0
@@ -78,16 +80,7 @@ class WriteMemoFragment : Fragment() {
         if (key != "") {
             memoViewModel.getPostData(key)
             memoViewModel.memoData.observe(viewLifecycleOwner) { memo ->
-                memo?.let {
-                    binding.etTitle.setText(it.title)
-                    binding.etLink.setText(it.link)
-                    binding.etContent.setText(it.content)
-                    binding.tvMap.text = it.location
-                    latitude = it.latitude
-                    longitude = it.longitude
-                    writeUid = it.uid
-                    category = it.category
-                }
+                loadMemo(memo)
             }
             memoViewModel.getImageUrl(key)
             memoViewModel.imageUrl.observe(viewLifecycleOwner) { url ->
@@ -100,30 +93,17 @@ class WriteMemoFragment : Fragment() {
         memoViewModel.saveStatus.observe(viewLifecycleOwner) {success ->
             if (success){
                 Toast.makeText(requireContext(), "메모 저장 성공", Toast.LENGTH_SHORT).show()
-                requireActivity().finish()
+                val intent = Intent(context, MainActivity::class.java).apply {
+                    flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+                }
+                startActivity(intent)
             } else {
                 Toast.makeText(requireContext(), "메모 저장 실패", Toast.LENGTH_SHORT).show()
             }
         }
 
         binding.btnSave.setOnClickListener {
-            val memo = Memo(key, binding.etTitle.text.toString(),
-                binding.etContent.text.toString(),
-                binding.etLink.text.toString(),
-                binding.tvMap.text.toString(), latitude, longitude,
-                if (isEditMode) writeUid else FBAuth.getUid(), FBAuth.getTime(), "memo")
-
-            val imageView = binding.ivImage.drawable
-
-            val data: ByteArray? = if (imageView is BitmapDrawable) {
-                val bitmap = imageView.bitmap
-                val baos = ByteArrayOutputStream()
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos)
-                baos.toByteArray()
-            } else {
-                null // 이미지가 없을 경우 null로 처리
-            }
-
+            val (memo, data: ByteArray?) = saveMemo()
             memoViewModel.saveMemo(memo, data, isEditMode)
         }
 
@@ -145,6 +125,43 @@ class WriteMemoFragment : Fragment() {
         }
 
         return binding.root
+    }
+
+    private fun saveMemo(): Pair<Memo, ByteArray?> {
+        val memo = Memo(
+            key, binding.etTitle.text.toString(),
+            binding.etContent.text.toString(),
+            binding.etLink.text.toString(),
+            binding.tvMap.text.toString(), latitude, longitude,
+            if (isEditMode) writeUid else FBAuth.getUid(),
+            if (isEditMode) time else FBAuth.getTime(), "memo"
+        )
+
+        val imageView = binding.ivImage.drawable
+
+        val data: ByteArray? = if (imageView is BitmapDrawable) {
+            val bitmap = imageView.bitmap
+            val baos = ByteArrayOutputStream()
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos)
+            baos.toByteArray()
+        } else {
+            null // 이미지가 없을 경우 null로 처리
+        }
+        return Pair(memo, data)
+    }
+
+    private fun loadMemo(memo: Memo?) {
+        memo?.let {
+            binding.etTitle.setText(it.title)
+            binding.etLink.setText(it.link)
+            binding.etContent.setText(it.content)
+            binding.tvMap.text = it.location
+            latitude = it.latitude
+            longitude = it.longitude
+            writeUid = it.uid
+            time = it.time
+            category = it.category
+        }
     }
 
     // 다이얼로그 생성
