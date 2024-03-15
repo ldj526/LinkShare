@@ -5,6 +5,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.example.linkshare.R
 import com.example.linkshare.util.FBAuth
@@ -12,9 +13,13 @@ import com.example.linkshare.util.FBAuth
 class CommentRVAdapter(var commentList: MutableList<Comment>) :
     RecyclerView.Adapter<CommentRVAdapter.ViewHolder>() {
 
-    fun setCommentData(data: MutableList<Comment>) {
-        commentList = data
-        notifyDataSetChanged()
+    fun setCommentData(newCommentList: MutableList<Comment>) {
+        val diffCallback = CommentDiffCallback(commentList, newCommentList)
+        val diffResult = DiffUtil.calculateDiff(diffCallback)
+
+        commentList.clear()
+        commentList.addAll(newCommentList)
+        diffResult.dispatchUpdatesTo(this)
     }
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -41,5 +46,21 @@ class CommentRVAdapter(var commentList: MutableList<Comment>) :
             holder.delete.visibility = View.VISIBLE
         }
         holder.bind(commentList[position])
+    }
+
+    class CommentDiffCallback(
+        private val oldList: List<Comment>,
+        private val newList: List<Comment>
+    ) : DiffUtil.Callback() {
+        override fun getOldListSize(): Int = oldList.size
+        override fun getNewListSize(): Int = newList.size
+
+        override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+            return oldList[oldItemPosition].uid == newList[newItemPosition].uid
+        }
+
+        override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+            return oldList[oldItemPosition] == newList[newItemPosition]
+        }
     }
 }

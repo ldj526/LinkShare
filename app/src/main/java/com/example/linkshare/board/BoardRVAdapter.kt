@@ -5,17 +5,21 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.example.linkshare.R
 import com.example.linkshare.memo.Memo
-import com.example.linkshare.memo.MemoActivity
 
 class BoardRVAdapter(var memoList: MutableList<Memo>) :
     RecyclerView.Adapter<BoardRVAdapter.ViewHolder>() {
 
-    fun setBoardData(data: MutableList<Memo>) {
-        memoList = data
-        notifyDataSetChanged()
+    fun setBoardData(newMemoList: MutableList<Memo>) {
+        val diffCallback = BoardDiffCallback(memoList, newMemoList)
+        val diffResult = DiffUtil.calculateDiff(diffCallback)
+
+        memoList.clear()
+        memoList.addAll(newMemoList)
+        diffResult.dispatchUpdatesTo(this)
     }
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -47,4 +51,28 @@ class BoardRVAdapter(var memoList: MutableList<Memo>) :
     }
 
     override fun getItemCount(): Int = memoList.size
+
+    class BoardDiffCallback(
+        private val oldList: List<Memo>,
+        private val newList: List<Memo>
+    ) : DiffUtil.Callback() {
+
+        override fun getOldListSize(): Int {
+            return oldList.size
+        }
+
+        override fun getNewListSize(): Int {
+            return newList.size
+        }
+
+        override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+            // 메모의 고유 ID 또는 기타 고유한 속성을 비교
+            return oldList[oldItemPosition].key == newList[newItemPosition].key
+        }
+
+        override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+            // 메모의 내용이 같은지 비교
+            return oldList[oldItemPosition] == newList[newItemPosition]
+        }
+    }
 }
