@@ -9,21 +9,20 @@ import kotlinx.coroutines.launch
 class CommentViewModel: ViewModel() {
 
     private val commentRepo = CommentRepo()
-
-    private val _commentData = MutableLiveData<MutableList<Comment>>()
-    val commentData: LiveData<MutableList<Comment>> = _commentData
+    private var commentsLiveData: LiveData<MutableList<Comment>>? = null
 
     private val _commentStatus = MutableLiveData<Boolean>()
     val commentStatus: LiveData<Boolean> = _commentStatus
 
     // 해당하는 글에 대한 댓글 가져오기
-    fun getCommentData(key: String) {
-        viewModelScope.launch {
-            val commentData = commentRepo.getCommentData(key)
-            _commentData.postValue(commentData)
+    fun getCommentData(key: String): LiveData<MutableList<Comment>> {
+        if (commentsLiveData == null) {
+            commentsLiveData = commentRepo.getCommentsLiveData(key)
         }
+        return commentsLiveData!!
     }
 
+    // 댓글 입력하기
     fun insertComment(comment: Comment, key: String) {
         viewModelScope.launch {
             val result = commentRepo.insertComment(comment, key)
