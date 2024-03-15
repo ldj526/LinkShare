@@ -22,6 +22,7 @@ import com.example.linkshare.memo.UpdateMemoActivity
 import com.example.linkshare.util.CustomDialog
 import com.example.linkshare.util.FBAuth
 import com.example.linkshare.util.FBRef
+import com.example.linkshare.util.ShareResult
 import java.io.ByteArrayOutputStream
 
 class BoardActivity : AppCompatActivity() {
@@ -74,11 +75,17 @@ class BoardActivity : AppCompatActivity() {
                 Toast.makeText(this, "삭제 실패", Toast.LENGTH_SHORT).show()
             }
         }
-        memoViewModel.shareStatus.observe(this) { isSuccess ->
-            if (isSuccess) {
-                Toast.makeText(this, "공유 성공", Toast.LENGTH_SHORT).show()
-            } else {
-                Toast.makeText(this, "공유 실패", Toast.LENGTH_SHORT).show()
+        memoViewModel.shareStatus.observe(this) { result ->
+            when (result) {
+                ShareResult.SUCCESS -> {
+                    Toast.makeText(this, "공유 성공", Toast.LENGTH_SHORT).show()
+                }
+                ShareResult.ALREADY_SHARED -> {
+                    Toast.makeText(this, "이미 공유된 글입니다.", Toast.LENGTH_SHORT).show()
+                }
+                else -> {
+                    Toast.makeText(this, "공유 실패", Toast.LENGTH_SHORT).show()
+                }
             }
         }
 
@@ -184,7 +191,7 @@ class BoardActivity : AppCompatActivity() {
             null // 이미지가 없을 경우 null로 처리
         }
 
-        memoViewModel.shareMemo(memo, data, FBRef.boardCategory, false)
+        memoViewModel.shareMemo(memo, data)
     }
 
     // 글의 데이터를 불러와 UI에 대입
