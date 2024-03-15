@@ -1,6 +1,11 @@
 package com.example.linkshare.comment
 
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import com.example.linkshare.util.FBRef
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.ValueEventListener
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
@@ -8,17 +13,23 @@ import kotlinx.coroutines.withContext
 class CommentRepo {
 
     // 해당하는 글에 대한 댓글 가져오기
-    suspend fun getCommentData(key: String): MutableList<Comment> = withContext(Dispatchers.IO) {
-        val commentList = mutableListOf<Comment>()
-        val snapshot = FBRef.commentCategory.child(key).get().await()
-        // Get Post object and use the values to update the UI
-        for (dataModel in snapshot.children) {
-            // Memo 형식의 데이터 받기
-            val item = dataModel.getValue(Comment::class.java)
-            item?.let { commentList.add(it) }
-        }
-        commentList.sortBy { it.time }
-        commentList
+    fun getCommentsLiveData(key: String): LiveData<MutableList<Comment>> {
+        val liveData = MutableLiveData<MutableList<Comment>>()
+        FBRef.commentCategory.child(key).addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val comments = mutableListOf<Comment>()
+                for (dataModel in snapshot.children) {
+                    val comment = dataModel.getValue(Comment::class.java)
+                    comment?.let { comments.add(it) }
+                }
+                liveData.postValue(comments)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                // 에러 처리
+            }
+        })
+        return liveData
     }
 
     // Firebase에 댓글 내용 입력

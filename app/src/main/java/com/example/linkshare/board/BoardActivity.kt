@@ -10,6 +10,7 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.example.linkshare.comment.Comment
@@ -89,8 +90,7 @@ class BoardActivity : AppCompatActivity() {
             }
         }
 
-        commentViewModel.getCommentData(key)
-        commentViewModel.commentData.observe(this) {comments ->
+        commentViewModel.getCommentData(key).observe(this) { comments ->
             commentRVAdapter.setCommentData(comments)
         }
 
