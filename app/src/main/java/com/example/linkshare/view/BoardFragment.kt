@@ -11,14 +11,12 @@ import com.example.linkshare.board.BoardRVAdapter
 import com.example.linkshare.databinding.FragmentBoardBinding
 import com.example.linkshare.memo.Memo
 import com.example.linkshare.memo.MemoViewModel
-import com.example.linkshare.util.FBAuth
 
 class BoardFragment : Fragment() {
 
     private var _binding: FragmentBoardBinding? = null
     private val binding get() = _binding!!
     private val memoList = mutableListOf<Memo>()
-    private val memoKeyList = mutableListOf<String>()
     private lateinit var boardRVAdapter: BoardRVAdapter
     private val boardViewModel by lazy { ViewModelProvider(this)[MemoViewModel::class.java] }
 
@@ -32,20 +30,20 @@ class BoardFragment : Fragment() {
         binding.rvBoard.adapter = boardRVAdapter
         binding.rvBoard.layoutManager = LinearLayoutManager(context)
 
-        val uid = FBAuth.getUid()
-
-        boardViewModel.getAllUserWrittenData().observe(viewLifecycleOwner) {
-            boardRVAdapter.setBoardData(it)
+        boardViewModel.allUserWrittenData.observe(viewLifecycleOwner) { memos ->
+            boardRVAdapter.setBoardData(memos)
         }
 
-        // 전체보기 클릭 시
         binding.btnAll.setOnClickListener {
-            boardViewModel.getAllUserWrittenData()
+            boardViewModel.allUserWrittenData.value?.let { memos ->
+                boardRVAdapter.setBoardData(memos)
+            }
         }
 
-        // 내 글 보기 클릭 시
         binding.btnMy.setOnClickListener {
-            boardViewModel.getUserWrittenData(uid)
+            boardViewModel.userWrittenData.value?.let { memos ->
+                boardRVAdapter.setBoardData(memos)
+            }
         }
 
         return binding.root

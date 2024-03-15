@@ -5,6 +5,7 @@ import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.linkshare.util.FBAuth
 import com.example.linkshare.util.ShareResult
 import com.google.firebase.database.DatabaseReference
 import kotlinx.coroutines.launch
@@ -27,8 +28,15 @@ class MemoViewModel : ViewModel() {
     private val _shareStatus = MutableLiveData<ShareResult>()
     val shareStatus: LiveData<ShareResult> = _shareStatus
 
-    private var userWrittenData: LiveData<MutableList<Memo>>? = null
-    private var allUserWrittenData: LiveData<MutableList<Memo>>? = null
+    // Repository에서 반환된 LiveData를 직접 사용
+    val userWrittenData: LiveData<MutableList<Memo>>
+    val allUserWrittenData: LiveData<MutableList<Memo>>
+
+    init {
+        val uid = FBAuth.getUid()
+        userWrittenData = memoRepo.getMemoData(uid)
+        allUserWrittenData = memoRepo.getAllMemoData()
+    }
 
     // 내가 작성하고 공유받은 메모들 가져오기
     fun getUserWrittenAndSharedData(uid: String): LiveData<MutableList<Memo>> {
@@ -53,22 +61,6 @@ class MemoViewModel : ViewModel() {
         memoList?.let { combinedList.addAll(it) }
         boardList?.let { combinedList.addAll(it) }
         return combinedList
-    }
-
-    // 내가 작성한 메모만 가져오는 것
-    fun getUserWrittenData(uid: String): LiveData<MutableList<Memo>> {
-        if (userWrittenData == null) {
-            userWrittenData = memoRepo.getMemoData(uid)
-        }
-        return userWrittenData!!
-    }
-
-    // 모든 사용자들이 작성한 메모들
-    fun getAllUserWrittenData(): LiveData<MutableList<Memo>> {
-        if (allUserWrittenData == null) {
-            allUserWrittenData = memoRepo.getAllMemoData()
-        }
-        return allUserWrittenData!!
     }
 
     // 메모, 게시글에서 볼 데이터를 받아오는 기능
