@@ -1,7 +1,7 @@
 package com.example.linkshare.memo
 
-import android.util.Log
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -11,14 +11,6 @@ import kotlinx.coroutines.launch
 
 class MemoViewModel : ViewModel() {
     private val memoRepo = MemoRepo()
-    private val _userWrittenAndSharedData = MutableLiveData<MutableList<Memo>>()
-    val userWrittenAndSharedData: LiveData<MutableList<Memo>> = _userWrittenAndSharedData
-
-    private val _userWrittenData = MutableLiveData<MutableList<Memo>>()
-    val userWrittenData: LiveData<MutableList<Memo>> = _userWrittenData
-
-    private val _allUserWrittenData = MutableLiveData<MutableList<Memo>>()
-    val allUserWrittenData: LiveData<MutableList<Memo>> = _allUserWrittenData
 
     private val _saveStatus = MutableLiveData<Boolean>()
     val saveStatus: LiveData<Boolean> = _saveStatus
@@ -35,30 +27,48 @@ class MemoViewModel : ViewModel() {
     private val _shareStatus = MutableLiveData<ShareResult>()
     val shareStatus: LiveData<ShareResult> = _shareStatus
 
+    private var userWrittenData: LiveData<MutableList<Memo>>? = null
+    private var allUserWrittenData: LiveData<MutableList<Memo>>? = null
+
     // 내가 작성하고 공유받은 메모들 가져오기
-    fun getUserWrittenAndSharedData(uid: String) {
-        viewModelScope.launch {
-            val memoData = memoRepo.getMemoData(uid)
-            val boardData = memoRepo.getBoardData(uid)
-            _userWrittenAndSharedData.postValue((memoData + boardData).toMutableList())
-            Log.d("memoData", "ViewModel에서 getUserWirtten ~ :$_userWrittenAndSharedData")
+    fun getUserWrittenAndSharedData(uid: String): LiveData<MutableList<Memo>> {
+        val mediatorLiveData = MediatorLiveData<MutableList<Memo>>()
+        val memoData  = memoRepo.getMemoData(uid)
+        val boardData = memoRepo.getBoardData(uid)
+
+        mediatorLiveData.addSource(memoData) { memos ->
+            mediatorLiveData.value = combineDataList(memoData.value, boardData.value)
         }
+
+        mediatorLiveData.addSource(boardData) { memos ->
+            mediatorLiveData.value = combineDataList(memoData.value, boardData.value)
+        }
+
+        return mediatorLiveData
+    }
+
+    // LiveData 합치기
+    private fun combineDataList(memoList: MutableList<Memo>?, boardList: MutableList<Memo>?): MutableList<Memo> {
+        val combinedList = mutableListOf<Memo>()
+        memoList?.let { combinedList.addAll(it) }
+        boardList?.let { combinedList.addAll(it) }
+        return combinedList
     }
 
     // 내가 작성한 메모만 가져오는 것
-    fun getUserWrittenData(uid: String) {
-        viewModelScope.launch {
-            val memoData = memoRepo.getMemoData(uid)
-            _userWrittenData.postValue(memoData)
+    fun getUserWrittenData(uid: String): LiveData<MutableList<Memo>> {
+        if (userWrittenData == null) {
+            userWrittenData = memoRepo.getMemoData(uid)
         }
+        return userWrittenData!!
     }
 
     // 모든 사용자들이 작성한 메모들
-    fun getAllUserWrittenData() {
-        viewModelScope.launch {
-            val memoData = memoRepo.getAllMemoData()
-            _allUserWrittenData.postValue(memoData)
+    fun getAllUserWrittenData(): LiveData<MutableList<Memo>> {
+        if (allUserWrittenData == null) {
+            allUserWrittenData = memoRepo.getAllMemoData()
         }
+        return allUserWrittenData!!
     }
 
     // 메모, 게시글에서 볼 데이터를 받아오는 기능

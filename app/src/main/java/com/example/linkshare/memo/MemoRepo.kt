@@ -1,10 +1,14 @@
 package com.example.linkshare.memo
 
-import android.util.Log
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import com.example.linkshare.util.FBRef
 import com.example.linkshare.util.ShareResult
 import com.google.firebase.Firebase
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.ValueEventListener
 import com.google.firebase.storage.storage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
@@ -13,54 +17,85 @@ import kotlinx.coroutines.withContext
 class MemoRepo {
 
     // 자신의 id값과 일치하는 게시물 가져오기
-    suspend fun getMemoData(uid: String): MutableList<Memo> = withContext(Dispatchers.IO) {
-        val memoList = mutableListOf<Memo>()
-        val snapshot = FBRef.memoCategory.get().await()
-        // Get Post object and use the values to update the UI
-        for (dataModel in snapshot.children) {
-            // Memo 형식의 데이터 받기
-            val item = dataModel.getValue(Memo::class.java)
-            item?.let {
-                if (it.uid == uid) {
-                    memoList.add(it)
+    fun getMemoData(uid: String): LiveData<MutableList<Memo>> {
+        val liveData = MutableLiveData<MutableList<Memo>>()
+
+        FBRef.memoCategory.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val memoList = mutableListOf<Memo>()
+                // Get Post object and use the values to update the UI
+                for (dataModel in snapshot.children) {
+                    // Memo 형식의 데이터 받기
+                    val item = dataModel.getValue(Memo::class.java)
+                    item?.let {
+                        if (it.uid == uid) {
+                            memoList.add(it)
+                        }
+                    }
                 }
+                memoList.sortByDescending { it.time }
+                liveData.value = memoList
             }
-        }
-        memoList.sortByDescending { it.time }
-        memoList
+
+            override fun onCancelled(error: DatabaseError) {
+
+            }
+
+        })
+        return liveData
     }
 
     // Firebase database로부터 내가 공유받은 memo 가져오기
-    suspend fun getBoardData(uid: String): MutableList<Memo> = withContext(Dispatchers.IO) {
-        val memoList = mutableListOf<Memo>()
-        val snapshot = FBRef.boardCategory.get().await()
-        // Get Post object and use the values to update the UI
-        for (dataModel in snapshot.children) {
-            // Memo 형식의 데이터 받기
-            val item = dataModel.getValue(Memo::class.java)
-            item?.let {
-                if (it.shareUid == uid) {
-                    memoList.add(item)
-                }
-            }
-        }
-        memoList.sortByDescending { it.time }
-        Log.d("memoData", "Repo에서 getBoardData: $memoList")
-        memoList
-    }
+    fun getBoardData(uid: String): LiveData<MutableList<Memo>> {
+        val liveData = MutableLiveData<MutableList<Memo>>()
 
+        FBRef.boardCategory.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val memoList = mutableListOf<Memo>()
+                // Get Post object and use the values to update the UI
+                for (dataModel in snapshot.children) {
+                    // Memo 형식의 데이터 받기
+                    val item = dataModel.getValue(Memo::class.java)
+                    item?.let {
+                        if (it.shareUid == uid) {
+                            memoList.add(item)
+                        }
+                    }
+                }
+                memoList.sortByDescending { it.time }
+                liveData.value = memoList
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+
+            }
+
+        })
+
+        return liveData
+    }
     // Firebase database로부터 모든 사용자의 memo 가져오기
-    suspend fun getAllMemoData(): MutableList<Memo> = withContext(Dispatchers.IO) {
-        val memoList = mutableListOf<Memo>()
-        val snapshot = FBRef.memoCategory.get().await()
-        // Get Post object and use the values to update the UI
-        for (dataModel in snapshot.children) {
-            // Memo 형식의 데이터 받기
-            val item = dataModel.getValue(Memo::class.java)
-            item?.let { memoList.add(it) }
-        }
-        memoList.sortByDescending { it.time }
-        memoList
+    fun getAllMemoData(): LiveData<MutableList<Memo>> {
+        val liveData = MutableLiveData<MutableList<Memo>>()
+
+        FBRef.memoCategory.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val memoList = mutableListOf<Memo>()
+                // Get Post object and use the values to update the UI
+                for (dataModel in snapshot.children) {
+                    // Memo 형식의 데이터 받기
+                    val item = dataModel.getValue(Memo::class.java)
+                    item?.let { memoList.add(it) }
+                }
+                memoList.sortByDescending { it.time }
+                liveData.value = memoList
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+
+            }
+        })
+        return liveData
     }
 
     // 메모, 게시글에서 볼 데이터를 key값 기반으로 받아오는 기능
