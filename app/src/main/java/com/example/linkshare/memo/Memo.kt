@@ -11,6 +11,7 @@ data class Memo(
     val uid: String = "",
     val time: String = "",
     val category: String = "",
+    var shareCount: Int = 0,
     val shareUid: String? = null,
     val imageUrl: String? = null
 )

@@ -2,12 +2,14 @@ package com.example.linkshare.memo
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.example.linkshare.util.FBAuth
 import com.example.linkshare.util.FBRef
 import com.example.linkshare.util.ShareResult
 import com.google.firebase.Firebase
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.ServerValue
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.storage.storage
 import kotlinx.coroutines.Dispatchers
@@ -125,36 +127,38 @@ class MemoRepo {
     }
 
     // Firebase에 이미 공유되어 있는지 확인
-    private suspend fun isMemoAlreadyShared(memo: Memo): Boolean = withContext(Dispatchers.IO) {
-        val snapshot = FBRef.boardCategory.child(memo.key).get().await()
-        snapshot.getValue(Memo::class.java)?.let {
-            return@withContext it.shareUid == memo.shareUid
-        } ?: return@withContext false
+    private suspend fun isMemoAlreadyShared(memoKey: String, currentUserUid: String): Boolean = withContext(Dispatchers.IO) {
+        val snapshot = FBRef.boardCategory.child(memoKey).get().await()
+        val memo = snapshot.getValue(Memo::class.java)
+        return@withContext memo?.shareUid == currentUserUid
     }
 
     // 메모 공유
-    suspend fun shareMemo(memo:Memo, imageData: ByteArray?): ShareResult = withContext(Dispatchers.IO) {
-        if (isMemoAlreadyShared(memo)) {
-            return@withContext ShareResult.ALREADY_SHARED
+    suspend fun shareMemo(memoKey: String, imageData: ByteArray?): Pair<ShareResult, Int> = withContext(Dispatchers.IO) {
+        val currentUserUid = FBAuth.getUid()
+        val memoData = getMemoDataByKey(memoKey) ?: return@withContext Pair(ShareResult.FAILURE, 0)
+
+        if (isMemoAlreadyShared(memoKey, currentUserUid)) {
+            return@withContext Pair(ShareResult.ALREADY_SHARED, memoData.shareCount)
         }
-        val storageRef = Firebase.storage.reference.child("${memo.key}.png")
-        val memoRef = FBRef.boardCategory.child(memo.key)
+        val storageRef = Firebase.storage.reference.child("$memoKey.png")
+        val boardRef = FBRef.boardCategory.child(memoKey)
 
         try {
-            // 이미지가 있는 경우
-            imageData?.let {
-                val uploadTask = storageRef.putBytes(it).await()
-                val downloadUrl = storageRef.downloadUrl.await().toString()
-                val updateMemo = memo.copy(key = memo.key, imageUrl = downloadUrl)
-                memoRef.setValue(updateMemo).await()
-            } ?: run {
-                // 이미지가 없는 경우
-                val updatedMemo = memo.copy(key = memo.key)
-                memoRef.setValue(updatedMemo).await()
+            val downloadUrl = imageData?.let {
+                storageRef.putBytes(it).await()
+                storageRef.downloadUrl.await().toString()
             }
-            ShareResult.SUCCESS
+            val updatedMemo = memoData.copy(imageUrl = downloadUrl ?: memoData.imageUrl,
+                shareUid = currentUserUid, shareCount = memoData.shareCount + 1, time = FBAuth.getTime())
+            boardRef.setValue(updatedMemo).await()
+
+            // `memoCategory`에 있는 원본 글의 `shareCount` 값을 +1 업데이트하는 과정
+            val memoRef = FBRef.memoCategory.child(memoKey).child("shareCount")
+            memoRef.setValue(ServerValue.increment(1)).await()
+            Pair(ShareResult.SUCCESS, updatedMemo.shareCount)
         } catch (e: Exception) {
-            ShareResult.FAILURE
+            Pair(ShareResult.FAILURE, memoData.shareCount)
         }
     }
 
@@ -167,7 +171,7 @@ class MemoRepo {
         try {
             // 이미지가 있는 경우
             imageData?.let {
-                val uploadTask = storageRef.putBytes(it).await()
+                storageRef.putBytes(it).await()
                 val downloadUrl = storageRef.downloadUrl.await().toString()
                 val updateMemo = memo.copy(key = key, imageUrl = downloadUrl)
                 memoRef.setValue(updateMemo).await()

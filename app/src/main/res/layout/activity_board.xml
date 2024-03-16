@@ -102,6 +102,15 @@
                 android:text="time" />
 
             <TextView
+                android:id="@+id/tv_shareCnt"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="10dp"
+                android:layout_marginBottom="10dp"
+                android:gravity="right"
+                android:text="공유횟수 : 0" />
+
+            <TextView
                 android:id="@+id/tv_link"
                 android:text="링크"
                 android:layout_width="match_parent"

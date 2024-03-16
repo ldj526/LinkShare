@@ -32,6 +32,9 @@ class MemoViewModel : ViewModel() {
     val userWrittenData: LiveData<MutableList<Memo>>
     val allUserWrittenData: LiveData<MutableList<Memo>>
 
+    private val _shareCount = MutableLiveData<Int>()
+    val shareCount: LiveData<Int> = _shareCount
+
     init {
         val uid = FBAuth.getUid()
         userWrittenData = memoRepo.getMemoData(uid)
@@ -60,6 +63,7 @@ class MemoViewModel : ViewModel() {
         val combinedList = mutableListOf<Memo>()
         memoList?.let { combinedList.addAll(it) }
         boardList?.let { combinedList.addAll(it) }
+        combinedList.sortByDescending { it.time }
         return combinedList
     }
 
@@ -87,9 +91,12 @@ class MemoViewModel : ViewModel() {
     }
 
     // 메모 공유하기
-    fun shareMemo(memo: Memo, imageData: ByteArray?) {
+    fun shareMemo(memoKey: String, imageData: ByteArray?) {
         viewModelScope.launch {
-            val result = memoRepo.shareMemo(memo, imageData)
+            val (result, newShareCount) = memoRepo.shareMemo(memoKey, imageData)
+            if (result == ShareResult.SUCCESS) {
+                _shareCount.value = newShareCount
+            }
             _shareStatus.value = result
         }
     }

@@ -36,6 +36,7 @@ class WriteMemoFragment : Fragment() {
     private var latitude: Double? = 0.0
     private var longitude: Double? = 0.0
     private var category = ""
+    private var shareCnt: Int = 0
     private val startForResult =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
@@ -90,8 +91,8 @@ class WriteMemoFragment : Fragment() {
             }
         }
 
-        memoViewModel.saveStatus.observe(viewLifecycleOwner) {success ->
-            if (success){
+        memoViewModel.saveStatus.observe(viewLifecycleOwner) { isSuccess ->
+            if (isSuccess) {
                 Toast.makeText(requireContext(), "메모 저장 성공", Toast.LENGTH_SHORT).show()
                 val intent = Intent(context, MainActivity::class.java).apply {
                     flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
@@ -134,7 +135,8 @@ class WriteMemoFragment : Fragment() {
             binding.etLink.text.toString(),
             binding.tvMap.text.toString(), latitude, longitude,
             if (isEditMode) writeUid else FBAuth.getUid(),
-            if (isEditMode) time else FBAuth.getTime(), "memo"
+            if (isEditMode) time else FBAuth.getTime(), "memo",
+            if (isEditMode) shareCnt else 0
         )
 
         val imageView = binding.ivImage.drawable
@@ -161,6 +163,7 @@ class WriteMemoFragment : Fragment() {
             writeUid = it.uid
             time = it.time
             category = it.category
+            shareCnt = it.shareCount
         }
     }
 
