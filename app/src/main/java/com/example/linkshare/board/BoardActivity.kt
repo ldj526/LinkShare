@@ -5,6 +5,7 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -36,6 +37,7 @@ class BoardActivity : AppCompatActivity() {
     private var latitude: Double? = 0.0
     private var longitude: Double? = 0.0
     private var category = ""
+    private var shareCnt = 0
     private val startForResult =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
@@ -88,6 +90,9 @@ class BoardActivity : AppCompatActivity() {
                     Toast.makeText(this, "공유 실패", Toast.LENGTH_SHORT).show()
                 }
             }
+        }
+        memoViewModel.shareCount.observe(this) { newShareCount ->
+            binding.tvShareCnt.text = "공유 횟수 : $newShareCount"
         }
 
         commentViewModel.getCommentData(key).observe(this) { comments ->
@@ -163,7 +168,8 @@ class BoardActivity : AppCompatActivity() {
     // 공유 다이얼로그 생성
     private fun showShareDialog() {
         val dialog = CustomDialog("개인 메모로 공유하시겠습니까?", onYesClicked = {
-            shareMemo()
+            val data = shareMemo()
+            memoViewModel.shareMemo(key, data)
         })
         // 다이얼로그 창 밖에 클릭 불가
         dialog.isCancelable = false
@@ -171,15 +177,7 @@ class BoardActivity : AppCompatActivity() {
     }
 
     // 메모를 내 개인메모 목록으로 가져가기
-    private fun shareMemo() {
-        val memo = Memo(
-            key, binding.tvTitle.text.toString(),
-            binding.tvContent.text.toString(),
-            binding.tvLink.text.toString(),
-            binding.tvMap.text.toString(), latitude, longitude,
-            writeUid, FBAuth.getTime(), "board", FBAuth.getUid()
-        )
-
+    private fun shareMemo(): ByteArray? {
         val imageView = binding.ivImage.drawable
 
         val data: ByteArray? = if (imageView is BitmapDrawable) {
@@ -190,8 +188,7 @@ class BoardActivity : AppCompatActivity() {
         } else {
             null // 이미지가 없을 경우 null로 처리
         }
-
-        memoViewModel.shareMemo(memo, data)
+        return data
     }
 
     // 글의 데이터를 불러와 UI에 대입
@@ -209,6 +206,8 @@ class BoardActivity : AppCompatActivity() {
             longitude = it.longitude
             writeUid = it.uid
             category = it.category
+            shareCnt = it.shareCount
+            binding.tvShareCnt.text = "공유횟수 : ${it.shareCount}"
             adjustBoardViewVisibility(writeUid)
         }
     }
