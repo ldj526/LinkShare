@@ -1,4 +1,4 @@
-package com.example.linkshare.memo
+package com.example.linkshare.link
 
 import android.app.Activity
 import android.content.Intent
@@ -16,7 +16,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
-import com.example.linkshare.databinding.FragmentWriteMemoBinding
+import com.example.linkshare.databinding.FragmentWriteLinkBinding
 import com.example.linkshare.util.CustomDialog
 import com.example.linkshare.util.FBAuth
 import com.example.linkshare.util.FBRef
@@ -24,9 +24,9 @@ import com.example.linkshare.view.MainActivity
 import com.example.linkshare.view.MapViewActivity
 import java.io.ByteArrayOutputStream
 
-class WriteMemoFragment : Fragment() {
+class WriteLinkFragment : Fragment() {
 
-    private var _binding: FragmentWriteMemoBinding? = null
+    private var _binding: FragmentWriteLinkBinding? = null
     private val binding get() = _binding!!
     private var isEditMode: Boolean = false
     private lateinit var key: String
@@ -47,7 +47,7 @@ class WriteMemoFragment : Fragment() {
                 longitude = result.data?.getDoubleExtra("longitude", 0.0) ?: 0.0
             }
         }
-    private val memoViewModel by lazy { ViewModelProvider(this)[MemoViewModel::class.java] }
+    private val linkViewModel by lazy { ViewModelProvider(this)[LinkViewModel::class.java] }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         arguments?.let {
@@ -69,7 +69,7 @@ class WriteMemoFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentWriteMemoBinding.inflate(inflater, container, false)
+        _binding = FragmentWriteLinkBinding.inflate(inflater, container, false)
         if (isEditMode) {
             binding.btnSave.text = "수정"
             binding.btnDelete.visibility = View.VISIBLE
@@ -79,19 +79,19 @@ class WriteMemoFragment : Fragment() {
 
         // 저장된 메모를 불러올 경우
         if (key != "") {
-            memoViewModel.getPostData(key)
-            memoViewModel.memoData.observe(viewLifecycleOwner) { memo ->
-                loadMemo(memo)
+            linkViewModel.getPostData(key)
+            linkViewModel.linkData.observe(viewLifecycleOwner) { link ->
+                loadLink(link)
             }
-            memoViewModel.getImageUrl(key)
-            memoViewModel.imageUrl.observe(viewLifecycleOwner) { url ->
+            linkViewModel.getImageUrl(key)
+            linkViewModel.imageUrl.observe(viewLifecycleOwner) { url ->
                 url?.let {
                     Glide.with(this).load(it).into(binding.ivImage)
                 }
             }
         }
 
-        memoViewModel.saveStatus.observe(viewLifecycleOwner) { isSuccess ->
+        linkViewModel.saveStatus.observe(viewLifecycleOwner) { isSuccess ->
             if (isSuccess) {
                 Toast.makeText(requireContext(), "메모 저장 성공", Toast.LENGTH_SHORT).show()
                 val intent = Intent(context, MainActivity::class.java).apply {
@@ -104,8 +104,8 @@ class WriteMemoFragment : Fragment() {
         }
 
         binding.btnSave.setOnClickListener {
-            val (memo, data: ByteArray?) = saveMemo()
-            memoViewModel.saveMemo(memo, data, isEditMode)
+            val (link, data: ByteArray?) = saveLink()
+            linkViewModel.saveLink(link, data, isEditMode)
         }
 
         binding.btnDelete.setOnClickListener {
@@ -128,14 +128,14 @@ class WriteMemoFragment : Fragment() {
         return binding.root
     }
 
-    private fun saveMemo(): Pair<Memo, ByteArray?> {
-        val memo = Memo(
+    private fun saveLink(): Pair<Link, ByteArray?> {
+        val link = Link(
             key, binding.etTitle.text.toString(),
             binding.etContent.text.toString(),
             binding.etLink.text.toString(),
             binding.tvMap.text.toString(), latitude, longitude,
             if (isEditMode) writeUid else FBAuth.getUid(),
-            if (isEditMode) time else FBAuth.getTime(), "memo",
+            if (isEditMode) time else FBAuth.getTime(), "link",
             if (isEditMode) shareCnt else 0
         )
 
@@ -149,11 +149,11 @@ class WriteMemoFragment : Fragment() {
         } else {
             null // 이미지가 없을 경우 null로 처리
         }
-        return Pair(memo, data)
+        return Pair(link, data)
     }
 
-    private fun loadMemo(memo: Memo?) {
-        memo?.let {
+    private fun loadLink(link: Link?) {
+        link?.let {
             binding.etTitle.setText(it.title)
             binding.etLink.setText(it.link)
             binding.etContent.setText(it.content)
@@ -170,7 +170,8 @@ class WriteMemoFragment : Fragment() {
     // 다이얼로그 생성
     private fun showDeleteDialog() {
         val dialog = CustomDialog("삭제 하시겠습니까?", onYesClicked = {
-            FBRef.memoCategory.child(key).removeValue()
+            if (category == "link") linkViewModel.deleteMemo(FBRef.linkCategory, key)
+            else if (category == "sharedLink") linkViewModel.deleteMemo(FBRef.sharedLinkCategory, key)
             requireActivity().finish()
         })
         // 다이얼로그 창 밖에 클릭 불가
@@ -181,7 +182,7 @@ class WriteMemoFragment : Fragment() {
     companion object {
         @JvmStatic
         fun newInstance(isEditMode: Boolean, key: String) =
-            WriteMemoFragment().apply {
+            WriteLinkFragment().apply {
                 arguments = Bundle().apply {
                     putBoolean("isEditMode", isEditMode)
                     putString("key", key)

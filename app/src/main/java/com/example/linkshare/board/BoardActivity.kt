@@ -5,22 +5,19 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.example.linkshare.comment.Comment
 import com.example.linkshare.comment.CommentRVAdapter
 import com.example.linkshare.comment.CommentViewModel
 import com.example.linkshare.databinding.ActivityBoardBinding
-import com.example.linkshare.memo.Memo
-import com.example.linkshare.memo.MemoViewModel
-import com.example.linkshare.memo.UpdateMemoActivity
+import com.example.linkshare.link.Link
+import com.example.linkshare.link.UpdateLinkActivity
 import com.example.linkshare.util.CustomDialog
 import com.example.linkshare.util.FBAuth
 import com.example.linkshare.util.FBRef
@@ -45,7 +42,7 @@ class BoardActivity : AppCompatActivity() {
                 binding.tvMap.text = result.data?.getStringExtra("title")
             }
         }
-    private val memoViewModel by lazy { ViewModelProvider(this)[MemoViewModel::class.java] }
+    private val boardViewModel by lazy { ViewModelProvider(this)[BoardViewModel::class.java] }
     private val commentViewModel by lazy { ViewModelProvider(this)[CommentViewModel::class.java] }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -60,17 +57,17 @@ class BoardActivity : AppCompatActivity() {
         binding.rvComment.adapter = commentRVAdapter
         binding.rvComment.layoutManager = LinearLayoutManager(this)
 
-        memoViewModel.getPostData(key)
-        memoViewModel.memoData.observe(this) { memo ->
-            updateBoardData(memo)
+        boardViewModel.getPostData(key)
+        boardViewModel.linkData.observe(this) { link ->
+            updateBoardData(link)
         }
-        memoViewModel.getImageUrl(key)
-        memoViewModel.imageUrl.observe(this) { url ->
+        boardViewModel.getImageUrl(key)
+        boardViewModel.imageUrl.observe(this) { url ->
             url?.let {
                 Glide.with(this).load(it).into(binding.ivImage)
             }
         }
-        memoViewModel.deleteStatus.observe(this) { isSuccess ->
+        boardViewModel.deleteStatus.observe(this) { isSuccess ->
             if (isSuccess) {
                 Toast.makeText(this, "삭제 성공", Toast.LENGTH_SHORT).show()
                 finish()
@@ -78,7 +75,7 @@ class BoardActivity : AppCompatActivity() {
                 Toast.makeText(this, "삭제 실패", Toast.LENGTH_SHORT).show()
             }
         }
-        memoViewModel.shareStatus.observe(this) { result ->
+        boardViewModel.shareStatus.observe(this) { result ->
             when (result) {
                 ShareResult.SUCCESS -> {
                     Toast.makeText(this, "공유 성공", Toast.LENGTH_SHORT).show()
@@ -91,7 +88,7 @@ class BoardActivity : AppCompatActivity() {
                 }
             }
         }
-        memoViewModel.shareCount.observe(this) { newShareCount ->
+        boardViewModel.shareCount.observe(this) { newShareCount ->
             binding.tvShareCnt.text = "공유 횟수 : $newShareCount"
         }
 
@@ -146,7 +143,7 @@ class BoardActivity : AppCompatActivity() {
     // 삭제 다이얼로그 생성
     private fun showDeleteDialog() {
         val dialog = CustomDialog("삭제 하시겠습니까?", onYesClicked = {
-            memoViewModel.deleteMemo(FBRef.memoCategory, key)
+            boardViewModel.deleteLink(FBRef.linkCategory, key)
         })
         // 다이얼로그 창 밖에 클릭 불가
         dialog.isCancelable = false
@@ -156,7 +153,7 @@ class BoardActivity : AppCompatActivity() {
     // 수정 다이얼로그 생성
     private fun showUpdateDialog() {
         val dialog = CustomDialog("수정 하시겠습니까?", onYesClicked = {
-            val intent = Intent(this, UpdateMemoActivity::class.java)
+            val intent = Intent(this, UpdateLinkActivity::class.java)
             intent.putExtra("key", key)   // key 값 전달
             startActivity(intent)
         })
@@ -168,8 +165,8 @@ class BoardActivity : AppCompatActivity() {
     // 공유 다이얼로그 생성
     private fun showShareDialog() {
         val dialog = CustomDialog("개인 메모로 공유하시겠습니까?", onYesClicked = {
-            val data = shareMemo()
-            memoViewModel.shareMemo(key, data)
+            val data = shareLink()
+            boardViewModel.shareLink(key, data)
         })
         // 다이얼로그 창 밖에 클릭 불가
         dialog.isCancelable = false
@@ -177,7 +174,7 @@ class BoardActivity : AppCompatActivity() {
     }
 
     // 메모를 내 개인메모 목록으로 가져가기
-    private fun shareMemo(): ByteArray? {
+    private fun shareLink(): ByteArray? {
         val imageView = binding.ivImage.drawable
 
         val data: ByteArray? = if (imageView is BitmapDrawable) {
@@ -192,8 +189,8 @@ class BoardActivity : AppCompatActivity() {
     }
 
     // 글의 데이터를 불러와 UI에 대입
-    private fun updateBoardData(memo: Memo?) {
-        memo?.let {
+    private fun updateBoardData(link: Link?) {
+        link?.let {
             binding.tvTitle.text = it.title
             binding.tvLink.text = it.link
             binding.tvTime.text = it.time
@@ -213,13 +210,13 @@ class BoardActivity : AppCompatActivity() {
     }
 
     // UI Visibility 조절
-    private fun adjustBoardViewVisibility(memoWriteUid: String) {
+    private fun adjustBoardViewVisibility(linkWriteUid: String) {
         val myUid = FBAuth.getUid()
-        val isMyMemo = myUid == memoWriteUid
+        val isMyLink = myUid == linkWriteUid
 
         // 글 쓴 사람이 자신일 경우 수정, 삭제 버튼 보이기
-        binding.ivDelete.visibility = if (isMyMemo) View.VISIBLE else View.GONE
-        binding.ivUpdate.visibility = if (isMyMemo) View.VISIBLE else View.GONE
-        binding.ivShare.visibility = if (isMyMemo) View.GONE else View.VISIBLE
+        binding.ivDelete.visibility = if (isMyLink) View.VISIBLE else View.GONE
+        binding.ivUpdate.visibility = if (isMyLink) View.VISIBLE else View.GONE
+        binding.ivShare.visibility = if (isMyLink) View.GONE else View.VISIBLE
     }
 }

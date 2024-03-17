@@ -3,13 +3,13 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main_nav"
-    app:startDestination="@id/memo_fragment">
+    app:startDestination="@id/link_fragment">
 
     <fragment
-        android:id="@+id/memo_fragment"
-        android:name="com.example.linkshare.view.MemoFragment"
+        android:id="@+id/link_fragment"
+        android:name="com.example.linkshare.view.LinkFragment"
         android:label="fragment_memo"
-        tools:layout="@layout/fragment_memo" />
+        tools:layout="@layout/fragment_link" />
     <fragment
         android:id="@+id/board_fragment"
         android:name="com.example.linkshare.view.BoardFragment"

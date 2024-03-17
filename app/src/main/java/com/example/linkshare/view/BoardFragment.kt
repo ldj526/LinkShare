@@ -8,17 +8,17 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.linkshare.board.BoardRVAdapter
+import com.example.linkshare.board.BoardViewModel
 import com.example.linkshare.databinding.FragmentBoardBinding
-import com.example.linkshare.memo.Memo
-import com.example.linkshare.memo.MemoViewModel
+import com.example.linkshare.link.Link
 
 class BoardFragment : Fragment() {
 
     private var _binding: FragmentBoardBinding? = null
     private val binding get() = _binding!!
-    private val memoList = mutableListOf<Memo>()
+    private val linkList = mutableListOf<Link>()
     private lateinit var boardRVAdapter: BoardRVAdapter
-    private val boardViewModel by lazy { ViewModelProvider(this)[MemoViewModel::class.java] }
+    private val boardViewModel by lazy { ViewModelProvider(this)[BoardViewModel::class.java] }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -26,7 +26,7 @@ class BoardFragment : Fragment() {
     ): View {
         _binding = FragmentBoardBinding.inflate(inflater, container, false)
 
-        boardRVAdapter = BoardRVAdapter(memoList)
+        boardRVAdapter = BoardRVAdapter(linkList)
         binding.rvBoard.adapter = boardRVAdapter
         binding.rvBoard.layoutManager = LinearLayoutManager(context)
 

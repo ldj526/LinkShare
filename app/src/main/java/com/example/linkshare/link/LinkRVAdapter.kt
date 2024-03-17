@@ -1,4 +1,4 @@
-package com.example.linkshare.memo
+package com.example.linkshare.link
 
 import android.content.Intent
 import android.view.LayoutInflater
@@ -9,15 +9,15 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.example.linkshare.R
 
-class MemoRVAdapter(var memoList: MutableList<Memo>) :
-    RecyclerView.Adapter<MemoRVAdapter.ViewHolder>() {
+class LinkRVAdapter(var linkList: MutableList<Link>) :
+    RecyclerView.Adapter<LinkRVAdapter.ViewHolder>() {
 
-    fun setMemoData(newMemoList: MutableList<Memo>) {
-        val diffCallback = MemoDiffCallback(memoList, newMemoList)
+    fun setLinkData(newLinkList: MutableList<Link>) {
+        val diffCallback = LinkDiffCallback(linkList, newLinkList)
         val diffResult = DiffUtil.calculateDiff(diffCallback)
 
-        memoList.clear()
-        memoList.addAll(newMemoList)
+        linkList.clear()
+        linkList.addAll(newLinkList)
         diffResult.dispatchUpdatesTo(this)
     }
 
@@ -27,35 +27,35 @@ class MemoRVAdapter(var memoList: MutableList<Memo>) :
         val link = itemView.findViewById<TextView>(R.id.tv_memo_link)
         val time = itemView.findViewById<TextView>(R.id.tv_memo_time)
 
-        fun bind(memo: Memo) {
-            title.text = memo.title
-            link.text = memo.link
-            time.text = memo.time
+        fun bind(link: Link) {
+            title.text = link.title
+            this.link.text = link.link
+            time.text = link.time
         }
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val memo = memoList[position]
+        val link = linkList[position]
         holder.itemView.setOnClickListener {
-            val intent = Intent(it.context, MemoActivity::class.java)
-            intent.putExtra("key", memo.key)   // key 값 전달
-            intent.putExtra("category", memo.category)  // category 값 전달
+            val intent = Intent(it.context, LinkActivity::class.java)
+            intent.putExtra("key", link.key)   // key 값 전달
+            intent.putExtra("category", link.category)  // category 값 전달
             it.context.startActivity(intent)
         }
-        holder.bind(memoList[position])
+        holder.bind(linkList[position])
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view =
-            LayoutInflater.from(parent.context).inflate(R.layout.memo_list_item, parent, false)
+            LayoutInflater.from(parent.context).inflate(R.layout.link_list_item, parent, false)
         return ViewHolder(view)
     }
 
-    override fun getItemCount(): Int = memoList.size
+    override fun getItemCount(): Int = linkList.size
 
-    class MemoDiffCallback(
-        private val oldList: List<Memo>,
-        private val newList: List<Memo>
+    class LinkDiffCallback(
+        private val oldList: List<Link>,
+        private val newList: List<Link>
     ) : DiffUtil.Callback() {
 
         override fun getOldListSize(): Int {

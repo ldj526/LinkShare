@@ -7,8 +7,8 @@ class FBRef {
     companion object {
         private val database = Firebase.database
 
-        val memoCategory = database.getReference("memoList")
-        val boardCategory = database.getReference("boardList")
+        val linkCategory = database.getReference("linkList")
+        val sharedLinkCategory = database.getReference("sharedLinkList")
         val commentCategory = database.getReference("commentList")
     }
 }
