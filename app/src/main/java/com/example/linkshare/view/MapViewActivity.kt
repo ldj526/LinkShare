@@ -85,7 +85,7 @@ class MapViewActivity : AppCompatActivity(), OnMapReadyCallback {
             }
         })
 
-        binding.autoCompleteTextView.setOnItemClickListener { parent, view, position, id ->
+        binding.autoCompleteTextView.setOnItemClickListener { parent, _, position, _ ->
             val selectedItem = parent.adapter.getItem(position) as LocalInfo
             // 좌표 값 가져오기
             val latLng = LatLng(selectedItem.mapy.toDouble() / 1E7, selectedItem.mapx.toDouble() / 1E7)
@@ -145,7 +145,7 @@ class MapViewActivity : AppCompatActivity(), OnMapReadyCallback {
             }
         }
 
-        naverMap.setOnMapLongClickListener { pointF, latLng ->
+        naverMap.setOnMapLongClickListener { _, latLng ->
             getMarker(latLng.latitude, latLng.longitude)
             getAddress(latLng.latitude, latLng.longitude)
         }

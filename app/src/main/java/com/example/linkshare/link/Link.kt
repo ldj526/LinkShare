@@ -1,6 +1,6 @@
-package com.example.linkshare.memo
+package com.example.linkshare.link
 
-data class Memo(
+data class Link(
     val key: String = "",
     val title: String = "",
     val content: String = "",

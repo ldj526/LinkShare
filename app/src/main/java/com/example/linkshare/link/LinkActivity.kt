@@ -1,4 +1,4 @@
-package com.example.linkshare.memo
+package com.example.linkshare.link
 
 import android.app.Activity
 import android.content.Intent
@@ -10,14 +10,14 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
 import com.example.linkshare.board.MapActivity
-import com.example.linkshare.databinding.ActivityMemoBinding
+import com.example.linkshare.databinding.ActivityLinkBinding
 import com.example.linkshare.util.CustomDialog
 import com.example.linkshare.util.FBAuth
 import com.example.linkshare.util.FBRef
 
-class MemoActivity : AppCompatActivity() {
+class LinkActivity : AppCompatActivity() {
 
-    private lateinit var binding: ActivityMemoBinding
+    private lateinit var binding: ActivityLinkBinding
     private lateinit var key: String
     private lateinit var writeUid: String
     private var latitude: Double? = 0.0
@@ -30,27 +30,27 @@ class MemoActivity : AppCompatActivity() {
                 binding.tvMap.text = result.data?.getStringExtra("title")
             }
         }
-    private val memoViewModel by lazy { ViewModelProvider(this)[MemoViewModel::class.java] }
+    private val linkViewModel by lazy { ViewModelProvider(this)[LinkViewModel::class.java] }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityMemoBinding.inflate(layoutInflater)
+        binding = ActivityLinkBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         key = intent.getStringExtra("key").toString()
         category = intent.getStringExtra("category").toString()
 
-        memoViewModel.getPostData(key)
-        memoViewModel.memoData.observe(this) { memo ->
-            updateMemoData(memo)
+        linkViewModel.getPostData(key)
+        linkViewModel.linkData.observe(this) { link ->
+            updateLinkData(link)
         }
-        memoViewModel.getImageUrl(key)
-        memoViewModel.imageUrl.observe(this) { url ->
+        linkViewModel.getImageUrl(key)
+        linkViewModel.imageUrl.observe(this) { url ->
             url?.let {
                 Glide.with(this).load(it).into(binding.ivImage)
             }
         }
-        memoViewModel.deleteStatus.observe(this) { isSuccess ->
+        linkViewModel.deleteStatus.observe(this) { isSuccess ->
             if (isSuccess) {
                 Toast.makeText(this, "삭제 성공", Toast.LENGTH_SHORT).show()
                 finish()
@@ -85,8 +85,8 @@ class MemoActivity : AppCompatActivity() {
     }
 
     // 글의 데이터를 불러와 UI에 대입
-    private fun updateMemoData(memo: Memo?) {
-        memo?.let {
+    private fun updateLinkData(link: Link?) {
+        link?.let {
             binding.tvTitle.text = it.title
             binding.tvLink.text = it.link
             binding.tvContent.text = it.content
@@ -104,9 +104,9 @@ class MemoActivity : AppCompatActivity() {
     }
 
     // UI Visibility 조절
-    private fun adjustMemoViewVisibility(memoWriteUid: String, shareUid: String?) {
+    private fun adjustMemoViewVisibility(linkWriteUid: String, shareUid: String?) {
         val myUid = FBAuth.getUid()
-        val isMyMemo = myUid == memoWriteUid
+        val isMyMemo = myUid == linkWriteUid
         val isSharedMemo = myUid == (shareUid ?: "")
 
         // 글 쓴 사람이 자신일 경우 수정, 삭제 버튼 보이기
@@ -117,8 +117,8 @@ class MemoActivity : AppCompatActivity() {
     // 삭제 다이얼로그 생성
     private fun showDeleteDialog() {
         val dialog = CustomDialog("삭제 하시겠습니까?", onYesClicked = {
-            if (category == "memo") memoViewModel.deleteMemo(FBRef.memoCategory, key)
-            else if (category == "board") memoViewModel.deleteMemo(FBRef.boardCategory, key)
+            if (category == "link") linkViewModel.deleteMemo(FBRef.linkCategory, key)
+            else if (category == "sharedLink") linkViewModel.deleteMemo(FBRef.sharedLinkCategory, key)
         })
         // 다이얼로그 창 밖에 클릭 불가
         dialog.isCancelable = false
@@ -128,7 +128,7 @@ class MemoActivity : AppCompatActivity() {
     // 수정 다이얼로그 생성
     private fun showUpdateDialog() {
         val dialog = CustomDialog("수정 하시겠습니까?", onYesClicked = {
-            val intent = Intent(this, UpdateMemoActivity::class.java)
+            val intent = Intent(this, UpdateLinkActivity::class.java)
             intent.putExtra("key", key)   // key 값 전달
             startActivity(intent)
         })

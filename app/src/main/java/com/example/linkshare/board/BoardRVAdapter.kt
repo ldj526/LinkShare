@@ -8,17 +8,17 @@ import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.example.linkshare.R
-import com.example.linkshare.memo.Memo
+import com.example.linkshare.link.Link
 
-class BoardRVAdapter(var memoList: MutableList<Memo>) :
+class BoardRVAdapter(var linkList: MutableList<Link>) :
     RecyclerView.Adapter<BoardRVAdapter.ViewHolder>() {
 
-    fun setBoardData(newMemoList: MutableList<Memo>) {
-        val diffCallback = BoardDiffCallback(memoList, newMemoList)
+    fun setBoardData(newLinkList: MutableList<Link>) {
+        val diffCallback = BoardDiffCallback(linkList, newLinkList)
         val diffResult = DiffUtil.calculateDiff(diffCallback)
 
-        memoList.clear()
-        memoList.addAll(newMemoList)
+        linkList.clear()
+        linkList.addAll(newLinkList)
         diffResult.dispatchUpdatesTo(this)
     }
 
@@ -27,10 +27,10 @@ class BoardRVAdapter(var memoList: MutableList<Memo>) :
         val link = itemView.findViewById<TextView>(R.id.tv_board_link)
         val time = itemView.findViewById<TextView>(R.id.tv_board_time)
 
-        fun bind(memo: Memo) {
-            title.text = memo.title
-            link.text = memo.link
-            time.text = memo.time
+        fun bind(link: Link) {
+            title.text = link.title
+            this.link.text = link.link
+            time.text = link.time
         }
     }
 
@@ -41,20 +41,20 @@ class BoardRVAdapter(var memoList: MutableList<Memo>) :
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val memo = memoList[position]
+        val memo = linkList[position]
         holder.itemView.setOnClickListener {
             val intent = Intent(it.context, BoardActivity::class.java)
             intent.putExtra("key", memo.key)   // key 값 전달
             it.context.startActivity(intent)
         }
-        holder.bind(memoList[position])
+        holder.bind(linkList[position])
     }
 
-    override fun getItemCount(): Int = memoList.size
+    override fun getItemCount(): Int = linkList.size
 
     class BoardDiffCallback(
-        private val oldList: List<Memo>,
-        private val newList: List<Memo>
+        private val oldList: List<Link>,
+        private val newList: List<Link>
     ) : DiffUtil.Callback() {
 
         override fun getOldListSize(): Int {
