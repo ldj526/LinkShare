@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     tools:context=".link.NewLinkActivity">
 
@@ -38,6 +39,26 @@
                 android:layout_height="60dp"
                 android:layout_margin="10dp"
                 android:hint="제목을 입력해 주세요." />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal" >
+
+                <TextView
+                    android:id="@+id/tv_category"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="10dp"
+                    android:text="카테고리 선택"
+                    android:textSize="18sp" />
+            <com.google.android.flexbox.FlexboxLayout
+                android:id="@+id/category_flexboxLayout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:flexWrap="wrap" />
+
+            </LinearLayout>
 
             <EditText
                 android:id="@+id/et_link"

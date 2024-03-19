@@ -10,18 +10,22 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
+import com.example.linkshare.R
+import com.example.linkshare.category.CategoryActivity
 import com.example.linkshare.databinding.FragmentWriteLinkBinding
 import com.example.linkshare.util.CustomDialog
 import com.example.linkshare.util.FBAuth
 import com.example.linkshare.util.FBRef
 import com.example.linkshare.view.MainActivity
 import com.example.linkshare.view.MapViewActivity
+import com.google.android.flexbox.FlexboxLayout
 import java.io.ByteArrayOutputStream
 
 class WriteLinkFragment : Fragment() {
@@ -35,8 +39,9 @@ class WriteLinkFragment : Fragment() {
     private lateinit var galleryLauncher: ActivityResultLauncher<String>
     private var latitude: Double? = 0.0
     private var longitude: Double? = 0.0
-    private var category = ""
+    private var firebaseRef = ""
     private var shareCnt: Int = 0
+    private var selectedCategories: List<String>? = null
     private val startForResult =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
@@ -47,6 +52,12 @@ class WriteLinkFragment : Fragment() {
                 longitude = result.data?.getDoubleExtra("longitude", 0.0) ?: 0.0
             }
         }
+    private val categoryResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            selectedCategories = result.data?.getStringArrayListExtra("selectedCategories")
+            updateCategoriesView(selectedCategories)
+        }
+    }
     private val linkViewModel by lazy { ViewModelProvider(this)[LinkViewModel::class.java] }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -125,18 +136,44 @@ class WriteLinkFragment : Fragment() {
             startForResult.launch(intent)
         }
 
+        binding.tvCategory.setOnClickListener {
+            val intent = Intent(activity, CategoryActivity::class.java).apply {
+                selectedCategories?.let {
+                    putStringArrayListExtra("currentSelectedCategories", ArrayList(it))
+                }
+            }
+            categoryResultLauncher.launch(intent)
+        }
+
         return binding.root
+    }
+
+    private fun updateCategoriesView(categories: List<String>?) {
+        binding.categoryFlexboxLayout.removeAllViews() // 기존에 추가된 뷰들 제거
+        categories?.forEach { category ->
+            val textView = TextView(context).apply {
+                text = category
+                layoutParams = FlexboxLayout.LayoutParams(
+                    FlexboxLayout.LayoutParams.WRAP_CONTENT,
+                    FlexboxLayout.LayoutParams.WRAP_CONTENT
+                ).apply {
+                    setMargins(5, 5, 5, 5)
+                }
+                setBackgroundResource(R.drawable.category_unselected_background)
+            }
+            binding.categoryFlexboxLayout.addView(textView)
+        }
     }
 
     private fun saveLink(): Pair<Link, ByteArray?> {
         val link = Link(
-            key, binding.etTitle.text.toString(),
-            binding.etContent.text.toString(),
-            binding.etLink.text.toString(),
-            binding.tvMap.text.toString(), latitude, longitude,
-            if (isEditMode) writeUid else FBAuth.getUid(),
-            if (isEditMode) time else FBAuth.getTime(), "link",
-            if (isEditMode) shareCnt else 0
+            key = key, title = binding.etTitle.text.toString(),
+            content = binding.etContent.text.toString(),
+            link = binding.etLink.text.toString(),
+            location = binding.tvMap.text.toString(), latitude = latitude, longitude = longitude,
+            uid = if (isEditMode) writeUid else FBAuth.getUid(),
+            time = if (isEditMode) time else FBAuth.getTime(), firebaseRef = "link",
+            shareCount = if (isEditMode) shareCnt else 0
         )
 
         val imageView = binding.ivImage.drawable
@@ -162,7 +199,7 @@ class WriteLinkFragment : Fragment() {
             longitude = it.longitude
             writeUid = it.uid
             time = it.time
-            category = it.category
+            firebaseRef = it.firebaseRef
             shareCnt = it.shareCount
         }
     }
@@ -170,8 +207,8 @@ class WriteLinkFragment : Fragment() {
     // 다이얼로그 생성
     private fun showDeleteDialog() {
         val dialog = CustomDialog("삭제 하시겠습니까?", onYesClicked = {
-            if (category == "link") linkViewModel.deleteMemo(FBRef.linkCategory, key)
-            else if (category == "sharedLink") linkViewModel.deleteMemo(FBRef.sharedLinkCategory, key)
+            if (firebaseRef == "link") linkViewModel.deleteMemo(FBRef.linkCategory, key)
+            else if (firebaseRef == "sharedLink") linkViewModel.deleteMemo(FBRef.sharedLinkCategory, key)
             requireActivity().finish()
         })
         // 다이얼로그 창 밖에 클릭 불가

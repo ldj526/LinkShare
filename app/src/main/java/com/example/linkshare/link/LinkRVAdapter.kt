@@ -39,7 +39,7 @@ class LinkRVAdapter(var linkList: MutableList<Link>) :
         holder.itemView.setOnClickListener {
             val intent = Intent(it.context, LinkActivity::class.java)
             intent.putExtra("key", link.key)   // key 값 전달
-            intent.putExtra("category", link.category)  // category 값 전달
+            intent.putExtra("firebaseRef", link.firebaseRef)  // firebaseRef 값 전달
             it.context.startActivity(intent)
         }
         holder.bind(linkList[position])
