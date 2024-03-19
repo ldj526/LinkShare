@@ -22,7 +22,7 @@ class LinkActivity : AppCompatActivity() {
     private lateinit var writeUid: String
     private var latitude: Double? = 0.0
     private var longitude: Double? = 0.0
-    private var category = ""
+    private var firebaseRef = ""
     private val startForResult =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
@@ -38,7 +38,7 @@ class LinkActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         key = intent.getStringExtra("key").toString()
-        category = intent.getStringExtra("category").toString()
+        firebaseRef = intent.getStringExtra("firebaseRef").toString()
 
         linkViewModel.getPostData(key)
         linkViewModel.linkData.observe(this) { link ->
@@ -98,7 +98,7 @@ class LinkActivity : AppCompatActivity() {
             longitude = it.longitude
             binding.tvTime.text = it.time
             writeUid = it.uid
-            category = it.category
+            firebaseRef = it.firebaseRef
             adjustMemoViewVisibility(writeUid, it.shareUid)
         }
     }
@@ -117,8 +117,8 @@ class LinkActivity : AppCompatActivity() {
     // 삭제 다이얼로그 생성
     private fun showDeleteDialog() {
         val dialog = CustomDialog("삭제 하시겠습니까?", onYesClicked = {
-            if (category == "link") linkViewModel.deleteMemo(FBRef.linkCategory, key)
-            else if (category == "sharedLink") linkViewModel.deleteMemo(FBRef.sharedLinkCategory, key)
+            if (firebaseRef == "link") linkViewModel.deleteMemo(FBRef.linkCategory, key)
+            else if (firebaseRef == "sharedLink") linkViewModel.deleteMemo(FBRef.sharedLinkCategory, key)
         })
         // 다이얼로그 창 밖에 클릭 불가
         dialog.isCancelable = false

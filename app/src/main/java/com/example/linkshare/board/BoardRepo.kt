@@ -135,9 +135,9 @@ class BoardRepo {
     }
 
     // 링크 삭제
-    suspend fun deleteLink(category: DatabaseReference, key: String): Boolean = withContext(Dispatchers.IO) {
+    suspend fun deleteLink(ref: DatabaseReference, key: String): Boolean = withContext(Dispatchers.IO) {
         try {
-            category.child(key).removeValue().await()
+            ref.child(key).removeValue().await()
             true
         } catch (e: Exception) {
             false

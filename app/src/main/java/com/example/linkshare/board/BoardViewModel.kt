@@ -66,9 +66,9 @@ class BoardViewModel: ViewModel() {
     }
 
     // 링크 삭제
-    fun deleteLink(category: DatabaseReference, key: String) {
+    fun deleteLink(ref: DatabaseReference, key: String) {
         viewModelScope.launch {
-            val result = boardRepo.deleteLink(category, key)
+            val result = boardRepo.deleteLink(ref, key)
             _deleteStatus.value = result
         }
     }

@@ -33,7 +33,7 @@ class BoardActivity : AppCompatActivity() {
     private lateinit var commentRVAdapter: CommentRVAdapter
     private var latitude: Double? = 0.0
     private var longitude: Double? = 0.0
-    private var category = ""
+    private var firebaseRef = ""
     private var shareCnt = 0
     private val startForResult =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -202,7 +202,7 @@ class BoardActivity : AppCompatActivity() {
             latitude = it.latitude
             longitude = it.longitude
             writeUid = it.uid
-            category = it.category
+            firebaseRef = it.firebaseRef
             shareCnt = it.shareCount
             binding.tvShareCnt.text = "공유횟수 : ${it.shareCount}"
             adjustBoardViewVisibility(writeUid)

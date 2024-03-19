@@ -76,9 +76,9 @@ class LinkViewModel : ViewModel() {
     }
 
     // 메모 삭제
-    fun deleteMemo(category: DatabaseReference, key: String) {
+    fun deleteMemo(ref: DatabaseReference, key: String) {
         viewModelScope.launch {
-            val result = linkRepo.deleteLink(category, key)
+            val result = linkRepo.deleteLink(ref, key)
             _deleteStatus.value = result
         }
     }
