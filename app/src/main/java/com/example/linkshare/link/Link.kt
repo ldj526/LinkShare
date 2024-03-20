@@ -2,7 +2,7 @@ package com.example.linkshare.link
 
 data class Link(
     val key: String = "",
-    val category: ArrayList<String>? = null,
+    val category: List<String>? = null,
     val title: String = "",
     val content: String = "",
     val link: String = "",

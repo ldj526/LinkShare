@@ -87,6 +87,25 @@
                 android:gravity="right"
                 android:text="time" />
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal" >
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="카테고리"
+                    android:layout_margin="20dp" />
+
+                <com.google.android.flexbox.FlexboxLayout
+                    android:id="@+id/category_flexboxLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    app:flexWrap="wrap" />
+            </LinearLayout>
+
             <TextView
                 android:id="@+id/tv_link"
                 android:text="링크"

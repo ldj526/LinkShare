@@ -6,12 +6,14 @@ import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
 import android.view.View
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
+import com.example.linkshare.R
 import com.example.linkshare.comment.Comment
 import com.example.linkshare.comment.CommentRVAdapter
 import com.example.linkshare.comment.CommentViewModel
@@ -22,6 +24,7 @@ import com.example.linkshare.util.CustomDialog
 import com.example.linkshare.util.FBAuth
 import com.example.linkshare.util.FBRef
 import com.example.linkshare.util.ShareResult
+import com.google.android.flexbox.FlexboxLayout
 import java.io.ByteArrayOutputStream
 
 class BoardActivity : AppCompatActivity() {
@@ -191,6 +194,20 @@ class BoardActivity : AppCompatActivity() {
     // 글의 데이터를 불러와 UI에 대입
     private fun updateBoardData(link: Link?) {
         link?.let {
+            it.category?.forEach { category ->
+                val textView = TextView(this).apply {
+                    text = category
+                    layoutParams = FlexboxLayout.LayoutParams(
+                        FlexboxLayout.LayoutParams.WRAP_CONTENT,
+                        FlexboxLayout.LayoutParams.WRAP_CONTENT
+                    ).apply {
+                        setMargins(5, 5, 5, 5)
+                    }
+                    // 현재 선택된 카테고리인지 확인하여 UI 업데이트
+                    setBackgroundResource(R.drawable.category_unselected_background)
+                }
+                binding.categoryFlexboxLayout.addView(textView)
+            }
             binding.tvTitle.text = it.title
             binding.tvLink.text = it.link
             binding.tvTime.text = it.time
