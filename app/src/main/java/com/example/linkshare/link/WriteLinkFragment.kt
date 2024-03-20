@@ -88,6 +88,8 @@ class WriteLinkFragment : Fragment() {
             binding.btnSave.text = "저장"
         }
 
+        updateCategoriesView(selectedCategories)
+
         // 저장된 메모를 불러올 경우
         if (key != "") {
             linkViewModel.getPostData(key)
@@ -167,7 +169,7 @@ class WriteLinkFragment : Fragment() {
 
     private fun saveLink(): Pair<Link, ByteArray?> {
         val link = Link(
-            key = key, title = binding.etTitle.text.toString(),
+            key = key, category = selectedCategories, title = binding.etTitle.text.toString(),
             content = binding.etContent.text.toString(),
             link = binding.etLink.text.toString(),
             location = binding.tvMap.text.toString(), latitude = latitude, longitude = longitude,
@@ -191,6 +193,21 @@ class WriteLinkFragment : Fragment() {
 
     private fun loadLink(link: Link?) {
         link?.let {
+            selectedCategories = it.category
+            it.category?.forEach { category ->
+                val textView = TextView(context).apply {
+                    text = category
+                    layoutParams = FlexboxLayout.LayoutParams(
+                        FlexboxLayout.LayoutParams.WRAP_CONTENT,
+                        FlexboxLayout.LayoutParams.WRAP_CONTENT
+                    ).apply {
+                        setMargins(5, 5, 5, 5)
+                    }
+                    // 현재 선택된 카테고리인지 확인하여 UI 업데이트
+                    setBackgroundResource(R.drawable.category_unselected_background)
+                }
+                binding.categoryFlexboxLayout.addView(textView)
+            }
             binding.etTitle.setText(it.title)
             binding.etLink.setText(it.link)
             binding.etContent.setText(it.content)
