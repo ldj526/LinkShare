@@ -19,34 +19,16 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private var backKeyPressedTime = 0L
-    private val categoryViewModel: CategoryViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val categoryResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            if (result.resultCode == Activity.RESULT_OK) {
-                val selectedCategory = result.data?.getStringExtra("category")
-                categoryViewModel.selectCategory(selectedCategory ?: "")
-            }
-        }
-
         // BottomNavigation 연결
         val bottomNavigationView = binding.bottomNavigationView
         val navController = findNavController(R.id.fragment_container_view)
         bottomNavigationView.setupWithNavController(navController)
-
-        binding.btnSetting.setOnClickListener {
-            val intent = Intent(this, SettingActivity::class.java)
-            startActivity(intent)
-        }
-
-        binding.btnCategory.setOnClickListener {
-            val intent = Intent(this, CategoryActivity::class.java)
-            categoryResultLauncher.launch(intent)
-        }
 
         // 뒤로가기 2번 클릭 시 앱 종료
         onBackPressedDispatcher.addCallback {

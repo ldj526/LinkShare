@@ -8,9 +8,10 @@ import android.os.Bundle
 import android.view.View
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.example.linkshare.R
@@ -38,15 +39,15 @@ class BoardActivity : AppCompatActivity() {
     private var longitude: Double? = 0.0
     private var firebaseRef = ""
     private var shareCnt = 0
-    private val startForResult =
+    private val linkDataResultLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
                 // 결과를 받아 TextView에 설정
                 binding.tvMap.text = result.data?.getStringExtra("title")
             }
         }
-    private val boardViewModel by lazy { ViewModelProvider(this)[BoardViewModel::class.java] }
-    private val commentViewModel by lazy { ViewModelProvider(this)[CommentViewModel::class.java] }
+    private val boardViewModel: BoardViewModel by viewModels()
+    private val commentViewModel: CommentViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -135,7 +136,7 @@ class BoardActivity : AppCompatActivity() {
                 putExtra("longitude", longitude)
                 putExtra("title", binding.tvMap.text)
             }
-            startForResult.launch(intent)
+            linkDataResultLauncher.launch(intent)
         }
 
         binding.ivShare.setOnClickListener {

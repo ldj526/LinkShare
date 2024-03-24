@@ -6,7 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.linkshare.databinding.FragmentLinkBinding
 import com.example.linkshare.link.Link
@@ -21,13 +21,18 @@ class LinkFragment : Fragment() {
     private val binding get() = _binding!!
     private val linkList = mutableListOf<Link>()
     private lateinit var linkAdapter: LinkRVAdapter
-    private val linkViewModel by lazy { ViewModelProvider(this)[LinkViewModel::class.java] }
+    private val linkViewModel: LinkViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         _binding = FragmentLinkBinding.inflate(inflater, container, false)
 
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         linkAdapter = LinkRVAdapter(linkList)
         binding.rvMemo.adapter = linkAdapter
         binding.rvMemo.layoutManager = LinearLayoutManager(context)
@@ -42,8 +47,6 @@ class LinkFragment : Fragment() {
             val intent = Intent(context, NewLinkActivity::class.java)
             startActivity(intent)
         }
-
-        return binding.root
     }
 
     override fun onDestroyView() {
