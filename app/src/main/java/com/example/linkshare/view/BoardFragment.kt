@@ -5,10 +5,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.linkshare.board.BoardRVAdapter
 import com.example.linkshare.board.BoardViewModel
+import com.example.linkshare.category.CategoryViewModel
 import com.example.linkshare.databinding.FragmentBoardBinding
 import com.example.linkshare.link.Link
 
@@ -19,12 +21,20 @@ class BoardFragment : Fragment() {
     private val linkList = mutableListOf<Link>()
     private lateinit var boardRVAdapter: BoardRVAdapter
     private val boardViewModel by lazy { ViewModelProvider(this)[BoardViewModel::class.java] }
+    private val categoryViewModel: CategoryViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentBoardBinding.inflate(inflater, container, false)
+
+        categoryViewModel.getSelectedCategory().observe(viewLifecycleOwner) { category ->
+            boardViewModel.getEqualCategoryListData(category)
+            boardViewModel.categoryList.observe(viewLifecycleOwner) {links ->
+                boardRVAdapter.setBoardData(links)
+            }
+        }
 
         boardRVAdapter = BoardRVAdapter(linkList)
         binding.rvBoard.adapter = boardRVAdapter

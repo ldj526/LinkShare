@@ -19,6 +19,33 @@ import kotlinx.coroutines.withContext
 
 class BoardRepo {
 
+    // 카테고리가 일치하는 게시물 가져오기
+    fun getEqualCategoryListData(category: String): LiveData<MutableList<Link>> {
+        val liveData = MutableLiveData<MutableList<Link>>()
+
+        FBRef.linkCategory.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val linkList = mutableListOf<Link>()
+                // Get Post object and use the values to update the UI
+                for (dataModel in snapshot.children) {
+                    // Memo 형식의 데이터 받기
+                    val item = dataModel.getValue(Link::class.java)
+                    item?.let {
+                        if (!it.category.isNullOrEmpty() && it.category.contains(category)) {
+                            linkList.add(it)
+                        }
+                    }
+                }
+                linkList.sortByDescending { it.time }
+                liveData.value = linkList
+            }
+            override fun onCancelled(error: DatabaseError) {
+
+            }
+        })
+        return liveData
+    }
+
     // 자신의 id값과 일치하는 게시물 가져오기
     fun getEqualUidListData(uid: String): LiveData<MutableList<Link>> {
         val liveData = MutableLiveData<MutableList<Link>>()
