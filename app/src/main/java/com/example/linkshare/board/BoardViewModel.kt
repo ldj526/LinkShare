@@ -33,10 +33,19 @@ class BoardViewModel: ViewModel() {
     val userWrittenData: LiveData<MutableList<Link>>
     val allUserWrittenData: LiveData<MutableList<Link>>
 
+    private val _categoryList = MutableLiveData<MutableList<Link>>()
+    val categoryList: LiveData<MutableList<Link>> = _categoryList
+
     init {
         val uid = FBAuth.getUid()
         userWrittenData = boardRepo.getEqualUidListData(uid)
         allUserWrittenData = boardRepo.getAllLinkListData()
+    }
+
+    fun getEqualCategoryListData(category: String) {
+        boardRepo.getEqualCategoryListData(category).observeForever { categoryList ->
+            _categoryList.value = categoryList
+        }
     }
 
     // 메모 공유하기

@@ -18,7 +18,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
 import com.example.linkshare.R
-import com.example.linkshare.category.CategoryActivity
+import com.example.linkshare.category.CategorySelectActivity
 import com.example.linkshare.databinding.FragmentWriteLinkBinding
 import com.example.linkshare.util.CustomDialog
 import com.example.linkshare.util.FBAuth
@@ -139,7 +139,7 @@ class WriteLinkFragment : Fragment() {
         }
 
         binding.tvCategory.setOnClickListener {
-            val intent = Intent(activity, CategoryActivity::class.java).apply {
+            val intent = Intent(activity, CategorySelectActivity::class.java).apply {
                 selectedCategories?.let {
                     putStringArrayListExtra("currentSelectedCategories", ArrayList(it))
                 }
