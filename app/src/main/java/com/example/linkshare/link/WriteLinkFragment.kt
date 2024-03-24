@@ -6,7 +6,6 @@ import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,7 +14,7 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.viewModels
 import com.bumptech.glide.Glide
 import com.example.linkshare.R
 import com.example.linkshare.category.CategorySelectActivity
@@ -33,38 +32,36 @@ class WriteLinkFragment : Fragment() {
     private var _binding: FragmentWriteLinkBinding? = null
     private val binding get() = _binding!!
     private var isEditMode: Boolean = false
-    private lateinit var key: String
-    private lateinit var writeUid: String
-    private lateinit var time: String
-    private lateinit var galleryLauncher: ActivityResultLauncher<String>
     private var latitude: Double? = 0.0
     private var longitude: Double? = 0.0
     private var firebaseRef = ""
     private var shareCnt: Int = 0
     private var selectedCategories: List<String>? = null
-    private val startForResult =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            if (result.resultCode == Activity.RESULT_OK) {
-                // 결과를 받아 TextView에 설정
-                binding.tvMap.text = result.data?.getStringExtra("title")
-                // 결과를 받아 변수에 설정
-                latitude = result.data?.getDoubleExtra("latitude", 0.0) ?: 0.0
-                longitude = result.data?.getDoubleExtra("longitude", 0.0) ?: 0.0
-            }
+    private lateinit var key: String
+    private lateinit var writeUid: String
+    private lateinit var time: String
+    private lateinit var galleryLauncher: ActivityResultLauncher<String>
+    private val linkDataResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            // 결과를 받아 TextView에 설정
+            binding.tvMap.text = result.data?.getStringExtra("title")
+            // 결과를 받아 변수에 설정
+            latitude = result.data?.getDoubleExtra("latitude", 0.0) ?: 0.0
+            longitude = result.data?.getDoubleExtra("longitude", 0.0) ?: 0.0
         }
-    private val categoryResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+    }
+    private val selectedCategoryResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
             selectedCategories = result.data?.getStringArrayListExtra("selectedCategories")
             updateCategoriesView(selectedCategories)
         }
     }
-    private val linkViewModel by lazy { ViewModelProvider(this)[LinkViewModel::class.java] }
+    private val linkViewModel: LinkViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         arguments?.let {
             isEditMode = it.getBoolean("isEditMode", false)
             key = it.getString("key", "")
-            Log.d("WriteMemoFragment", "key: $key")
         }
 
         galleryLauncher =
@@ -81,6 +78,13 @@ class WriteLinkFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentWriteLinkBinding.inflate(inflater, container, false)
+
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
         if (isEditMode) {
             binding.btnSave.text = "수정"
             binding.btnDelete.visibility = View.VISIBLE
@@ -135,7 +139,7 @@ class WriteLinkFragment : Fragment() {
                 putExtra("longitude", longitude)
                 putExtra("title", binding.tvMap.text)
             }
-            startForResult.launch(intent)
+            linkDataResultLauncher.launch(intent)
         }
 
         binding.tvCategory.setOnClickListener {
@@ -144,10 +148,8 @@ class WriteLinkFragment : Fragment() {
                     putStringArrayListExtra("currentSelectedCategories", ArrayList(it))
                 }
             }
-            categoryResultLauncher.launch(intent)
+            selectedCategoryResultLauncher.launch(intent)
         }
-
-        return binding.root
     }
 
     private fun updateCategoriesView(categories: List<String>?) {

@@ -8,21 +8,19 @@
     <fragment
         android:id="@+id/link_fragment"
         android:name="com.example.linkshare.view.LinkFragment"
-        android:label="fragment_memo"
+        android:label="fragment_link"
         tools:layout="@layout/fragment_link" >
-
-        <action
-            android:id="@+id/action_linkFragment_to_boardFragment"
-            app:destination="@+id/board_fragment" />
     </fragment>
     <fragment
         android:id="@+id/board_fragment"
         android:name="com.example.linkshare.view.BoardFragment"
         android:label="fragment_board"
         tools:layout="@layout/fragment_board" >
-
-        <action
-            android:id="@+id/action_boardFragment_to_linkFragment"
-            app:destination="@+id/link_fragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/setting_fragment"
+        android:name="com.example.linkshare.view.SettingFragment"
+        android:label="fragment_setting"
+        tools:layout="@layout/fragment_setting" >
     </fragment>
 </navigation>

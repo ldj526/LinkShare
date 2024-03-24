@@ -7,8 +7,8 @@ import android.view.View
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
 import com.example.linkshare.R
 import com.example.linkshare.board.MapActivity
@@ -26,14 +26,13 @@ class LinkActivity : AppCompatActivity() {
     private var latitude: Double? = 0.0
     private var longitude: Double? = 0.0
     private var firebaseRef = ""
-    private val startForResult =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            if (result.resultCode == Activity.RESULT_OK) {
-                // 결과를 받아 TextView에 설정
-                binding.tvMap.text = result.data?.getStringExtra("title")
-            }
+    private val linkDataResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            // 결과를 받아 TextView에 설정
+            binding.tvMap.text = result.data?.getStringExtra("title")
         }
-    private val linkViewModel by lazy { ViewModelProvider(this)[LinkViewModel::class.java] }
+    }
+    private val linkViewModel: LinkViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -83,7 +82,7 @@ class LinkActivity : AppCompatActivity() {
                 putExtra("longitude", longitude)
                 putExtra("title", binding.tvMap.text)
             }
-            startForResult.launch(intent)
+            linkDataResultLauncher.launch(intent)
         }
     }
 
