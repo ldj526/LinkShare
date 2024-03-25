@@ -5,7 +5,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.linkshare.link.Link
-import com.example.linkshare.util.FBAuth
 import com.example.linkshare.util.ShareResult
 import com.google.firebase.database.DatabaseReference
 import kotlinx.coroutines.launch
@@ -29,26 +28,12 @@ class BoardViewModel: ViewModel() {
     private val _deleteStatus = MutableLiveData<Boolean>()
     val deleteStatus: LiveData<Boolean> = _deleteStatus
 
-    // Repository에서 반환된 LiveData를 직접 사용
-    val userWrittenData: LiveData<MutableList<Link>>
-    val allUserWrittenData: LiveData<MutableList<Link>>
-
-    private val _categoryList = MutableLiveData<MutableList<Link>>()
-    val categoryList: LiveData<MutableList<Link>> = _categoryList
-
-    init {
-        val uid = FBAuth.getUid()
-        userWrittenData = boardRepo.getEqualUidListData(uid)
-        allUserWrittenData = boardRepo.getAllLinkListData()
+    // 카테고리에 맞는 LinkList 가져오기
+    fun getEqualCategoryLinkList(category: String, sortOrder: Int): LiveData<MutableList<Link>> {
+        return boardRepo.getEqualCategoryLinkList(category, sortOrder)
     }
 
-    fun getEqualCategoryListData(category: String) {
-        boardRepo.getEqualCategoryListData(category).observeForever { categoryList ->
-            _categoryList.value = categoryList
-        }
-    }
-
-    // 메모 공유하기
+    // 링크 공유하기
     fun shareLink(key: String, imageData: ByteArray?) {
         viewModelScope.launch {
             val (result, newShareCount) = boardRepo.shareLink(key, imageData)

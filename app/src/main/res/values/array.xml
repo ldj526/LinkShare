@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="category">
+        <item>전체보기</item>
         <item>카테고리1</item>
         <item>카테고리2</item>
         <item>카테고리3333</item>
@@ -9,5 +10,9 @@
         <item>카테고리66666</item>
         <item>카테고리77777777777</item>
         <item>카테고리8</item>
+    </string-array>
+    <string-array name="sort">
+        <item>최신순</item>
+        <item>공유순</item>
     </string-array>
 </resources>

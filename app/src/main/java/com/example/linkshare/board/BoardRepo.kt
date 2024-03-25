@@ -20,7 +20,7 @@ import kotlinx.coroutines.withContext
 class BoardRepo {
 
     // 카테고리가 일치하는 게시물 가져오기
-    fun getEqualCategoryListData(category: String): LiveData<MutableList<Link>> {
+    fun getEqualCategoryLinkList(category: String, sortOrder: Int): LiveData<MutableList<Link>> {
         val liveData = MutableLiveData<MutableList<Link>>()
 
         FBRef.linkCategory.addValueEventListener(object : ValueEventListener {
@@ -31,13 +31,13 @@ class BoardRepo {
                     // Memo 형식의 데이터 받기
                     val item = dataModel.getValue(Link::class.java)
                     item?.let {
-                        if (!it.category.isNullOrEmpty() && it.category.contains(category)) {
+                        if (category == "전체보기" || (!it.category.isNullOrEmpty() && it.category.contains(category))) {
                             linkList.add(it)
                         }
                     }
                 }
-                linkList.sortByDescending { it.time }
-                liveData.value = linkList
+                val sortedLinkList = sortLinkList(linkList, sortOrder)
+                liveData.value = sortedLinkList
             }
             override fun onCancelled(error: DatabaseError) {
 
@@ -46,57 +46,13 @@ class BoardRepo {
         return liveData
     }
 
-    // 자신의 id값과 일치하는 게시물 가져오기
-    fun getEqualUidListData(uid: String): LiveData<MutableList<Link>> {
-        val liveData = MutableLiveData<MutableList<Link>>()
-
-        FBRef.linkCategory.addValueEventListener(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                val linkList = mutableListOf<Link>()
-                // Get Post object and use the values to update the UI
-                for (dataModel in snapshot.children) {
-                    // Memo 형식의 데이터 받기
-                    val item = dataModel.getValue(Link::class.java)
-                    item?.let {
-                        if (it.uid == uid) {
-                            linkList.add(it)
-                        }
-                    }
-                }
-                linkList.sortByDescending { it.time }
-                liveData.value = linkList
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-
-            }
-
-        })
-        return liveData
-    }
-
-    // Firebase database로부터 모든 사용자의 링크 목록 가져오기
-    fun getAllLinkListData(): LiveData<MutableList<Link>> {
-        val liveData = MutableLiveData<MutableList<Link>>()
-
-        FBRef.linkCategory.addValueEventListener(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                val linkList = mutableListOf<Link>()
-                // Get Post object and use the values to update the UI
-                for (dataModel in snapshot.children) {
-                    // Memo 형식의 데이터 받기
-                    val item = dataModel.getValue(Link::class.java)
-                    item?.let { linkList.add(it) }
-                }
-                linkList.sortByDescending { it.time }
-                liveData.value = linkList
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-
-            }
-        })
-        return liveData
+    // 데이터를 정렬하는 함수
+    private fun sortLinkList(links: MutableList<Link>, sortOrder: Int): MutableList<Link> {
+        return when (sortOrder) {
+            0 -> links.sortedByDescending { it.time }
+            1 -> links.sortedByDescending { it.shareCount }
+            else -> links.sortedByDescending { it.time }
+        }.toMutableList()
     }
 
     // Firebase에서 데이터를 key값 기반으로 받아오는 기능
