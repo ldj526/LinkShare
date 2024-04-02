@@ -28,6 +28,11 @@ class BoardViewModel: ViewModel() {
     private val _deleteStatus = MutableLiveData<Boolean>()
     val deleteStatus: LiveData<Boolean> = _deleteStatus
 
+    // 검색된 링크 가져오기
+    fun getSearchedLinks(searchText: String, searchOption: String): LiveData<MutableList<Link>> {
+        return boardRepo.searchLinks(searchText, searchOption)
+    }
+
     // 카테고리에 맞는 LinkList 가져오기
     fun getEqualCategoryLinkList(category: String, sortOrder: Int): LiveData<MutableList<Link>> {
         return boardRepo.getEqualCategoryLinkList(category, sortOrder)

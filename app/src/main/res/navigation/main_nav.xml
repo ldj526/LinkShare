@@ -18,6 +18,11 @@
         tools:layout="@layout/fragment_board" >
     </fragment>
     <fragment
+        android:id="@+id/search_fragment"
+        android:name="com.example.linkshare.view.SearchFragment"
+        android:label="fragment_search"
+        tools:layout="@layout/fragment_search" />
+    <fragment
         android:id="@+id/setting_fragment"
         android:name="com.example.linkshare.view.SettingFragment"
         android:label="fragment_setting"

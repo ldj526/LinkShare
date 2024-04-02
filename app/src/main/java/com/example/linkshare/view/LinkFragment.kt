@@ -41,6 +41,7 @@ class LinkFragment : Fragment() {
 
         linkViewModel.getUserWrittenAndSharedData(uid).observe(viewLifecycleOwner) { memos ->
             linkAdapter.setLinkData(memos)
+            binding.rvMemo.scrollToPosition(0)
         }
 
         binding.fabNewMemo.setOnClickListener {

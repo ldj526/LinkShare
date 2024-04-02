@@ -90,6 +90,7 @@ class BoardFragment : Fragment() {
         boardViewModel.getEqualCategoryLinkList(category, checkedItem)
             .observe(viewLifecycleOwner) { links ->
                 boardRVAdapter.setBoardData(links)
+                binding.rvBoard.scrollToPosition(0)
             }
     }
 

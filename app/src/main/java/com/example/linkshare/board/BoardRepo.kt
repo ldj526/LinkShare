@@ -19,6 +19,37 @@ import kotlinx.coroutines.withContext
 
 class BoardRepo {
 
+    // 링크 검색하기
+    fun searchLinks(searchText: String, searchOption: String): LiveData<MutableList<Link>> {
+        val liveData = MutableLiveData<MutableList<Link>>()
+
+        FBRef.linkCategory.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val linkList = mutableListOf<Link>()
+                // Get Post object and use the values to update the UI
+                for (dataModel in snapshot.children) {
+                    // Memo 형식의 데이터 받기
+                    val item = dataModel.getValue(Link::class.java)
+                    item?.let {
+                        val containedLink = when (searchOption) {
+                            "제목" -> it.title.contains(searchText, true)
+                            "내용" -> it.content.contains(searchText, true)
+                            "링크" -> it.link.contains(searchText, true)
+                            else -> false
+                        }
+                        if (containedLink) linkList.add(it)
+                    }
+                }
+                linkList.sortByDescending { it.time }
+                liveData.value = linkList
+            }
+            override fun onCancelled(error: DatabaseError) {
+
+            }
+        })
+        return liveData
+    }
+
     // 카테고리가 일치하는 게시물 가져오기
     fun getEqualCategoryLinkList(category: String, sortOrder: Int): LiveData<MutableList<Link>> {
         val liveData = MutableLiveData<MutableList<Link>>()
@@ -50,7 +81,7 @@ class BoardRepo {
     private fun sortLinkList(links: MutableList<Link>, sortOrder: Int): MutableList<Link> {
         return when (sortOrder) {
             0 -> links.sortedByDescending { it.time }
-            1 -> links.sortedByDescending { it.shareCount }
+            1 -> links.sortedWith(compareByDescending<Link> { it.shareCount }.thenByDescending { it.time })
             else -> links.sortedByDescending { it.time }
         }.toMutableList()
     }
