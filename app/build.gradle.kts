@@ -71,6 +71,8 @@ dependencies {
     implementation("com.google.firebase:firebase-database-ktx")
     // Add firebase storage
     implementation("com.google.firebase:firebase-storage-ktx")
+    // Add firebase firestore
+    implementation("com.google.firebase:firebase-firestore")
 
     // Add the dependency for the Firebase Authentication library
     implementation("com.google.firebase:firebase-auth:22.3.0")

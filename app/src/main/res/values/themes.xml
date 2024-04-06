@@ -6,10 +6,12 @@
 
     <style name="Theme.LinkShare" parent="Base.Theme.LinkShare" />
     
-    <style name="TextInputLayoutStyle" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+    <style name="TextInputLayoutStyle" parent="Widget.MaterialComponents.TextInputLayout.FilledBox">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="errorEnabled">true</item>
+        <item name="errorIconDrawable">@android:color/transparent</item>
+        <item name="boxBackgroundColor">@android:color/transparent</item>
     </style>
 
     <style name="Theme.LinkShare.Splash" parent="Theme.SplashScreen">

@@ -1,5 +1,6 @@
 package com.example.linkshare.comment
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,6 +10,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.example.linkshare.R
 import com.example.linkshare.util.FBAuth
+import com.example.linkshare.util.FBUser
 
 class CommentRVAdapter(var commentList: MutableList<Comment>) :
     RecyclerView.Adapter<CommentRVAdapter.ViewHolder>() {
@@ -24,12 +26,20 @@ class CommentRVAdapter(var commentList: MutableList<Comment>) :
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val title = itemView.findViewById<TextView>(R.id.tv_comment_title)
+        val nickname = itemView.findViewById<TextView>(R.id.tv_user_nickname)
         val time = itemView.findViewById<TextView>(R.id.tv_comment_time)
         val delete = itemView.findViewById<ImageView>(R.id.iv_comment_delete)
 
         fun bind(comment: Comment) {
             title.text = comment.comment
             time.text = comment.time
+
+            FBUser.getUserNickname(comment.uid, onSuccess = { userNickname ->
+                nickname.text = userNickname ?: "알 수 없음"
+            }, onFailure = { exception ->
+                Log.e("CommentRVADatper", "닉네임 가져오기 실패", exception)
+                nickname.text = "알 수 없음"
+            })
         }
     }
 
