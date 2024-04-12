@@ -34,39 +34,9 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/et_email_layout"
-                style="@style/TextInputLayoutStyle"
-                android:layout_margin="10dp">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/et_email"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="email" />
-
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/et_pwd_layout"
-                style="@style/TextInputLayoutStyle"
-                android:layout_marginLeft="10dp"
-                android:layout_marginRight="10dp"
-                app:counterEnabled="true"
-                app:counterMaxLength="20">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/et_pwd"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="pwd"
-                    android:inputType="textPassword" />
-
-            </com.google.android.material.textfield.TextInputLayout>
-
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" >
+                android:layout_height="wrap_content">
 
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/et_nickname_layout"
@@ -83,19 +53,57 @@
 
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <Button
+                <android.widget.Button
                     android:id="@+id/btn_check_nickname"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_weight="3"
+                    android:background="@drawable/button_ripple"
+                    android:maxLines="1"
+                    android:autoSizeTextType="uniform"
+                    android:autoSizeMaxTextSize="16sp"
+                    android:autoSizeMinTextSize="12sp"
+                    android:autoSizeStepGranularity="1sp"
                     android:text="중복체크"
                     android:layout_marginEnd="10dp"/>
             </LinearLayout>
 
-            <Button
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/et_email_layout"
+                style="@style/TextInputLayoutStyle"
+                android:layout_margin="10dp">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/et_email"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="email" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/et_pwd_layout"
+                style="@style/TextInputLayoutStyle"
+                android:layout_height="100dp"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp"
+                app:counterEnabled="true"
+                app:counterMaxLength="20">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/et_pwd"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="pwd"
+                    android:inputType="textPassword" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <android.widget.Button
                 android:id="@+id/btn_join"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:background="@drawable/button_ripple"
                 android:layout_margin="10dp"
                 android:enabled="false"
                 android:text="회원가입" />

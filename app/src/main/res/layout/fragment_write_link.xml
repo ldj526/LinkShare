@@ -38,6 +38,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="60dp"
                 android:layout_margin="10dp"
+                android:inputType="text"
                 android:hint="제목을 입력해 주세요." />
 
             <LinearLayout
@@ -71,9 +72,10 @@
             <EditText
                 android:id="@+id/et_content"
                 android:layout_width="match_parent"
-                android:layout_height="60dp"
+                android:layout_height="wrap_content"
                 android:layout_margin="10dp"
-                android:hint="내용을 입력해 주세요." />
+                android:hint="내용을 입력해 주세요."
+                android:inputType="textMultiLine" />
 
             <ImageView
                 android:id="@+id/iv_image"
@@ -94,18 +96,20 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
 
-                <Button
+                <android.widget.Button
                     android:id="@+id/btn_save"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:background="@drawable/button_ripple"
                     android:layout_margin="20dp"
                     android:layout_weight="1"
                     android:text="저장" />
 
-                <Button
+                <android.widget.Button
                     android:id="@+id/btn_delete"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:background="@drawable/button_ripple"
                     android:layout_margin="20dp"
                     android:layout_weight="1"
                     android:visibility="gone"

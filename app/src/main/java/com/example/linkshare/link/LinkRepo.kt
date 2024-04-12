@@ -107,17 +107,12 @@ class LinkRepo {
         val linkRef = FBRef.linkCategory.child(key)
 
         try {
-            // 이미지가 있는 경우
-            imageData?.let {
-                storageRef.putBytes(it).await()
-                val downloadUrl = storageRef.downloadUrl.await().toString()
-                val updateLink = link.copy(key = key, imageUrl = downloadUrl)
-                linkRef.setValue(updateLink).await()
-            } ?: run {
-                // 이미지가 없는 경우
-                val updateLink = link.copy(key = key)
-                linkRef.setValue(updateLink).await()
+            val updateLink = link.copy(key = key)
+            val downloadUrl = imageData?.let {
+                storageRef.putBytes(it).await().storage.downloadUrl.await().toString()
             }
+            val finalLink = updateLink.copy(imageUrl = downloadUrl ?: link.imageUrl)
+            linkRef.setValue(finalLink).await()
             true
         } catch (e: Exception) {
             false

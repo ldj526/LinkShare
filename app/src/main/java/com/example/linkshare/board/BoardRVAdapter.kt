@@ -1,12 +1,20 @@
 package com.example.linkshare.board
 
 import android.content.Intent
+import android.graphics.drawable.Drawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
+import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.DataSource
+import com.bumptech.glide.load.engine.GlideException
+import com.bumptech.glide.request.RequestListener
+import com.bumptech.glide.request.target.Target
 import com.example.linkshare.R
 import com.example.linkshare.link.Link
 
@@ -26,11 +34,44 @@ class BoardRVAdapter(var linkList: MutableList<Link>) :
         val title = itemView.findViewById<TextView>(R.id.tv_board_title)
         val link = itemView.findViewById<TextView>(R.id.tv_board_link)
         val time = itemView.findViewById<TextView>(R.id.tv_board_time)
+        val image = itemView.findViewById<ImageView>(R.id.iv_board_image)
+        val progressBar = itemView.findViewById<ProgressBar>(R.id.image_board_progressBar)
 
         fun bind(link: Link) {
             title.text = link.title
             this.link.text = link.link
             time.text = link.time
+
+            progressBar.visibility = View.VISIBLE
+
+            Glide.with(itemView.context)
+                .load(link.imageUrl)
+                .placeholder(R.drawable.loading_image)  // 로딩 중
+                .error(R.drawable.error_image)        // 로딩 실패
+                .fallback(R.drawable.no_image)     // 이미지가 null 일 경우
+                .listener(object : RequestListener<Drawable>{
+                    override fun onLoadFailed(
+                        e: GlideException?,
+                        model: Any?,
+                        target: Target<Drawable>,
+                        isFirstResource: Boolean
+                    ): Boolean {
+                        progressBar.visibility = View.GONE
+                        return false
+                    }
+
+                    override fun onResourceReady(
+                        resource: Drawable,
+                        model: Any,
+                        target: Target<Drawable>?,
+                        dataSource: DataSource,
+                        isFirstResource: Boolean
+                    ): Boolean {
+                        progressBar.visibility = View.GONE
+                        return false
+                    }
+                })
+                .into(image)
         }
     }
 
