@@ -36,11 +36,13 @@ class BoardRVAdapter(var linkList: MutableList<Link>) :
         val time = itemView.findViewById<TextView>(R.id.tv_board_time)
         val image = itemView.findViewById<ImageView>(R.id.iv_board_image)
         val progressBar = itemView.findViewById<ProgressBar>(R.id.image_board_progressBar)
+        val shareCount = itemView.findViewById<TextView>(R.id.tv_share_count)
 
         fun bind(link: Link) {
             title.text = link.title
             this.link.text = link.link
             time.text = link.time
+            shareCount.text = "공유 : ${link.shareCount}"
 
             progressBar.visibility = View.VISIBLE
 

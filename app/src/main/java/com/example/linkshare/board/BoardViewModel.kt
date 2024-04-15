@@ -3,10 +3,13 @@ package com.example.linkshare.board
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.liveData
+import androidx.lifecycle.switchMap
 import androidx.lifecycle.viewModelScope
 import com.example.linkshare.link.Link
 import com.example.linkshare.util.ShareResult
 import com.google.firebase.database.DatabaseReference
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class BoardViewModel: ViewModel() {
@@ -34,8 +37,12 @@ class BoardViewModel: ViewModel() {
     }
 
     // 카테고리에 맞는 LinkList 가져오기
-    fun getEqualCategoryLinkList(category: String, sortOrder: Int): LiveData<MutableList<Link>> {
-        return boardRepo.getEqualCategoryLinkList(category, sortOrder)
+    fun getEqualCategoryLinkList(category: String, sortOrder: Int, limit: Int): LiveData<MutableList<Link>> {
+        return boardRepo.getEqualCategoryLinkList(category, sortOrder).switchMap { links ->
+            liveData(viewModelScope.coroutineContext + Dispatchers.Default) {
+                emit(links.take(limit).toMutableList())
+            }
+        }
     }
 
     // 링크 공유하기

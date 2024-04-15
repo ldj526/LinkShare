@@ -143,9 +143,9 @@ class JoinActivity : AppCompatActivity() {
     // TextInputLayout 조건 맞을 때
     private fun showPositiveFeedback(inputLayout: TextInputLayout, message: String) {
         inputLayout.error = message
-        inputLayout.setErrorTextColor(ContextCompat.getColorStateList(this, R.color.color))
-        inputLayout.boxStrokeErrorColor = ContextCompat.getColorStateList(this, R.color.color)
-        inputLayout.hintTextColor = ContextCompat.getColorStateList(this, R.color.color)
+        inputLayout.setErrorTextColor(ContextCompat.getColorStateList(this, R.color.correct_input_layout))
+        inputLayout.boxStrokeErrorColor = ContextCompat.getColorStateList(this, R.color.correct_input_layout)
+        inputLayout.hintTextColor = ContextCompat.getColorStateList(this, R.color.correct_input_layout)
     }
 
     // TextInputLayout 조건 틀렸을 때

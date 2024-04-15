@@ -1,40 +1,26 @@
 package com.example.linkshare.view
 
-import android.app.Activity
-import android.app.AlertDialog
 import android.content.Intent
+import android.content.res.ColorStateList
+import android.graphics.Rect
+import android.graphics.Typeface
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.viewModels
-import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.viewpager2.widget.ViewPager2
 import com.example.linkshare.R
-import com.example.linkshare.board.BoardRVAdapter
-import com.example.linkshare.board.BoardViewModel
-import com.example.linkshare.category.CategoryActivity
-import com.example.linkshare.category.CategoryViewModel
+import com.example.linkshare.category.CategoryAdapter
+import com.example.linkshare.category.SeeMoreActivity
 import com.example.linkshare.databinding.FragmentBoardBinding
-import com.example.linkshare.link.Link
+import com.google.android.material.chip.Chip
 
 class BoardFragment : Fragment() {
 
     private var _binding: FragmentBoardBinding? = null
     private val binding get() = _binding!!
-    private val linkList = mutableListOf<Link>()
-    private var checkedItem = -1
-    private lateinit var boardRVAdapter: BoardRVAdapter
-    private val categoryResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            val selectedCategory = result.data?.getStringExtra("category")
-            categoryViewModel.selectCategory(selectedCategory ?: "전체보기")
-        }
-    }
-    private val boardViewModel: BoardViewModel by viewModels()
-    private val categoryViewModel: CategoryViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -48,50 +34,86 @@ class BoardFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        categoryViewModel.getSelectedCategory().observe(viewLifecycleOwner) { category ->
-            loadLinkList(category)
-        }
+        setupViewPager()
+        setupChips()
+    }
 
-        loadLinkList("전체보기")
+    // viewPager setting
+    private fun setupViewPager() {
+        val categories = resources.getStringArray(R.array.category)
+        val adapter = CategoryAdapter(this, categories)
+        binding.viewPager.adapter = adapter
 
-        boardRVAdapter = BoardRVAdapter(linkList)
-        binding.rvBoard.adapter = boardRVAdapter
-        binding.rvBoard.layoutManager = LinearLayoutManager(context)
+        binding.viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+            override fun onPageSelected(position: Int) {
+                updateChipSelection(position)
+            }
+        })
 
-        binding.btnCategory.setOnClickListener {
-            val intent = Intent(requireContext(), CategoryActivity::class.java)
-            categoryResultLauncher.launch(intent)
-        }
-
-        binding.tvSort.setOnClickListener {
-            showSortDialog()
+        binding.tvSeeMore.setOnClickListener {
+            seeMoreList()
         }
     }
 
-    // 정렬을 위한 Dialog
-    private fun showSortDialog() {
-        val sortOptions = resources.getStringArray(R.array.sort)
-        if (checkedItem == -1) checkedItem = 0
-        AlertDialog.Builder(requireActivity())
-            .setTitle("정렬 선택")
-            .setSingleChoiceItems(sortOptions, checkedItem) { dialog, which ->
-                binding.tvSort.text = sortOptions[which]
-                checkedItem = which
-                categoryViewModel.getSelectedCategory().value?.let { category ->
-                    loadLinkList(category)
-                }
-                dialog.dismiss()
+    // chipGroup setting
+    private fun setupChips() {
+        val categories = resources.getStringArray(R.array.category)
+
+        categories.forEachIndexed { idx, category ->
+            val chip = Chip(context).apply {
+                text = category
+                textSize = 12f
+                typeface = Typeface.DEFAULT_BOLD
+                isClickable = true
+                isCheckable = true
+                checkedIcon = null
+                id = View.generateViewId()
             }
-            .show()
+            binding.chipGroup.addView(chip)
+            chip.setOnClickListener {
+                binding.viewPager.currentItem = idx
+            }
+        }
     }
 
-    // LinkList 가져오기
-    private fun loadLinkList(category: String) {
-        boardViewModel.getEqualCategoryLinkList(category, checkedItem)
-            .observe(viewLifecycleOwner) { links ->
-                boardRVAdapter.setBoardData(links)
-                binding.rvBoard.scrollToPosition(0)
+    // chip 선택한 것과 선택하지 않은 것 구분
+    private fun updateChipSelection(selectedIndex: Int) {
+        for (i in 0 until binding.chipGroup.childCount) {
+            val chip = binding.chipGroup.getChildAt(i) as Chip
+            chip.isChecked = i == selectedIndex
+            if (chip.isChecked) {
+                chip.chipBackgroundColor = ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.selected_chip_background_color))
+                chip.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
+                scrollToChip(chip)
+            } else {
+                chip.chipBackgroundColor = ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.unselected_chip_background_color))
+                chip.setTextColor(ContextCompat.getColor(requireContext(), R.color.black))
             }
+        }
+    }
+
+    // chip에 맞게 scrollview 조작
+    private fun scrollToChip(chip: Chip?) {
+        chip?.let {
+            val scrollBounds = Rect()
+            binding.horizontalScrollview.getDrawingRect(scrollBounds)
+            val chipBounds = Rect()
+            chip.getDrawingRect(chipBounds)
+            binding.horizontalScrollview.offsetDescendantRectToMyCoords(chip, chipBounds)
+            if (!scrollBounds.contains(chipBounds)) {
+                binding.horizontalScrollview.smoothScrollTo(chipBounds.left - (scrollBounds.width() - chipBounds.width()) / 2, 0)
+            }
+        }
+    }
+
+    private fun seeMoreList() {
+        val currentPageIndex = binding.viewPager.currentItem
+        val currentCategory = resources.getStringArray(R.array.category)[currentPageIndex]
+
+        val intent = Intent(context, SeeMoreActivity::class.java).apply {
+            putExtra("category", currentCategory)
+        }
+        startActivity(intent)
     }
 
     override fun onDestroyView() {

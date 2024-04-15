@@ -2,6 +2,9 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="category_selected_color">#AC8686</color>
+    <color name="category_selected_color">#7E3030</color>
     <color name="category_unselected_color">@color/black</color>
+    <color name="selected_chip_background_color">@color/black</color>
+    <color name="unselected_chip_background_color">@color/white</color>
+    <color name="correct_input_layout">#008D23</color>
 </resources>
