@@ -75,6 +75,12 @@
             android:layout_margin="20dp"
             android:text="로그인하기" />
 
+        <com.google.android.gms.common.SignInButton
+            android:id="@+id/google_login"
+            android:layout_gravity="center"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
     </LinearLayout>
 
 </LinearLayout>

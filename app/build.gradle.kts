@@ -28,6 +28,7 @@ android {
 
         buildConfigField("String", "NAVER_CLIENT_ID", "\"${localProperties["naver_client_id"]}\"")
         buildConfigField("String", "NAVER_CLIENT_SECRET", "\"${localProperties["naver_client_secret"]}\"")
+        buildConfigField("String", "OUATH_WEB_CLIENT_ID", "\"${localProperties["ouath_web_client_id"]}\"")
 
         manifestPlaceholders += mapOf("NAVER_MAP_CLIENT_ID" to localProperties.getProperty("naver_map_client_id"))
     }
@@ -73,6 +74,10 @@ dependencies {
     implementation("com.google.firebase:firebase-storage-ktx")
     // Add firebase firestore
     implementation("com.google.firebase:firebase-firestore")
+    // Add firebase auth
+    implementation("com.google.firebase:firebase-auth-ktx")
+    // Add Google Play services library
+    implementation("com.google.android.gms:play-services-auth:21.1.1")
 
     // Add the dependency for the Firebase Authentication library
     implementation("com.google.firebase:firebase-auth:22.3.0")

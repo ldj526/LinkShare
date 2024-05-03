@@ -20,9 +20,6 @@
             android:name=".category.SeeMoreActivity"
             android:exported="false" />
         <activity
-            android:name=".board.LinkListActivity"
-            android:exported="false" />
-        <activity
             android:name=".category.CategoryActivity"
             android:exported="false" />
         <activity
@@ -38,12 +35,6 @@
             android:name=".board.BoardActivity"
             android:exported="false" />
         <activity
-            android:name=".board.UpdateBoardActivity"
-            android:exported="false" />
-        <activity
-            android:name=".board.NewBoardActivity"
-            android:exported="false" />
-        <activity
             android:name=".view.MapViewActivity"
             android:exported="false" />
 
@@ -56,9 +47,6 @@
             android:exported="false" />
         <activity
             android:name=".link.NewLinkActivity"
-            android:exported="false" />
-        <activity
-            android:name=".view.SettingActivity"
             android:exported="false" />
         <activity
             android:name=".auth.JoinActivity"
