@@ -29,8 +29,10 @@ android {
         buildConfigField("String", "NAVER_CLIENT_ID", "\"${localProperties["naver_client_id"]}\"")
         buildConfigField("String", "NAVER_CLIENT_SECRET", "\"${localProperties["naver_client_secret"]}\"")
         buildConfigField("String", "OUATH_WEB_CLIENT_ID", "\"${localProperties["ouath_web_client_id"]}\"")
+        buildConfigField("String", "KAKAO_NATIVE_KEY", "\"${localProperties["kakao_native_key"]}\"")
 
         manifestPlaceholders += mapOf("NAVER_MAP_CLIENT_ID" to localProperties.getProperty("naver_map_client_id"))
+        manifestPlaceholders += mapOf("KAKAO_NATIVE_KEY" to localProperties.getProperty("kakao_native_key"))
     }
 
     buildTypes {
@@ -78,6 +80,9 @@ dependencies {
     implementation("com.google.firebase:firebase-auth-ktx")
     // Add Google Play services library
     implementation("com.google.android.gms:play-services-auth:21.1.1")
+
+    // KaKao Login
+    implementation("com.kakao.sdk:v2-user:2.10.0")
 
     // Add the dependency for the Firebase Authentication library
     implementation("com.google.firebase:firebase-auth:22.3.0")
