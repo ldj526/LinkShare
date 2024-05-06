@@ -80,6 +80,8 @@ dependencies {
     implementation("com.google.firebase:firebase-auth-ktx")
     // Add Google Play services library
     implementation("com.google.android.gms:play-services-auth:21.1.1")
+    // Add firebase functions
+    implementation("com.google.firebase:firebase-functions")
 
     // KaKao Login
     implementation("com.kakao.sdk:v2-user:2.10.0")

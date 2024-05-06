@@ -14,3 +14,4 @@
 .cxx
 local.properties
 build/
+firebase/functions/admin.json

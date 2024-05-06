@@ -1,8 +1,10 @@
 package com.example.linkshare.auth
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.Gravity
 import android.widget.TextView
 import android.widget.Toast
@@ -17,10 +19,13 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.SignInButton
 import com.google.android.gms.common.api.ApiException
+import com.google.android.gms.tasks.RuntimeExecutionException
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.functions.FirebaseFunctions
+import com.google.firebase.functions.ktx.functions
 import com.google.firebase.ktx.Firebase
 import com.kakao.sdk.auth.model.OAuthToken
 import com.kakao.sdk.common.KakaoSdk
@@ -104,23 +109,6 @@ class IntroActivity : AppCompatActivity() {
     }
 
     private fun kakaoLogin() {
-        // 카카오계정으로 로그인 공통 callback 구성
-        // 카카오톡으로 로그인 할 수 없어 카카오계정으로 로그인할 경우 사용됨
-        val callback: (OAuthToken?, Throwable?) -> Unit = { token, error ->
-            if (error != null) {
-                Toast.makeText(this, "카카오계정으로 로그인 실패 : $error", Toast.LENGTH_SHORT).show()
-            } else if (token != null) {
-                // 최종적으로 카카오로그인 및 유저정보 가져온 결과
-                UserApiClient.instance.me { user, error ->
-                    Toast.makeText(this, "카카오계정으로 로그인 성공 \n\n " + "token: ${token.accessToken} \n"
-                            + "me: $user", Toast.LENGTH_SHORT).show()
-                    val intent = Intent(this, MainActivity::class.java)
-                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-                    startActivity(intent)
-                }
-            }
-        }
-
         // 카카오톡이 설치되어 있으면 카카오톡으로 로그인, 아니면 카카오계정으로 로그인
         if (UserApiClient.instance.isKakaoTalkLoginAvailable(this)) {
             UserApiClient.instance.loginWithKakaoTalk(this) { token, error ->
@@ -132,18 +120,72 @@ class IntroActivity : AppCompatActivity() {
                     if (error is ClientError && error.reason == ClientErrorCause.Cancelled) {
                         return@loginWithKakaoTalk
                     }
-
-                    // 카카오톡에 연결된 카카오계정이 없는 경우, 카카오계정으로 로그인 시도
-                    UserApiClient.instance.loginWithKakaoAccount(this, callback = callback)
+                    loginWithKaKaoAccount(this)
                 } else if (token != null) {
-                    Toast.makeText(this, "카카오톡으로 로그인 성공 ${token.accessToken}", Toast.LENGTH_SHORT).show()
-                    val intent = Intent(this, MainActivity::class.java)
-                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-                    startActivity(intent)
+                    getCustomToken(token.accessToken)
                 }
             }
         } else {
-            UserApiClient.instance.loginWithKakaoAccount(this, callback = callback)
+            loginWithKaKaoAccount(this)
+        }
+    }
+
+    // 카카오 계정으로 로그인
+    private fun loginWithKaKaoAccount(context: Context) {
+        UserApiClient.instance.loginWithKakaoAccount(context) { token: OAuthToken?, error: Throwable? ->
+            if (token != null) {
+                getCustomToken(token.accessToken)
+            }
+        }
+    }
+
+    private fun getCustomToken(accessToken: String) {
+        val functions: FirebaseFunctions = Firebase.functions("asia-northeast3")
+
+        val data = hashMapOf(
+            "token" to accessToken
+        )
+        Log.d("KakaoCheck", "functions: $functions, token: $accessToken, data: $data")
+
+        functions.getHttpsCallable("kakaoCustomAuth").call(data).addOnCompleteListener { task ->
+                try {
+                    // 호출 성공
+                    Log.d("KakaoCheck", "호출 성공했을 때의 functions: $functions, token: $accessToken, data: $data")
+                    Log.d("KakaoCheck", "task.isSuccessful: ${task.isSuccessful}")
+                    Log.d("KakaoCheck", "task: $task task.result: ${task.result}, task.result?.data: ${task.result?.data}")
+                    val result = task.result?.data as HashMap<*, *>
+                    Log.d("KakaoCheck", "result: $result")
+                    var mKey: String? = null
+                    Log.d("KakaoCheck", "mKey: $mKey")
+                    for (key in result.keys) {
+                        mKey = key.toString()
+                        Log.d("for문 내의 KakaoCheck", "mKey: $mKey")
+                    }
+                    val customToken = result[mKey!!].toString()
+                    Log.d("KakaoCheck", "customToken: $customToken")
+
+                    // 호출 성공해서 반환받은 커스텀 토큰으로 Firebase Authentication 인증받기
+                    firebaseAuthWithKakao(customToken)
+                } catch (e: RuntimeExecutionException) {
+                    // 호출 실패
+                    Toast.makeText(this, "토큰 호출 실패: ${task.exception?.message}", Toast.LENGTH_LONG).show()
+                    Log.d("KakaoCheck", "task.exception?.message: ${task.exception?.message}")
+                }
+            }
+    }
+
+    private fun firebaseAuthWithKakao(customToken: String) {
+        auth.signInWithCustomToken(customToken).addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                // Firebase Authentication 인증 성공 후 로직
+                Toast.makeText(this, "로그인 성공", Toast.LENGTH_LONG).show()
+                val intent = Intent(this, MainActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                startActivity(intent)
+            } else {
+                // 실패 후 로직
+                Toast.makeText(this, "로그인 실패", Toast.LENGTH_LONG).show()
+            }
         }
     }
 
