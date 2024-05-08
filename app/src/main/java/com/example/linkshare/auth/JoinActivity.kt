@@ -40,6 +40,7 @@ class JoinActivity : AppCompatActivity() {
 
         binding.etEmailLayout.editText?.addTextChangedListener(emailListener)
         binding.etPwdLayout.editText?.addTextChangedListener(pwdListener)
+        binding.etNicknameLayout.editText?.addTextChangedListener(nicknameListener)
         binding.etEmail.setOnFocusChangeListener { v, hasFocus ->
             if (!hasFocus) {
                 val email = binding.etEmail.text.toString()
@@ -168,7 +169,23 @@ class JoinActivity : AppCompatActivity() {
         }
 
         override fun afterTextChanged(s: Editable?) {
+            flagCheck()
+        }
+    }
 
+    // nickname check listener
+    private val nicknameListener = object : TextWatcher {
+        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+
+        }
+
+        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+            binding.etNicknameLayout.error = null
+            isNicknameDuplicated = true
+        }
+
+        override fun afterTextChanged(s: Editable?) {
+            flagCheck()
         }
     }
 
