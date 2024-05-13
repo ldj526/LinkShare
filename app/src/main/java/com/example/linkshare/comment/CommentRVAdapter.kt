@@ -11,9 +11,12 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.linkshare.R
 import com.example.linkshare.util.FBAuth
 import com.example.linkshare.util.FBUser
+import com.google.firebase.auth.FirebaseAuth
 
-class CommentRVAdapter(var commentList: MutableList<Comment>) :
+class CommentRVAdapter(var commentList: MutableList<Comment>, private val onClick: (String) -> Unit) :
     RecyclerView.Adapter<CommentRVAdapter.ViewHolder>() {
+
+    private val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
 
     fun setCommentData(newCommentList: MutableList<Comment>) {
         val diffCallback = CommentDiffCallback(commentList, newCommentList)
@@ -33,6 +36,20 @@ class CommentRVAdapter(var commentList: MutableList<Comment>) :
         fun bind(comment: Comment) {
             title.text = comment.comment
             time.text = comment.time
+
+            if (comment.uid == currentUserId) {
+                delete.visibility = View.VISIBLE
+            } else {
+                delete.visibility = View.GONE
+            }
+
+            delete.setOnClickListener {
+                val position = bindingAdapterPosition
+                if (position != RecyclerView.NO_POSITION) {
+                    val commentId = commentList[position].id
+                    onClick(commentId!!)
+                }
+            }
 
             FBUser.getUserNickname(comment.uid, onSuccess = { userNickname ->
                 nickname.text = userNickname ?: "알 수 없음"

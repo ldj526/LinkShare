@@ -11,6 +11,9 @@ class CommentViewModel: ViewModel() {
     private val commentRepo = CommentRepo()
     private var commentsLiveData: LiveData<MutableList<Comment>>? = null
 
+    private val _deleteStatus = MutableLiveData<Boolean>()
+    val deleteStatus: LiveData<Boolean> = _deleteStatus
+
     private val _commentStatus = MutableLiveData<Boolean>()
     val commentStatus: LiveData<Boolean> = _commentStatus
 
@@ -27,6 +30,14 @@ class CommentViewModel: ViewModel() {
         viewModelScope.launch {
             val result = commentRepo.insertComment(comment, key)
             _commentStatus.value = result
+        }
+    }
+
+    // 댓글 삭제
+    fun deleteComment(postKey: String, commentId: String) {
+        viewModelScope.launch {
+            val result = commentRepo.deleteComment(postKey, commentId)
+            _deleteStatus.value = result
         }
     }
 }

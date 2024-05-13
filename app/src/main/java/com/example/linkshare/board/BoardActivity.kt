@@ -8,7 +8,6 @@ import android.os.Bundle
 import android.view.View
 import android.widget.TextView
 import android.widget.Toast
-import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -57,7 +56,14 @@ class BoardActivity : AppCompatActivity() {
         key = intent.getStringExtra("key").toString()
 
         // comment RecyclerView 연결
-        commentRVAdapter = CommentRVAdapter(commentList)
+        commentRVAdapter = CommentRVAdapter(commentList) { commentId ->
+            val dialog = CustomDialog("삭제 하시겠습니까?", onYesClicked = {
+                commentViewModel.deleteComment(key, commentId)
+            })
+            // 다이얼로그 창 밖에 클릭 불가
+            dialog.isCancelable = false
+            dialog.show(supportFragmentManager, "DeleteDialog")
+        }
         binding.rvComment.adapter = commentRVAdapter
         binding.rvComment.layoutManager = LinearLayoutManager(this)
 
@@ -108,6 +114,14 @@ class BoardActivity : AppCompatActivity() {
             }
         }
 
+        commentViewModel.deleteStatus.observe(this) { success ->
+            if (success) {
+                Toast.makeText(this, "댓글 삭제 성공", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(this, "댓글 삭제 실패", Toast.LENGTH_SHORT).show()
+            }
+        }
+
         // 수정 버튼 클릭 시
         binding.ivUpdate.setOnClickListener {
             showUpdateDialog()
@@ -125,7 +139,7 @@ class BoardActivity : AppCompatActivity() {
 
         // 댓글 입력 버튼 클릭 시
         binding.btnComment.setOnClickListener {
-            val comment = Comment(binding.etComment.text.toString(), FBAuth.getUid(), FBAuth.getTime())
+            val comment = Comment(null, binding.etComment.text.toString(), FBAuth.getUid(), FBAuth.getTime())
             commentViewModel.insertComment(comment, key)
             binding.etComment.setText("")
         }

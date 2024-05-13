@@ -35,7 +35,20 @@ class CommentRepo {
     // Firebase에 댓글 내용 입력
     suspend fun insertComment(comment: Comment, key: String): Boolean = withContext(Dispatchers.IO) {
         try {
-            FBRef.commentCategory.child(key).push().setValue(comment).await()
+            val ref = FBRef.commentCategory.child(key).push()
+            comment.id = ref.key
+            ref.setValue(comment).await()
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    // 댓글 삭제
+    suspend fun deleteComment(postKey: String, commentId: String): Boolean = withContext(Dispatchers.IO) {
+        try {
+            val ref = FBRef.commentCategory.child(postKey).child(commentId)
+            ref.removeValue().await()
             true
         } catch (e: Exception) {
             false
