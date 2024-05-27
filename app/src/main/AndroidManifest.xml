@@ -23,9 +23,6 @@
             android:name=".category.SeeMoreActivity"
             android:exported="false" />
         <activity
-            android:name=".category.CategoryActivity"
-            android:exported="false" />
-        <activity
             android:name=".category.CategorySelectActivity"
             android:exported="false" />
         <activity

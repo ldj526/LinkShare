@@ -4,19 +4,17 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
-import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
-import com.example.linkshare.R
 import com.example.linkshare.board.MapActivity
 import com.example.linkshare.databinding.ActivityLinkBinding
 import com.example.linkshare.util.CustomDialog
 import com.example.linkshare.util.FBAuth
 import com.example.linkshare.util.FBRef
-import com.google.android.flexbox.FlexboxLayout
+import com.google.android.material.chip.Chip
 
 class LinkActivity : AppCompatActivity() {
 
@@ -90,22 +88,19 @@ class LinkActivity : AppCompatActivity() {
     private fun updateLinkData(link: Link?) {
         link?.let {
             it.category?.forEach { category ->
-                val textView = TextView(this).apply {
+                val chip = Chip(this).apply {
                     text = category
-                    layoutParams = FlexboxLayout.LayoutParams(
-                        FlexboxLayout.LayoutParams.WRAP_CONTENT,
-                        FlexboxLayout.LayoutParams.WRAP_CONTENT
-                    ).apply {
-                        setMargins(5, 5, 5, 5)
-                    }
-                    // 현재 선택된 카테고리인지 확인하여 UI 업데이트
-                    setBackgroundResource(R.drawable.category_unselected_background)
+                    isCheckable = false
+                    isClickable = false
                 }
-                binding.categoryFlexboxLayout.addView(textView)
+                binding.categoryChipGroup.addView(chip)
             }
             binding.tvTitle.text = it.title
-            binding.tvLink.text = it.link
+            binding.tvLink.text = if (it.link == "") "없음" else it.link
             binding.tvContent.text = it.content
+            binding.tvLocation.apply {
+                visibility = if (it.location!!.isEmpty()) View.GONE else View.VISIBLE
+            }
             binding.tvMap.apply {
                 text = it.location
                 visibility = if (text.isEmpty()) View.GONE else View.VISIBLE

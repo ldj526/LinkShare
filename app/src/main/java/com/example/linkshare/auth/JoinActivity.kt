@@ -47,11 +47,17 @@ class JoinActivity : AppCompatActivity() {
                 checkEmailDuplication(email)
             }
         }
+
         binding.btnCheckNickname.setOnClickListener {
             checkNicknameDuplication()
         }
+
         binding.btnJoin.setOnClickListener {
             signUpUser()
+        }
+
+        binding.ivBack.setOnClickListener {
+            finish()
         }
     }
 

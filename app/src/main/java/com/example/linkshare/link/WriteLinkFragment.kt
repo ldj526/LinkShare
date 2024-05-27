@@ -9,14 +9,12 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import com.bumptech.glide.Glide
-import com.example.linkshare.R
 import com.example.linkshare.category.CategorySelectActivity
 import com.example.linkshare.databinding.FragmentWriteLinkBinding
 import com.example.linkshare.util.CustomDialog
@@ -24,7 +22,7 @@ import com.example.linkshare.util.FBAuth
 import com.example.linkshare.util.FBRef
 import com.example.linkshare.view.MainActivity
 import com.example.linkshare.view.MapViewActivity
-import com.google.android.flexbox.FlexboxLayout
+import com.google.android.material.chip.Chip
 import java.io.ByteArrayOutputStream
 
 class WriteLinkFragment : Fragment() {
@@ -153,19 +151,14 @@ class WriteLinkFragment : Fragment() {
     }
 
     private fun updateCategoriesView(categories: List<String>?) {
-        binding.categoryFlexboxLayout.removeAllViews() // 기존에 추가된 뷰들 제거
+        binding.categoryChipGroup.removeAllViews() // 기존에 추가된 뷰들 제거
         categories?.forEach { category ->
-            val textView = TextView(context).apply {
+            val chip = Chip(requireActivity()).apply {
                 text = category
-                layoutParams = FlexboxLayout.LayoutParams(
-                    FlexboxLayout.LayoutParams.WRAP_CONTENT,
-                    FlexboxLayout.LayoutParams.WRAP_CONTENT
-                ).apply {
-                    setMargins(5, 5, 5, 5)
-                }
-                setBackgroundResource(R.drawable.category_unselected_background)
+                isCheckable = false
+                isClickable = false
             }
-            binding.categoryFlexboxLayout.addView(textView)
+            binding.categoryChipGroup.addView(chip)
         }
     }
 
@@ -197,18 +190,12 @@ class WriteLinkFragment : Fragment() {
         link?.let {
             selectedCategories = it.category
             it.category?.forEach { category ->
-                val textView = TextView(context).apply {
+                val chip = Chip(requireActivity()).apply {
                     text = category
-                    layoutParams = FlexboxLayout.LayoutParams(
-                        FlexboxLayout.LayoutParams.WRAP_CONTENT,
-                        FlexboxLayout.LayoutParams.WRAP_CONTENT
-                    ).apply {
-                        setMargins(5, 5, 5, 5)
-                    }
-                    // 현재 선택된 카테고리인지 확인하여 UI 업데이트
-                    setBackgroundResource(R.drawable.category_unselected_background)
+                    isCheckable = false
+                    isClickable = false
                 }
-                binding.categoryFlexboxLayout.addView(textView)
+                binding.categoryChipGroup.addView(chip)
             }
             binding.etTitle.setText(it.title)
             binding.etLink.setText(it.link)

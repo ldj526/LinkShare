@@ -58,14 +58,23 @@ class SearchFragment : Fragment() {
 
         }
 
-        binding.tvSearch.setOnClickListener {
-            searchText = binding.etSearch.text.toString()
-            if (searchText == "") {
-                Toast.makeText(requireActivity(), "검색어를 입력하세요.", Toast.LENGTH_SHORT).show()
-            } else {
-                performSearch(searchText)
+        binding.searchView.isSubmitButtonEnabled = true
+        binding.searchView.setOnQueryTextListener(object : androidx.appcompat.widget.SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                searchText = query ?: ""
+                if (searchText.isEmpty()) {
+                    Toast.makeText(requireActivity(), "검색어를 입력하세요.", Toast.LENGTH_SHORT).show()
+                } else {
+                    performSearch(searchText)
+                }
+                return true
             }
-        }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                // 실시간으로 검색을 원하면 여기에 검색 로직을 추가
+                return false
+            }
+        })
 
         binding.tvSort.setOnClickListener {
             showSortDialog()

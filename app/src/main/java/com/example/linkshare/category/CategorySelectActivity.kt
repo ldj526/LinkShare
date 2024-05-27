@@ -2,12 +2,13 @@ package com.example.linkshare.category
 
 import android.app.Activity
 import android.content.Intent
+import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.example.linkshare.R
 import com.example.linkshare.databinding.ActivityCategorySelectBinding
-import com.google.android.flexbox.FlexboxLayout
+import com.google.android.material.chip.Chip
 
 class CategorySelectActivity : AppCompatActivity() {
 
@@ -25,29 +26,21 @@ class CategorySelectActivity : AppCompatActivity() {
         val categories = resources.getStringArray(R.array.category)
 
         categories.forEach { category ->
-            val textView = TextView(this).apply {
+            val chip = Chip(this).apply {
                 text = category
-                layoutParams = FlexboxLayout.LayoutParams(
-                    FlexboxLayout.LayoutParams.WRAP_CONTENT,
-                    FlexboxLayout.LayoutParams.WRAP_CONTENT
-                ).apply {
-                    setMargins(5, 5, 5, 5)
-                }
-                // 현재 선택된 카테고리인지 확인하여 UI 업데이트
-                setBackgroundResource(
-                    if (currentSelectedCategories.contains(category)) R.drawable.category_selected_background
-                    else R.drawable.category_unselected_background
-                )
-
-                setOnClickListener {
-                    toggleCategorySelection(category, this)
+                isCheckable = true
+                isChecked = currentSelectedCategories.contains(category)
+                chipIcon = if (isChecked) getCheckIcon() else getPlusIcon()
+                checkedIcon = getCheckIcon()
+                setOnCheckedChangeListener { buttonView, isChecked ->
+                    toggleCategorySelection(category, buttonView as Chip, isChecked)
                 }
             }
-            binding.selectCategory.addView(textView)
-            // 초기 선택 상태를 selectedCategories에도 반영
+            binding.selectCategory.addView(chip)
+
             if (currentSelectedCategories.contains(category)) {
-                selectedCategories[category] = textView
-                addCategoryToBottomView(category) // 초기 선택된 카테고리 하단에 추가
+                selectedCategories[category] = chip
+                addCategoryToBottomView(category)
             }
         }
 
@@ -64,32 +57,38 @@ class CategorySelectActivity : AppCompatActivity() {
         }
     }
 
-    private fun toggleCategorySelection(category: String, textView: TextView) {
-        if (selectedCategories.containsKey(category)) {
-            textView.setBackgroundResource(R.drawable.category_unselected_background)
-            selectedCategories.remove(category)
-            removeCategoryFromBottomView(category) // 하단 뷰에서 제거
+    private fun getPlusIcon(): Drawable? {
+        return resources.getDrawable(android.R.drawable.checkbox_off_background, null)
+    }
+
+    private fun getCheckIcon(): Drawable? {
+        return resources.getDrawable(android.R.drawable.checkbox_on_background, null)
+    }
+
+
+
+    // chip의 선택 여부에 따른 list 추가/제거
+    private fun toggleCategorySelection(category: String, chip: Chip, isChecked: Boolean) {
+        chip.chipIcon = if (isChecked) getCheckIcon() else getPlusIcon()
+        if (isChecked) {
+            selectedCategories[category] = chip
+            addCategoryToBottomView(category)
         } else {
-            textView.setBackgroundResource(R.drawable.category_selected_background)
-            selectedCategories[category] = textView
-            addCategoryToBottomView(category) // 하단 뷰에 추가
+            selectedCategories.remove(category)
+            removeCategoryFromBottomView(category)
         }
     }
 
+    // 선택된 항목들 표시해주는 기능
     private fun addCategoryToBottomView(category: String) {
-        val textView = TextView(this).apply {
+        val chip = Chip(this).apply {
             text = category
-            layoutParams = FlexboxLayout.LayoutParams(
-                FlexboxLayout.LayoutParams.WRAP_CONTENT,
-                FlexboxLayout.LayoutParams.WRAP_CONTENT
-            ).apply {
-                setMargins(5, 5, 5, 5)
-            }
-            setBackgroundResource(R.drawable.category_selected_background)
+            isCheckable = false
         }
-        binding.selectedCategory.addView(textView)
+        binding.selectedCategory.addView(chip)
     }
 
+    // 해제한 항목들 없애는 기능
     private fun removeCategoryFromBottomView(category: String) {
         for (i in 0 until binding.selectedCategory.childCount) {
             val view = binding.selectedCategory.getChildAt(i)

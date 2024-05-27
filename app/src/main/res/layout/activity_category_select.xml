@@ -15,41 +15,74 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <com.google.android.flexbox.FlexboxLayout
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:gravity="center"
+            android:text="선택할 카테고리"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <com.google.android.material.chip.ChipGroup
             android:id="@+id/select_category"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            app:flexWrap="wrap">
+            app:singleLine="false"
+            app:chipSpacing="8dp" />
 
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:gravity="center"
-                android:text="선택할 카테고리"
-                android:textSize="18sp"
-                android:textStyle="bold" />
 
-        </com.google.android.flexbox.FlexboxLayout>
+<!--        <com.google.android.flexbox.FlexboxLayout-->
+<!--            android:id="@+id/select_category"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_weight="1"-->
+<!--            app:flexWrap="wrap">-->
 
-        <com.google.android.flexbox.FlexboxLayout
-            android:id="@+id/selected_category"
+<!--            <TextView-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_marginTop="10dp"-->
+<!--                android:gravity="center"-->
+<!--                android:text="선택할 카테고리"-->
+<!--                android:textSize="18sp"-->
+<!--                android:textStyle="bold" />-->
+
+<!--        </com.google.android.flexbox.FlexboxLayout>-->
+
+        <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            app:flexWrap="wrap">
+            android:layout_marginTop="10dp"
+            android:gravity="center"
+            android:text="선택된 카테고리"
+            android:textSize="18sp"
+            android:textStyle="bold" />
 
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:gravity="center"
-                android:text="선택된 카테고리"
-                android:textSize="18sp"
-                android:textStyle="bold" />
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/selectedCategory"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:singleLine="false"
+            app:chipSpacing="8dp" />
 
-        </com.google.android.flexbox.FlexboxLayout>
+<!--        <com.google.android.flexbox.FlexboxLayout-->
+<!--            android:id="@+id/selected_category"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_weight="1"-->
+<!--            app:flexWrap="wrap">-->
+
+<!--            <TextView-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_marginTop="10dp"-->
+<!--                android:gravity="center"-->
+<!--                android:text="선택된 카테고리"-->
+<!--                android:textSize="18sp"-->
+<!--                android:textStyle="bold" />-->
+
+<!--        </com.google.android.flexbox.FlexboxLayout>-->
     </LinearLayout>
 
     <android.widget.Button

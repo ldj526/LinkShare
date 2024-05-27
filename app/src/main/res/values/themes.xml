@@ -2,6 +2,8 @@
 
     <style name="Base.Theme.LinkShare" parent="Theme.MaterialComponents.Light.NoActionBar">
         <item name="windowNoTitle">true</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:statusBarColor">@color/white</item>
     </style>
 
     <style name="Theme.LinkShare" parent="Base.Theme.LinkShare" />

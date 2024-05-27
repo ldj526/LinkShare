@@ -6,11 +6,13 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.Gravity
+import android.view.View
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.example.linkshare.BuildConfig
+import com.example.linkshare.R
 import com.example.linkshare.databinding.ActivityIntroBinding
 import com.example.linkshare.view.MainActivity
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -66,7 +68,7 @@ class IntroActivity : AppCompatActivity() {
 
         KakaoSdk.init(this, BuildConfig.KAKAO_NATIVE_KEY)
 
-        setGoogleButtonText(binding.googleLogin, "Google 로그인")
+//        setGoogleButtonText(binding.googleLogin, "구글 로그인", 16f)
 
         // Initialize Firebase Auth
         auth = Firebase.auth
@@ -76,6 +78,8 @@ class IntroActivity : AppCompatActivity() {
             .requestIdToken(ouathClientId)
             .requestEmail()
             .build()
+        val kakaoLogin: View = findViewById(R.id.kakao_login)
+        val googleLogin: View = findViewById(R.id.google_login)
 
         googleSignInClient = GoogleSignIn.getClient(this, gso)
 
@@ -100,11 +104,11 @@ class IntroActivity : AppCompatActivity() {
             }
         }
 
-        binding.googleLogin.setOnClickListener {
+        googleLogin.setOnClickListener {
             signInGoogle()
         }
 
-        binding.kakaoLogin.setOnClickListener {
+        kakaoLogin.setOnClickListener {
             kakaoLogin()
         }
     }
@@ -182,20 +186,21 @@ class IntroActivity : AppCompatActivity() {
         }
     }
 
-    // Google 로그인 버튼 Text 변경
-    private fun setGoogleButtonText(loginButton: SignInButton, buttonText: String){
-        var i = 0
-        while (i < loginButton.childCount){
-            val v = loginButton.getChildAt(i)
-            if (v is TextView) {
-                val tv = v
-                tv.text = buttonText
-                tv.gravity = Gravity.CENTER
-                return
-            }
-            i++
-        }
-    }
+//    // Google 로그인 버튼 Text 변경
+//    private fun setGoogleButtonText(loginButton: SignInButton, buttonText: String, textSize: Float) {
+//        var i = 0
+//        while (i < loginButton.childCount){
+//            val v = loginButton.getChildAt(i)
+//            if (v is TextView) {
+//                val tv = v
+//                tv.text = buttonText
+//                tv.gravity = Gravity.CENTER
+//                tv.textSize = textSize
+//                return
+//            }
+//            i++
+//        }
+//    }
 
     // Google 로그인 Intent
     private fun signInGoogle() {

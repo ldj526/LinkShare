@@ -1,18 +1,12 @@
 package com.example.linkshare.view
 
-import android.app.Activity
-import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.addCallback
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.findNavController
 import androidx.navigation.ui.setupWithNavController
 import com.example.linkshare.R
-import com.example.linkshare.category.CategoryActivity
-import com.example.linkshare.category.CategoryViewModel
 import com.example.linkshare.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
