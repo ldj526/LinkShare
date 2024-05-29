@@ -15,3 +15,4 @@
 local.properties
 build/
 firebase/functions/admin.json
+/app/google-services.json
