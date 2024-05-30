@@ -5,7 +5,8 @@
     android:id="@+id/itemView"
     android:layout_width="match_parent"
     android:layout_height="140dp"
-    android:orientation="horizontal">
+    android:orientation="horizontal"
+    android:background="@drawable/ripple_effect">
 
     <ImageView
         android:id="@+id/iv_memo_image"

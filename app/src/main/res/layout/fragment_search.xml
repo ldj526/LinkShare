@@ -39,13 +39,14 @@
             android:id="@+id/sort_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:gravity="end"
             app:layout_constraintTop_toBottomOf="@id/search_layout"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" >
+            app:layout_constraintEnd_toEndOf="parent">
 
             <TextView
                 android:id="@+id/tv_sort"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="5dp"
                 android:layout_marginBottom="5dp"
@@ -53,7 +54,8 @@
                 android:text="최신순"
                 android:gravity="end"
                 android:textSize="16sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:background="@drawable/ripple_effect" />
         </LinearLayout>
 
         <androidx.recyclerview.widget.RecyclerView

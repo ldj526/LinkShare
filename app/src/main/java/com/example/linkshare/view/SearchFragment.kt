@@ -102,6 +102,7 @@ class SearchFragment : Fragment() {
     // 정렬을 위한 Dialog
     private fun showSortDialog() {
         val sortOptions = resources.getStringArray(R.array.sort)
+        if (checkedItem == -1) checkedItem = 0
         AlertDialog.Builder(requireActivity())
             .setTitle("정렬 선택")
             .setSingleChoiceItems(sortOptions, checkedItem) { dialog, which ->

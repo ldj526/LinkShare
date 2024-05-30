@@ -35,6 +35,19 @@ class SettingFragment : Fragment() {
         binding.tvLogout.setOnClickListener {
             showLogoutDialog()
         }
+
+        binding.llNickname.setOnClickListener {
+
+        }
+
+        binding.llPwd.setOnClickListener {
+
+        }
+
+        binding.tvWithdraw.setOnClickListener {
+
+        }
+
         return binding.root
     }
 

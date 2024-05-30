@@ -79,14 +79,16 @@ class LinkRepo {
         val linkSnapshot = FBRef.linkCategory.child(key).get().await()
         val sharedLinkSnapshot = FBRef.sharedLinkCategory.child(key).get().await()
 
-        // linkCategory에서 데이터 찾은 경우
-        linkSnapshot.getValue(Link::class.java)?.let {
-            return@withContext it
-        }
         // sharedLinkCategory에서 데이터 찾은 경우
         sharedLinkSnapshot.getValue(Link::class.java)?.let {
             return@withContext it
         }
+
+        // linkCategory에서 데이터 찾은 경우
+        linkSnapshot.getValue(Link::class.java)?.let {
+            return@withContext it
+        }
+
         null
     }
 

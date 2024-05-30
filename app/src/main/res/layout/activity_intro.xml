@@ -74,7 +74,8 @@
                 android:layout_height="wrap_content"
                 android:text="회원가입"
                 android:layout_weight="1"
-                android:gravity="center"/>
+                android:gravity="center"
+                android:background="@drawable/ripple_effect"/>
 
             <View
                 android:layout_width="0.6dp"
@@ -87,7 +88,8 @@
                 android:layout_height="wrap_content"
                 android:text="이메일 / 비밀번호 찾기"
                 android:layout_weight="1"
-                android:gravity="center"/>
+                android:gravity="center"
+                android:background="@drawable/ripple_effect"/>
         </LinearLayout>
 
         <android.widget.Button

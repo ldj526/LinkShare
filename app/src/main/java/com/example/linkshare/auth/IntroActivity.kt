@@ -68,8 +68,6 @@ class IntroActivity : AppCompatActivity() {
 
         KakaoSdk.init(this, BuildConfig.KAKAO_NATIVE_KEY)
 
-//        setGoogleButtonText(binding.googleLogin, "구글 로그인", 16f)
-
         // Initialize Firebase Auth
         auth = Firebase.auth
 
@@ -185,22 +183,6 @@ class IntroActivity : AppCompatActivity() {
             }
         }
     }
-
-//    // Google 로그인 버튼 Text 변경
-//    private fun setGoogleButtonText(loginButton: SignInButton, buttonText: String, textSize: Float) {
-//        var i = 0
-//        while (i < loginButton.childCount){
-//            val v = loginButton.getChildAt(i)
-//            if (v is TextView) {
-//                val tv = v
-//                tv.text = buttonText
-//                tv.gravity = Gravity.CENTER
-//                tv.textSize = textSize
-//                return
-//            }
-//            i++
-//        }
-//    }
 
     // Google 로그인 Intent
     private fun signInGoogle() {
