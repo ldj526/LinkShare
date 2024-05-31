@@ -20,7 +20,8 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="16dp"
                 android:text="계정 정보"
-                android:textColor="#888888"
+                android:textStyle="bold"
+                android:textColor="#000000"
                 android:textSize="12sp" />
 
             <TextView
@@ -29,6 +30,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="5dp"
                 android:layout_marginStart="16dp"
+                android:textColor="#888888"
                 android:text="로그인 방법" />
 
             <TextView
@@ -36,6 +38,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
+                android:textColor="#888888"
                 android:text="이메일" />
 
         </LinearLayout>
@@ -51,7 +54,8 @@
             android:layout_height="wrap_content"
             android:text="닉네임"
             android:layout_marginStart="16dp"
-            android:textColor="#888888"
+            android:textStyle="bold"
+            android:textColor="#000000"
             android:textSize="12sp" />
 
         <LinearLayout
@@ -69,7 +73,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="유구리"
-                android:textColor="#000000"
+                android:textColor="#888888"
                 android:textSize="16sp" />
 
             <View
@@ -105,6 +109,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="비밀번호 변경"
+                android:textColor="#000000"
                 android:textSize="16sp"
                 android:textStyle="bold" />
 
@@ -136,6 +141,7 @@
             android:text="회원탈퇴"
             android:textSize="16sp"
             android:textStyle="bold"
+            android:textColor="#000000"
             android:background="@drawable/ripple_effect" />
 
         <View
@@ -152,6 +158,7 @@
             android:paddingVertical="10dp"
             android:padding="16dp"
             android:text="로그아웃"
+            android:textColor="#000000"
             android:textSize="16sp"
             android:textStyle="bold"
             android:background="@drawable/ripple_effect" />

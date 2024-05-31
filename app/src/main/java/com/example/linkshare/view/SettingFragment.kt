@@ -2,14 +2,18 @@ package com.example.linkshare.view
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import com.example.linkshare.setting.UpdateNicknameActivity
 import com.example.linkshare.auth.IntroActivity
 import com.example.linkshare.databinding.FragmentSettingBinding
 import com.example.linkshare.util.CustomDialog
+import com.example.linkshare.util.FBAuth
+import com.example.linkshare.util.FBUser
 import com.google.firebase.Firebase
 import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
@@ -29,15 +33,28 @@ class SettingFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentSettingBinding.inflate(layoutInflater, container, false)
+        return binding.root
+    }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        // FirebaseAuth 인스턴스 초기화
         auth = Firebase.auth
+
+        // 사용자 닉네임 가져오기
+        fetchUserNickname()
+
+        // 현재 사용자 정보 확인
+        updateUserAccountUI()
 
         binding.tvLogout.setOnClickListener {
             showLogoutDialog()
         }
 
         binding.llNickname.setOnClickListener {
-
+            val intent = Intent(requireContext(), UpdateNicknameActivity::class.java)
+            startActivity(intent)
         }
 
         binding.llPwd.setOnClickListener {
@@ -47,31 +64,54 @@ class SettingFragment : Fragment() {
         binding.tvWithdraw.setOnClickListener {
 
         }
-
-        return binding.root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
+    // 현재 접속중인 사용자의 닉네임 받아오기
+    private fun fetchUserNickname() {
+        FBUser.getUserNickname(FBAuth.getUid(), onSuccess = { userNickname ->
+            binding.tvNickname.text = userNickname ?: "알 수 없음"
+        }, onFailure = { exception ->
+            Log.e("CommentRVADatper", "닉네임 가져오기 실패", exception)
+            binding.tvNickname.text = "알 수 없음"
+        })
+    }
 
-        val user = FirebaseAuth.getInstance().currentUser
-
+    // 사용자가 접속한 계정의 정보 받아오기
+    private fun updateUserAccountUI() {
+        val user = auth.currentUser
         if (user != null) {
-            val email = user.email
             displayAuthenticationMethod(user)
-            updateProfileUI(email)
+            when {
+                isEmailAccount(user) -> updateProfileUI(user.email)
+                isGoogleAccount(user) -> updateProfileUI(user.email)
+                isKakaoAccount(user) -> fetchKakaoUserEmail()
+                else -> updateProfileUI(null)
+            }
         } else {
             updateProfileUI(null)
         }
+    }
 
-        fetchKakaoUserEmail()
+    // 이메일 계정인지 확인
+    private fun isEmailAccount(user: FirebaseUser): Boolean {
+        return user.providerData.any { it.providerId == EmailAuthProvider.PROVIDER_ID }
+    }
+
+    // 구글 계정인지 확인
+    private fun isGoogleAccount(user: FirebaseUser): Boolean {
+        return user.providerData.any { it.providerId == GoogleAuthProvider.PROVIDER_ID }
+    }
+
+    // 카카오 계정인지 확인
+    private fun isKakaoAccount(user: FirebaseUser): Boolean {
+        return user.providerData.any { it.providerId == "kakao.com" }
     }
 
     // 카카오 계정 이메일 가져오기
     private fun fetchKakaoUserEmail() {
         UserApiClient.instance.me { user, error ->
             if (error != null) {
-                Toast.makeText(requireContext(), "사용자 정보 요청 실패", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "카카오 사용자 정보 요청 실패", Toast.LENGTH_SHORT).show()
             } else {
                 val email = user?.kakaoAccount?.email
                 updateProfileUI(email)
@@ -93,11 +133,7 @@ class SettingFragment : Fragment() {
 
     // 이메일 표시
     private fun updateProfileUI(email: String?) {
-        if (email != null) {
-            binding.tvProfileEmail.text = email
-        } else {
-            binding.tvProfileEmail.text = "이메일 정보 없음"
-        }
+        binding.tvProfileEmail.text = email ?: "이메일 정보 없음"
     }
 
     private fun showLogoutDialog() {

@@ -33,6 +33,11 @@ class MainActivity : AppCompatActivity() {
                 finishAffinity()
             }
         }
+
+        // SettingFragment에서 Activity이동 후 Activity 종료 시 SettingFragment로 View 이동
+        if (intent.getBooleanExtra("navigateToSettingFragment", false)) {
+            findNavController(R.id.fragment_container_view).navigate(R.id.setting_fragment)
+        }
     }
     companion object {
         private const val BACK_PRESSED_DURATION = 2000L

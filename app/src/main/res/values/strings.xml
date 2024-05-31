@@ -2,4 +2,5 @@
     <string name="app_name">LinkShare</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="update_nickname_warning">※ 닉네임은 30일에 한 번씩 바꿀 수 있습니다.</string>
 </resources>
