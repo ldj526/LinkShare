@@ -39,7 +39,7 @@ class UpdateNicknameActivity : AppCompatActivity() {
         // Initialize Firebase Auth
         auth = Firebase.auth
         db = FirebaseFirestore.getInstance()
-        val settingRepository = SettingRepository(db)
+        val settingRepository = SettingRepository(db, auth)
         val factory = SettingViewModelFactory(settingRepository)
         settingViewModel = ViewModelProvider(this, factory)[SettingViewModel::class.java]
 
