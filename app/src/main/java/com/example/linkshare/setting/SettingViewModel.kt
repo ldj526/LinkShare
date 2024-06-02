@@ -10,14 +10,8 @@ import kotlinx.coroutines.launch
 
 class SettingViewModel(private val settingRepository: SettingRepository): ViewModel() {
 
-    private val _updateNicknameResult = MutableLiveData<Result<Unit>>()
-    val updateNicknameResult: LiveData<Result<Unit>> get() = _updateNicknameResult
-
     private val _userNicknameResult = MutableLiveData<Result<String?>>()
     val userNicknameResult: LiveData<Result<String?>> get() = _userNicknameResult
-
-    private val _nicknameDuplicationResult = MutableLiveData<Result<Boolean>>()
-    val nicknameDuplicationResult: LiveData<Result<Boolean>> get() = _nicknameDuplicationResult
 
     private val _loading = MutableLiveData<Boolean>()
     val loading: LiveData<Boolean> get() = _loading
@@ -27,9 +21,6 @@ class SettingViewModel(private val settingRepository: SettingRepository): ViewMo
 
     private val _loginMethodLoading = MutableLiveData<Boolean>()
     val loginMethodLoading: LiveData<Boolean> get() = _loginMethodLoading
-
-    private val _lastUpdatedResult = MutableLiveData<Result<Long>>()
-    val lastUpdatedResult: LiveData<Result<Long>> get() = _lastUpdatedResult
 
     private val _deleteResult = MutableLiveData<Result<Unit>>()
     val deleteResult: LiveData<Result<Unit>> get() = _deleteResult
@@ -44,7 +35,20 @@ class SettingViewModel(private val settingRepository: SettingRepository): ViewMo
     val profileEmail: LiveData<String?> get() = _profileEmail
 
     private val delayTime = 500L
-    private val nicknameChangeLimitDays = 30
+
+    // Nickname 가져오기
+    fun fetchUserNickname(userId: String) {
+        viewModelScope.launch {
+            val job = launch {// 빠르게 처리되면 progressBar 안나타나게 하기 위함
+                delay(delayTime)
+                _loading.value = true
+            }
+            val result = settingRepository.getUserNickname(userId)
+            job.cancel()
+            _loading.value = false
+            _userNicknameResult.value = result
+        }
+    }
 
     // 사용자 가져오기
     fun fetchCurrentUser() {
@@ -102,76 +106,6 @@ class SettingViewModel(private val settingRepository: SettingRepository): ViewMo
             job.cancel()
             _emailLoading.value = false
         }
-    }
-
-    // Nickname 가져오기
-    fun fetchUserNickname(userId: String) {
-        viewModelScope.launch {
-            val job = launch {// 빠르게 처리되면 progressBar 안나타나게 하기 위함
-                delay(delayTime)
-                _loading.value = true
-            }
-            val result = settingRepository.getUserNickname(userId)
-            job.cancel()
-            _loading.value = false
-            _userNicknameResult.value = result
-        }
-    }
-
-    // 마지막 업데이트 날짜 가져오기
-    fun fetchUserLastUpdated(userId: String) {
-        viewModelScope.launch {
-            val job = launch {
-                delay(delayTime)
-                _loading.value = true
-            }
-            val result = settingRepository.getUserLastUpdated(userId)
-            job.cancel()
-            _loading.value = false
-            _lastUpdatedResult.value = result
-        }
-    }
-
-    // Nickname 중복 체크
-    fun checkNicknameDuplication(nickname: String) {
-        viewModelScope.launch {
-            val job = launch {
-                delay(delayTime)
-                _loading.value = true
-            }
-            val result = settingRepository.isNicknameDuplicated(nickname)
-            job.cancel()
-            _loading.value = false
-            _nicknameDuplicationResult.value = result
-        }
-    }
-
-    // Nickname 업데이트
-    fun updateNickname(userId: String, email: String, nickname: String) {
-        viewModelScope.launch {
-            val job = launch {
-                delay(delayTime)
-                _loading.value = true
-            }
-            val result = settingRepository.updateNickname(userId, email, nickname)
-            job.cancel()
-            _loading.value = false
-            _updateNicknameResult.value = result
-        }
-    }
-
-    // 닉네임 변경 가능한지 여부 확인
-    fun checkNicknameChangeAllowed(lastUpdated: Long): Boolean {
-        val currentTime = System.currentTimeMillis()
-        val diffDays = (currentTime - lastUpdated) / (1000 * 60 * 60 * 24)
-        return diffDays >= nicknameChangeLimitDays
-    }
-
-    // 닉네임 변경 가능한 날짜까지 남은 기간
-    fun getRemainingDays(lastUpdated: Long): Long {
-        val currentTime = System.currentTimeMillis()
-        val diffDays = (currentTime - lastUpdated) / (1000 * 60 * 60 * 24)
-        return nicknameChangeLimitDays - diffDays
     }
 
     // 사용자의 계정 삭제

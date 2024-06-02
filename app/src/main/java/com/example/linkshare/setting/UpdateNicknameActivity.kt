@@ -26,7 +26,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 class UpdateNicknameActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityUpdateNicknameBinding
-    private lateinit var settingViewModel: SettingViewModel
+    private lateinit var nicknameViewModel: NicknameViewModel
     private lateinit var auth: FirebaseAuth
     private lateinit var db: FirebaseFirestore
     private var isNicknameDuplicated = true
@@ -41,7 +41,7 @@ class UpdateNicknameActivity : AppCompatActivity() {
         db = FirebaseFirestore.getInstance()
         val settingRepository = SettingRepository(db, auth)
         val factory = SettingViewModelFactory(settingRepository)
-        settingViewModel = ViewModelProvider(this, factory)[SettingViewModel::class.java]
+        nicknameViewModel = ViewModelProvider(this, factory)[NicknameViewModel::class.java]
 
         observeViewModel()
 
@@ -61,7 +61,7 @@ class UpdateNicknameActivity : AppCompatActivity() {
 
     // ViewModel
     private fun observeViewModel() {
-        settingViewModel.userNicknameResult.observe(this, Observer { result ->
+        nicknameViewModel.userNicknameResult.observe(this, Observer { result ->
             result.onSuccess { nickname ->
                 binding.etNickname.setText(nickname ?: "알 수 없음")
             }.onFailure {
@@ -70,7 +70,7 @@ class UpdateNicknameActivity : AppCompatActivity() {
             }
         })
 
-        settingViewModel.lastUpdatedResult.observe(this, Observer { result ->
+        nicknameViewModel.lastUpdatedResult.observe(this, Observer { result ->
             result.onSuccess { lastUpdated ->
                 binding.etNickname.tag = lastUpdated
             }.onFailure {
@@ -78,7 +78,7 @@ class UpdateNicknameActivity : AppCompatActivity() {
             }
         })
 
-        settingViewModel.nicknameDuplicationResult.observe(this, Observer { result ->
+        nicknameViewModel.nicknameDuplicationResult.observe(this, Observer { result ->
             result.onSuccess { isDuplicated ->
                 isNicknameDuplicated = isDuplicated
                 if (isDuplicated) {
@@ -93,7 +93,7 @@ class UpdateNicknameActivity : AppCompatActivity() {
             }
         })
 
-        settingViewModel.updateNicknameResult.observe(this, Observer { result ->
+        nicknameViewModel.updateNicknameResult.observe(this, Observer { result ->
             result.onSuccess {
                 Toast.makeText(this, "성공", Toast.LENGTH_SHORT).show()
                 navigateToSettingFragment()
@@ -102,7 +102,7 @@ class UpdateNicknameActivity : AppCompatActivity() {
             }
         })
 
-        settingViewModel.loading.observe(this, Observer { isLoading ->
+        nicknameViewModel.loading.observe(this, Observer { isLoading ->
             if (isLoading) {
                 binding.progressBar.visibility = View.VISIBLE
             } else {
@@ -130,22 +130,22 @@ class UpdateNicknameActivity : AppCompatActivity() {
     // 현재 접속중인 사용자의 Nickname 받아오기
     private fun fetchUserNickname() {
         val userId = auth.currentUser?.uid ?: return
-        settingViewModel.fetchUserNickname(userId)
+        nicknameViewModel.fetchUserNickname(userId)
     }
 
     // 현재 접속중인 사용자의 마지막 업데이트 날짜 받아오기
     private fun fetchUserLastUpdated() {
         val userId = auth.currentUser?.uid ?: return
-        settingViewModel.fetchUserLastUpdated(userId)
+        nicknameViewModel.fetchUserLastUpdated(userId)
     }
 
     // Nickname 변경 가능 여부 확인
     private fun checkNicknameChangeAllowed() {
         val lastUpdated = binding.etNickname.tag as? Long ?: 0L
-        if (settingViewModel.checkNicknameChangeAllowed(lastUpdated)) {
+        if (nicknameViewModel.checkNicknameChangeAllowed(lastUpdated)) {
             showUpdateNicknameDialog()
         } else {
-            val remainingDays = settingViewModel.getRemainingDays(lastUpdated)
+            val remainingDays = nicknameViewModel.getRemainingDays(lastUpdated)
             Toast.makeText(this, "닉네임 변경은 ${remainingDays}일 후에 가능합니다.", Toast.LENGTH_SHORT).show()
         }
     }
@@ -153,7 +153,7 @@ class UpdateNicknameActivity : AppCompatActivity() {
     // Nickname 중복 확인
     private fun checkNicknameDuplication() {
         val nickname = binding.etNickname.text.toString()
-        settingViewModel.checkNicknameDuplication(nickname)
+        nicknameViewModel.checkNicknameDuplication(nickname)
     }
 
     // Nickname 변경
@@ -161,7 +161,7 @@ class UpdateNicknameActivity : AppCompatActivity() {
         val nickname = binding.etNickname.text.toString()
         val email = auth.currentUser?.email ?: return
         val userId = auth.currentUser?.uid ?: return
-        settingViewModel.updateNickname(userId, email, nickname)
+        nicknameViewModel.updateNickname(userId, email, nickname)
     }
 
     // MainActivity로 돌아가서 SettingFragment로 navigate
