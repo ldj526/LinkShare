@@ -24,7 +24,7 @@
             android:name=".auth.NicknameActivity"
             android:exported="false" />
         <activity
-            android:name=".category.SeeMoreActivity"
+            android:name=".board.MoreBoardActivity"
             android:exported="false" />
         <activity
             android:name=".category.CategorySelectActivity"

@@ -9,11 +9,13 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.linkshare.R
 import com.example.linkshare.board.BoardRVAdapter
+import com.example.linkshare.board.BoardRepository
 import com.example.linkshare.board.BoardViewModel
+import com.example.linkshare.board.BoardViewModelFactory
 import com.example.linkshare.databinding.FragmentSearchBinding
 import com.example.linkshare.link.Link
 
@@ -26,7 +28,7 @@ class SearchFragment : Fragment() {
     private var searchText = ""
     private val linkList = mutableListOf<Link>()
     private var checkedItem = -1
-    private val boardViewModel: BoardViewModel by viewModels()
+    private lateinit var boardViewModel: BoardViewModel
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -42,6 +44,12 @@ class SearchFragment : Fragment() {
         boardRVAdapter = BoardRVAdapter(linkList)
         binding.rvSearchFragment.adapter = boardRVAdapter
         binding.rvSearchFragment.layoutManager = LinearLayoutManager(context)
+
+        val boardRepository = BoardRepository()
+        val boardFactory = BoardViewModelFactory(boardRepository)
+        boardViewModel = ViewModelProvider(this, boardFactory)[BoardViewModel::class.java]
+
+        observeViewModel()
 
         val searchItems = resources.getStringArray(R.array.search_list)
         val searchAdapter = ArrayAdapter(requireActivity(), android.R.layout.simple_spinner_dropdown_item, searchItems)
@@ -81,12 +89,23 @@ class SearchFragment : Fragment() {
         }
     }
 
+    private fun observeViewModel() {
+        boardViewModel.loading.observe(viewLifecycleOwner) { isLoading ->
+            binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
+        }
+
+        boardViewModel.searchResult.observe(viewLifecycleOwner) { result ->
+            result.onSuccess { links ->
+                sortAndDisplayLinks(links)
+            }.onFailure {
+                Toast.makeText(requireContext(), "검색 실패", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
     // 검색어에 따라 list 업데이트
     private fun performSearch(searchText: String) {
         boardViewModel.getSearchedLinks(searchText, selectedSearchItem.toString())
-            .observe(viewLifecycleOwner) { links ->
-                sortAndDisplayLinks(links)
-            }
     }
 
     private fun sortAndDisplayLinks(links: MutableList<Link>) {

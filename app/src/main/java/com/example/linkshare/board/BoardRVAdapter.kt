@@ -30,6 +30,12 @@ class BoardRVAdapter(var linkList: MutableList<Link>) :
         diffResult.dispatchUpdatesTo(this)
     }
 
+    fun addBoardData(newLinks: List<Link>) {
+        val currentSize = linkList.size
+        linkList.addAll(newLinks)
+        notifyItemRangeInserted(currentSize, newLinks.size)
+    }
+
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val title = itemView.findViewById<TextView>(R.id.tv_board_title)
         val link = itemView.findViewById<TextView>(R.id.tv_board_link)

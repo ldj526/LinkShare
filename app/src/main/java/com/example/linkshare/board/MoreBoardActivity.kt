@@ -1,33 +1,38 @@
-package com.example.linkshare.category
+package com.example.linkshare.board
 
 import android.os.Bundle
 import android.util.Log
 import android.view.View
-import androidx.activity.viewModels
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.linkshare.R
-import com.example.linkshare.board.BoardRVAdapter
-import com.example.linkshare.board.BoardViewModel
-import com.example.linkshare.databinding.ActivitySeeMoreBinding
+import com.example.linkshare.databinding.ActivityMoreBoardBinding
 import com.example.linkshare.link.Link
 
-class SeeMoreActivity : AppCompatActivity() {
+class MoreBoardActivity : AppCompatActivity() {
 
-    private lateinit var binding: ActivitySeeMoreBinding
+    private lateinit var binding: ActivityMoreBoardBinding
     private var checkedItem = -1
     private val linkList = mutableListOf<Link>()
     private lateinit var boardRVAdapter: BoardRVAdapter
-    private val boardViewModel: BoardViewModel by viewModels()
-    private var isLoading = false
+    private lateinit var moreBoardViewModel: MoreBoardViewModel
     private var totalItemCount = 0 // 현재 데이터 총 개수
+    private var isLoading = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivitySeeMoreBinding.inflate(layoutInflater)
+        binding = ActivityMoreBoardBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        val boardRepository = BoardRepository()
+        val boardFactory = BoardViewModelFactory(boardRepository)
+        moreBoardViewModel = ViewModelProvider(this, boardFactory)[MoreBoardViewModel::class.java]
+
+        observeViewModel()
 
         val category = intent.getStringExtra("category")?: ""
         Log.d("SeeMoreActivity", "category: $category")
@@ -36,6 +41,52 @@ class SeeMoreActivity : AppCompatActivity() {
 
         binding.tvSort.setOnClickListener {
             showSortDialog(category)
+        }
+    }
+
+    // Observe ViewModel
+    private fun observeViewModel() {
+        moreBoardViewModel.categoryResult.observe(this) { result ->
+            result.onSuccess { links ->
+                totalItemCount = links.size
+                boardRVAdapter.setBoardData(links)
+                binding.rvMore.scrollToPosition(0)
+            }.onFailure {
+                Toast.makeText(this, "카테고리 로드 실패", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        moreBoardViewModel.moreDataResult.observe(this) { result ->
+            result.onSuccess { links ->
+                boardRVAdapter.addBoardData(links)
+                totalItemCount += links.size
+                isLoading = false
+            }.onFailure {
+                Toast.makeText(this, "더 많은 데이터 로드 실패", Toast.LENGTH_SHORT).show()
+                isLoading = false
+            }
+        }
+
+        moreBoardViewModel.loading.observe(this) { loading ->
+            if (loading) {
+                binding.progressBar.visibility = View.VISIBLE
+            } else {
+                binding.progressBar.visibility = View.GONE
+            }
+        }
+
+        moreBoardViewModel.moreDataLoading.observe(this) { moreDataLoading ->
+            if (moreDataLoading) {
+                binding.progressBar.visibility = View.VISIBLE
+            } else {
+                binding.progressBar.visibility = View.GONE
+            }
+        }
+
+        moreBoardViewModel.noMoreData.observe(this) { noMoreData ->
+            if (noMoreData) {
+                Toast.makeText(this, "더 이상 데이터가 없습니다.", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
@@ -56,14 +107,10 @@ class SeeMoreActivity : AppCompatActivity() {
 
     // LinkList 가져오기
     private fun loadLinkList(category: String) {
-        boardViewModel.getEqualCategoryLinkList(category, checkedItem, 5).observe(this) { links ->
-            totalItemCount += links.size
-            boardRVAdapter.setBoardData(links)
-            binding.rvMore.scrollToPosition(0)
-            showLoading(false)
-        }
+        moreBoardViewModel.getEqualCategoryLinkList(category, checkedItem, 30)
     }
 
+    // RecyclerView setup
     private fun setupRecyclerView() {
         boardRVAdapter = BoardRVAdapter(linkList)
         binding.rvMore.adapter = boardRVAdapter
@@ -88,19 +135,10 @@ class SeeMoreActivity : AppCompatActivity() {
 
     // 추가 데이터 로드
     private fun loadMoreData() {
-        isLoading = true
-        showLoading(true)
         val category = intent.getStringExtra("category") ?: ""
-        boardViewModel.getEqualCategoryLinkList(category, checkedItem, totalItemCount + 5).observe(this) { links ->
-            if (links.isNotEmpty()) {
-                boardRVAdapter.setBoardData(links)
-                isLoading = false
-                showLoading(false)
-            }
+        if (!isLoading) {
+            isLoading = true
+            moreBoardViewModel.loadMoreData(category, checkedItem, totalItemCount, 5)
         }
-    }
-
-    private fun showLoading(isVisible: Boolean) {
-        binding.progressBar.visibility = if (isVisible) View.VISIBLE else View.GONE
     }
 }

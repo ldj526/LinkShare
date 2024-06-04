@@ -13,7 +13,7 @@ import androidx.fragment.app.Fragment
 import androidx.viewpager2.widget.ViewPager2
 import com.example.linkshare.R
 import com.example.linkshare.category.CategoryAdapter
-import com.example.linkshare.category.SeeMoreActivity
+import com.example.linkshare.board.MoreBoardActivity
 import com.example.linkshare.databinding.FragmentBoardBinding
 import com.google.android.material.chip.Chip
 
@@ -110,7 +110,7 @@ class BoardFragment : Fragment() {
         val currentPageIndex = binding.viewPager.currentItem
         val currentCategory = resources.getStringArray(R.array.category)[currentPageIndex]
 
-        val intent = Intent(context, SeeMoreActivity::class.java).apply {
+        val intent = Intent(context, MoreBoardActivity::class.java).apply {
             putExtra("category", currentCategory)
         }
         startActivity(intent)

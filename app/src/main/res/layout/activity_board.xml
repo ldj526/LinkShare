@@ -192,10 +192,19 @@
 
             <ImageView
                 android:id="@+id/iv_Image"
-                android:layout_width="match_parent"
-                android:layout_height="300dp"
-                android:layout_marginLeft="20dp"
-                android:layout_marginRight="20dp" />
+                android:layout_width="400dp"
+                android:layout_height="400dp"
+                android:layout_gravity="center"
+                android:layout_margin="10dp"
+                android:visibility="gone" />
+
+            <ProgressBar
+                android:id="@+id/pb_image"
+                android:layout_width="400dp"
+                android:layout_height="400dp"
+                android:layout_margin="10dp"
+                android:layout_gravity="center"
+                android:visibility="gone" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rv_comment"
@@ -228,4 +237,8 @@
             android:src="@android:drawable/ic_menu_edit" />
     </LinearLayout>
 
+    <ProgressBar
+        android:id="@+id/progress_bar"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 </RelativeLayout>

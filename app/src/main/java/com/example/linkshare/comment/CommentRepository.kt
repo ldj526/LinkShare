@@ -10,7 +10,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 
-class CommentRepo {
+class CommentRepository {
 
     // 해당하는 글에 대한 댓글 가져오기
     fun getCommentsLiveData(key: String): LiveData<MutableList<Comment>> {

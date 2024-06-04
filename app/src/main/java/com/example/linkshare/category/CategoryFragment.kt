@@ -4,14 +4,16 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.linkshare.board.BoardRVAdapter
+import com.example.linkshare.board.BoardRepository
 import com.example.linkshare.board.BoardViewModel
+import com.example.linkshare.board.BoardViewModelFactory
 import com.example.linkshare.databinding.FragmentCategoryBinding
 import com.example.linkshare.link.Link
-import com.example.linkshare.view.BoardFragment
 
 class CategoryFragment : Fragment() {
 
@@ -20,7 +22,7 @@ class CategoryFragment : Fragment() {
     private lateinit var category: String
     private val linkList = mutableListOf<Link>()
     private lateinit var boardRVAdapter: BoardRVAdapter
-    private val boardViewModel: BoardViewModel by viewModels()
+    private lateinit var boardViewModel: BoardViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,6 +37,13 @@ class CategoryFragment : Fragment() {
     ): View {
         _binding = FragmentCategoryBinding.inflate(inflater, container, false)
         // Inflate the layout for this fragment
+
+        val boardRepository = BoardRepository()
+        val boardFactory = BoardViewModelFactory(boardRepository)
+        boardViewModel = ViewModelProvider(this, boardFactory)[BoardViewModel::class.java]
+
+        observeViewModel()
+
         setupRecyclerView()
         loadCategoryData()
         return binding.root
@@ -47,12 +56,25 @@ class CategoryFragment : Fragment() {
         binding.rvCategory.layoutManager = LinearLayoutManager(context)
     }
 
+    // Observe ViewModel
+    private fun observeViewModel() {
+        boardViewModel.loading.observe(viewLifecycleOwner) { isLoading ->
+            binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
+        }
+
+        boardViewModel.categoryResult.observe(viewLifecycleOwner) { result ->
+            result.onSuccess { links ->
+                boardRVAdapter.setBoardData(links)
+                binding.rvCategory.scrollToPosition(0)
+            }.onFailure {
+                Toast.makeText(requireContext(), "검색 실패", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
     // 카테고리에 맞는 데이터 가져오기
     private fun loadCategoryData() {
-        boardViewModel.getEqualCategoryLinkList(category, 0, 3).observe(viewLifecycleOwner) { links ->
-            boardRVAdapter.setBoardData(links)
-            binding.rvCategory.scrollToPosition(0)
-        }
+        boardViewModel.getEqualCategoryLinkList(category, 0, 3)
     }
 
     companion object {

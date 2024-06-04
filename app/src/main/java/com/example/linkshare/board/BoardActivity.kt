@@ -8,13 +8,15 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.example.linkshare.comment.Comment
 import com.example.linkshare.comment.CommentRVAdapter
+import com.example.linkshare.comment.CommentRepository
 import com.example.linkshare.comment.CommentViewModel
+import com.example.linkshare.comment.CommentViewModelFactory
 import com.example.linkshare.databinding.ActivityBoardBinding
 import com.example.linkshare.link.Link
 import com.example.linkshare.link.UpdateLinkActivity
@@ -30,6 +32,8 @@ class BoardActivity : AppCompatActivity() {
     private lateinit var binding: ActivityBoardBinding
     private lateinit var key: String
     private lateinit var writeUid: String
+    private lateinit var boardViewModel: BoardViewModel
+    private lateinit var commentViewModel: CommentViewModel
     private val commentList = mutableListOf<Comment>()
     private lateinit var commentRVAdapter: CommentRVAdapter
     private var latitude: Double? = 0.0
@@ -43,8 +47,6 @@ class BoardActivity : AppCompatActivity() {
                 binding.tvMap.text = result.data?.getStringExtra("title")
             }
         }
-    private val boardViewModel: BoardViewModel by viewModels()
-    private val commentViewModel: CommentViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,6 +54,14 @@ class BoardActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         key = intent.getStringExtra("key").toString()
+
+        val boardRepository = BoardRepository()
+        val boardFactory = BoardViewModelFactory(boardRepository)
+        boardViewModel = ViewModelProvider(this, boardFactory)[BoardViewModel::class.java]
+
+        val commentRepository = CommentRepository()
+        val commentFactory = CommentViewModelFactory(commentRepository)
+        commentViewModel = ViewModelProvider(this, commentFactory)[CommentViewModel::class.java]
 
         // comment RecyclerView 연결
         commentRVAdapter = CommentRVAdapter(commentList) { commentId ->
@@ -66,61 +76,10 @@ class BoardActivity : AppCompatActivity() {
         binding.rvComment.layoutManager = LinearLayoutManager(this)
 
         boardViewModel.getPostData(key)
-        boardViewModel.linkData.observe(this) { link ->
-            updateBoardData(link)
-        }
         boardViewModel.getImageUrl(key)
-        boardViewModel.imageUrl.observe(this) { url ->
-            url?.let {
-                Glide.with(this).load(it).into(binding.ivImage)
-            }
-        }
-        boardViewModel.deleteStatus.observe(this) { isSuccess ->
-            if (isSuccess) {
-                Toast.makeText(this, "삭제 성공", Toast.LENGTH_SHORT).show()
-                finish()
-            } else {
-                Toast.makeText(this, "삭제 실패", Toast.LENGTH_SHORT).show()
-            }
-        }
-        boardViewModel.shareStatus.observe(this) { result ->
-            when (result) {
-                ShareResult.SUCCESS -> {
-                    Toast.makeText(this, "공유 성공", Toast.LENGTH_SHORT).show()
-                }
 
-                ShareResult.ALREADY_SHARED -> {
-                    Toast.makeText(this, "이미 공유된 글입니다.", Toast.LENGTH_SHORT).show()
-                }
-
-                else -> {
-                    Toast.makeText(this, "공유 실패", Toast.LENGTH_SHORT).show()
-                }
-            }
-        }
-        boardViewModel.shareCount.observe(this) { newShareCount ->
-            binding.tvShareCnt.text = "공유 횟수 : $newShareCount"
-        }
-
-        commentViewModel.getCommentData(key).observe(this) { comments ->
-            commentRVAdapter.setCommentData(comments)
-        }
-
-        commentViewModel.commentStatus.observe(this) { success ->
-            if (success) {
-                Toast.makeText(this, "댓글 작성 성공", Toast.LENGTH_SHORT).show()
-            } else {
-                Toast.makeText(this, "댓글 작성 실패", Toast.LENGTH_SHORT).show()
-            }
-        }
-
-        commentViewModel.deleteStatus.observe(this) { success ->
-            if (success) {
-                Toast.makeText(this, "댓글 삭제 성공", Toast.LENGTH_SHORT).show()
-            } else {
-                Toast.makeText(this, "댓글 삭제 실패", Toast.LENGTH_SHORT).show()
-            }
-        }
+        boardObserveViewModel()
+        commentObserveViewModel()
 
         // 수정 버튼 클릭 시
         binding.ivUpdate.setOnClickListener {
@@ -156,6 +115,85 @@ class BoardActivity : AppCompatActivity() {
 
         binding.ivShare.setOnClickListener {
             showShareDialog()
+        }
+    }
+
+    // Observe BoardViewModel
+    private fun boardObserveViewModel() {
+        boardViewModel.linkData.observe(this) { link ->
+            updateBoardData(link)
+        }
+
+        boardViewModel.imageUrl.observe(this) { url ->
+            url?.let {
+                Glide.with(this).load(it).into(binding.ivImage)
+            }
+        }
+
+        boardViewModel.deleteStatus.observe(this) { isSuccess ->
+            if (isSuccess) {
+                Toast.makeText(this, "삭제 성공", Toast.LENGTH_SHORT).show()
+                finish()
+            } else {
+                Toast.makeText(this, "삭제 실패", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        boardViewModel.shareStatus.observe(this) { result ->
+            when (result) {
+                ShareResult.SUCCESS -> {
+                    Toast.makeText(this, "공유 성공", Toast.LENGTH_SHORT).show()
+                }
+
+                ShareResult.ALREADY_SHARED -> {
+                    Toast.makeText(this, "이미 공유된 글입니다.", Toast.LENGTH_SHORT).show()
+                }
+
+                else -> {
+                    Toast.makeText(this, "공유 실패", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+
+        boardViewModel.shareCount.observe(this) { newShareCount ->
+            binding.tvShareCnt.text = "공유 횟수 : $newShareCount"
+        }
+
+        boardViewModel.loading.observe(this) { isLoading ->
+            binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
+        }
+
+        boardViewModel.imageLoading.observe(this) { isLoading ->
+            if (isLoading) {
+                binding.pbImage.visibility = View.VISIBLE
+                binding.ivImage.visibility = View.GONE
+            } else {
+                binding.pbImage.visibility = View.GONE
+                binding.ivImage.visibility = View.VISIBLE
+            }
+        }
+    }
+
+    // Observe CommentViewModel
+    private fun commentObserveViewModel() {
+        commentViewModel.getCommentData(key).observe(this) { comments ->
+            commentRVAdapter.setCommentData(comments)
+        }
+
+        commentViewModel.commentStatus.observe(this) { success ->
+            if (success) {
+                Toast.makeText(this, "댓글 작성 성공", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(this, "댓글 작성 실패", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        commentViewModel.deleteStatus.observe(this) { success ->
+            if (success) {
+                Toast.makeText(this, "댓글 삭제 성공", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(this, "댓글 삭제 실패", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
