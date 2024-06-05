@@ -1,7 +1,6 @@
 package com.example.linkshare.board
 
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -22,6 +21,7 @@ class MoreBoardActivity : AppCompatActivity() {
     private lateinit var moreBoardViewModel: MoreBoardViewModel
     private var totalItemCount = 0 // 현재 데이터 총 개수
     private var isLoading = false
+    private var isEndOfData = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,12 +32,11 @@ class MoreBoardActivity : AppCompatActivity() {
         val boardFactory = BoardViewModelFactory(boardRepository)
         moreBoardViewModel = ViewModelProvider(this, boardFactory)[MoreBoardViewModel::class.java]
 
-        observeViewModel()
-
         val category = intent.getStringExtra("category")?: ""
-        Log.d("SeeMoreActivity", "category: $category")
-        setupRecyclerView()
-        loadLinkList(category)
+        setupRecyclerView(category)
+        setupSwipeRefreshLayout(category)
+        observeViewModel()
+        loadLinkList(category, initialLoad = true)
 
         binding.tvSort.setOnClickListener {
             showSortDialog(category)
@@ -50,19 +49,11 @@ class MoreBoardActivity : AppCompatActivity() {
             result.onSuccess { links ->
                 totalItemCount = links.size
                 boardRVAdapter.setBoardData(links)
-                binding.rvMore.scrollToPosition(0)
-            }.onFailure {
-                Toast.makeText(this, "카테고리 로드 실패", Toast.LENGTH_SHORT).show()
-            }
-        }
-
-        moreBoardViewModel.moreDataResult.observe(this) { result ->
-            result.onSuccess { links ->
-                boardRVAdapter.addBoardData(links)
-                totalItemCount += links.size
+                binding.swipeRefreshLayout.isRefreshing = false
                 isLoading = false
             }.onFailure {
-                Toast.makeText(this, "더 많은 데이터 로드 실패", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "카테고리 로드 실패", Toast.LENGTH_SHORT).show()
+                binding.swipeRefreshLayout.isRefreshing = false
                 isLoading = false
             }
         }
@@ -75,17 +66,23 @@ class MoreBoardActivity : AppCompatActivity() {
             }
         }
 
-        moreBoardViewModel.moreDataLoading.observe(this) { moreDataLoading ->
-            if (moreDataLoading) {
-                binding.progressBar.visibility = View.VISIBLE
+        moreBoardViewModel.moreLoading.observe(this) { loading ->
+            isLoading = loading
+            if (loading) {
+                binding.pbMoreData.visibility = View.VISIBLE
             } else {
-                binding.progressBar.visibility = View.GONE
+                binding.pbMoreData.visibility = View.GONE
             }
         }
 
-        moreBoardViewModel.noMoreData.observe(this) { noMoreData ->
-            if (noMoreData) {
-                Toast.makeText(this, "더 이상 데이터가 없습니다.", Toast.LENGTH_SHORT).show()
+        moreBoardViewModel.isEndOfData.observe(this) { endOfData ->
+            isEndOfData = endOfData
+        }
+
+        moreBoardViewModel.initialLoadComplete.observe(this) { initialLoadComplete ->
+            if (initialLoadComplete) {
+                binding.rvMore.scrollToPosition(0)
+                moreBoardViewModel.resetPage()
             }
         }
     }
@@ -99,19 +96,20 @@ class MoreBoardActivity : AppCompatActivity() {
             .setSingleChoiceItems(sortOptions, checkedItem) { dialog, which ->
                 binding.tvSort.text = sortOptions[which]
                 checkedItem = which
-                loadLinkList(category)
+                loadLinkList(category, initialLoad = true)
                 dialog.dismiss()
             }
             .show()
     }
 
     // LinkList 가져오기
-    private fun loadLinkList(category: String) {
-        moreBoardViewModel.getEqualCategoryLinkList(category, checkedItem, 30)
+    private fun loadLinkList(category: String, initialLoad: Boolean) {
+        moreBoardViewModel.resetPage()
+        moreBoardViewModel.getEqualCategoryLinkList(category, checkedItem, initialLoad)
     }
 
     // RecyclerView setup
-    private fun setupRecyclerView() {
+    private fun setupRecyclerView(category: String) {
         boardRVAdapter = BoardRVAdapter(linkList)
         binding.rvMore.adapter = boardRVAdapter
         binding.rvMore.layoutManager = LinearLayoutManager(this)
@@ -121,24 +119,21 @@ class MoreBoardActivity : AppCompatActivity() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
                 val layoutManager = recyclerView.layoutManager as LinearLayoutManager
-                val visibleItemCount = layoutManager.childCount
+                val lastVisibleItemPosition = layoutManager.findLastVisibleItemPosition()
                 val totalItemCount = layoutManager.itemCount
-                val firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition()
 
-                if (!isLoading && totalItemCount <= (firstVisibleItemPosition + visibleItemCount)) {
-                    // 데이터 더 로드
-                    loadMoreData()
+                if (!isLoading && !isEndOfData && lastVisibleItemPosition >= totalItemCount - 5 && dy > 0) {
+                    moreBoardViewModel.loadMoreLinkList(category, checkedItem)
+                    isLoading = true
                 }
             }
         })
     }
 
-    // 추가 데이터 로드
-    private fun loadMoreData() {
-        val category = intent.getStringExtra("category") ?: ""
-        if (!isLoading) {
-            isLoading = true
-            moreBoardViewModel.loadMoreData(category, checkedItem, totalItemCount, 5)
+    // SwipeRefreshLayout setup
+    private fun setupSwipeRefreshLayout(category: String) {
+        binding.swipeRefreshLayout.setOnRefreshListener {
+            loadLinkList(category, initialLoad = false)  // 기본 카테고리 또는 사용자가 선택한 카테고리로 새로고침
         }
     }
 }
