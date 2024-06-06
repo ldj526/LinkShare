@@ -6,8 +6,8 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
 import com.example.linkshare.board.MapActivity
 import com.example.linkshare.databinding.ActivityLinkBinding
@@ -30,7 +30,7 @@ class LinkActivity : AppCompatActivity() {
             binding.tvMap.text = result.data?.getStringExtra("title")
         }
     }
-    private val linkViewModel: LinkViewModel by viewModels()
+    private lateinit var linkViewModel: LinkViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,24 +40,14 @@ class LinkActivity : AppCompatActivity() {
         key = intent.getStringExtra("key").toString()
         firebaseRef = intent.getStringExtra("firebaseRef").toString()
 
+        val linkRepository = LinkRepository()
+        val linkFactory = LinkViewModelFactory(linkRepository)
+        linkViewModel = ViewModelProvider(this, linkFactory)[LinkViewModel::class.java]
+
         linkViewModel.getPostData(key)
-        linkViewModel.linkData.observe(this) { link ->
-            updateLinkData(link)
-        }
         linkViewModel.getImageUrl(key)
-        linkViewModel.imageUrl.observe(this) { url ->
-            url?.let {
-                Glide.with(this).load(it).into(binding.ivImage)
-            }
-        }
-        linkViewModel.deleteStatus.observe(this) { isSuccess ->
-            if (isSuccess) {
-                Toast.makeText(this, "삭제 성공", Toast.LENGTH_SHORT).show()
-                finish()
-            } else {
-                Toast.makeText(this, "삭제 실패", Toast.LENGTH_SHORT).show()
-            }
-        }
+
+        observeViewModel()
 
         // 수정 버튼 클릭 시
         binding.ivUpdate.setOnClickListener {
@@ -81,6 +71,55 @@ class LinkActivity : AppCompatActivity() {
                 putExtra("title", binding.tvMap.text)
             }
             linkDataResultLauncher.launch(intent)
+        }
+    }
+
+    private fun observeViewModel() {
+        linkViewModel.linkData.observe(this) { result ->
+            result.onSuccess { link ->
+                updateLinkData(link)
+            }.onFailure {
+                Toast.makeText(this, "데이터 로드 실패", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        linkViewModel.imageUrl.observe(this) { url ->
+            url?.let {
+                Glide.with(this).load(it).into(binding.ivImage)
+            }
+        }
+
+        linkViewModel.deleteStatus.observe(this) { result ->
+            result.onSuccess {
+                if (it) {
+                    Toast.makeText(this, "삭제 성공", Toast.LENGTH_SHORT).show()
+                    finish()
+                } else {
+                    Toast.makeText(this, "삭제 실패", Toast.LENGTH_SHORT).show()
+                }
+            }.onFailure {
+                Toast.makeText(this, "삭제 실패", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        linkViewModel.loading.observe(this) { isLoading ->
+            if (isLoading) {
+                binding.scrollView.visibility = View.GONE
+                binding.progressBar.visibility = View.VISIBLE
+            } else {
+                binding.scrollView.visibility = View.VISIBLE
+                binding.progressBar.visibility = View.GONE
+            }
+        }
+
+        linkViewModel.imageLoading.observe(this) { imageLoading ->
+            if (imageLoading) {
+                binding.ivImage.visibility = View.GONE
+                binding.pbImage.visibility = View.VISIBLE
+            } else {
+                binding.ivImage.visibility = View.VISIBLE
+                binding.pbImage.visibility = View.GONE
+            }
         }
     }
 

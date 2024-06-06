@@ -13,7 +13,7 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
+import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
 import com.example.linkshare.category.CategorySelectActivity
 import com.example.linkshare.databinding.FragmentWriteLinkBinding
@@ -54,7 +54,7 @@ class WriteLinkFragment : Fragment() {
             updateCategoriesView(selectedCategories)
         }
     }
-    private val linkViewModel: LinkViewModel by viewModels()
+    private lateinit var linkViewModel: LinkViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         arguments?.let {
@@ -68,6 +68,11 @@ class WriteLinkFragment : Fragment() {
                     binding.ivImage.setImageURI(uri)
                 }
             }
+
+        val linkRepository = LinkRepository()
+        val linkFactory = LinkViewModelFactory(linkRepository)
+        linkViewModel = ViewModelProvider(this, linkFactory)[LinkViewModel::class.java]
+
         super.onCreate(savedInstanceState)
     }
 
@@ -92,11 +97,14 @@ class WriteLinkFragment : Fragment() {
 
         updateCategoriesView(selectedCategories)
 
-        // 저장된 메모를 불러올 경우
-        if (key != "") {
+        if (key.isNotEmpty()) {
             linkViewModel.getPostData(key)
-            linkViewModel.linkData.observe(viewLifecycleOwner) { link ->
-                loadLink(link)
+            linkViewModel.linkData.observe(viewLifecycleOwner) { result ->
+                result.onSuccess { link ->
+                    loadLink(link)
+                }.onFailure {
+                    Toast.makeText(requireContext(), "데이터 로드 실패", Toast.LENGTH_SHORT).show()
+                }
             }
             linkViewModel.getImageUrl(key)
             linkViewModel.imageUrl.observe(viewLifecycleOwner) { url ->
@@ -106,14 +114,15 @@ class WriteLinkFragment : Fragment() {
             }
         }
 
-        linkViewModel.saveStatus.observe(viewLifecycleOwner) { isSuccess ->
-            if (isSuccess) {
-                Toast.makeText(requireContext(), "메모 저장 성공", Toast.LENGTH_SHORT).show()
-                val intent = Intent(context, MainActivity::class.java).apply {
-                    flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+        linkViewModel.saveStatus.observe(viewLifecycleOwner) { result ->
+            result.onSuccess { isSuccess ->
+                if (isSuccess) {
+                    Toast.makeText(requireContext(), "메모 저장 성공", Toast.LENGTH_SHORT).show()
+                    navigateToLinkFragment()
+                } else {
+                    Toast.makeText(requireContext(), "메모 저장 실패", Toast.LENGTH_SHORT).show()
                 }
-                startActivity(intent)
-            } else {
+            }.onFailure {
                 Toast.makeText(requireContext(), "메모 저장 실패", Toast.LENGTH_SHORT).show()
             }
         }
@@ -148,6 +157,14 @@ class WriteLinkFragment : Fragment() {
             }
             selectedCategoryResultLauncher.launch(intent)
         }
+    }
+
+    // MainActivity로 돌아가서 LinkFragment로 navigate
+    private fun navigateToLinkFragment() {
+        val intent = Intent(context, MainActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+        intent.putExtra("navigateToLinkFragment", true)
+        startActivity(intent)
     }
 
     private fun updateCategoriesView(categories: List<String>?) {

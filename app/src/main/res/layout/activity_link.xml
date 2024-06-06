@@ -6,78 +6,84 @@
     android:layout_height="match_parent"
     tools:context=".board.BoardActivity">
 
-    <ScrollView
+
+    <LinearLayout
+        android:id="@+id/title_layout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="60dp">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <ImageView
+                android:id="@+id/iv_back"
+                android:layout_width="30dp"
+                android:layout_height="40dp"
+                android:layout_margin="10dp"
+                android:src="?attr/homeAsUpIndicator"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/tv_title"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="50dp"
+                android:layout_marginRight="50dp"
+                android:gravity="center"
+                android:text="title"
+                android:textColor="@color/black"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <ImageView
+                android:id="@+id/iv_update"
+                android:layout_width="30dp"
+                android:layout_height="40dp"
+                android:layout_margin="10dp"
+                android:src="@drawable/ic_update"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/iv_delete"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <ImageView
+                android:id="@+id/iv_delete"
+                android:layout_width="30dp"
+                android:layout_height="40dp"
+                android:layout_margin="10dp"
+                android:src="@android:drawable/ic_menu_delete"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0.6dp"
+        android:background="#999999">
+
+    </LinearLayout>
+
+    <ScrollView
+        android:id="@+id/scrollView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        tools:visibility="visible"
+        android:layout_below="@id/title_layout">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical"
             tools:context=".board.BoardInsideActivity">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="60dp">
-
-                <androidx.constraintlayout.widget.ConstraintLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent">
-
-                    <ImageView
-                        android:id="@+id/iv_back"
-                        android:layout_width="30dp"
-                        android:layout_height="40dp"
-                        android:layout_margin="10dp"
-                        android:src="?attr/homeAsUpIndicator"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent" />
-
-                    <TextView
-                        android:id="@+id/tv_title"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:layout_marginLeft="50dp"
-                        android:layout_marginRight="50dp"
-                        android:gravity="center"
-                        android:text="title"
-                        android:textColor="@color/black"
-                        android:textSize="20sp"
-                        android:textStyle="bold" />
-
-                    <ImageView
-                        android:id="@+id/iv_update"
-                        android:layout_width="30dp"
-                        android:layout_height="40dp"
-                        android:layout_margin="10dp"
-                        android:src="@drawable/ic_update"
-                        android:visibility="gone"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toStartOf="@+id/iv_delete"
-                        app:layout_constraintTop_toTopOf="parent" />
-
-                    <ImageView
-                        android:id="@+id/iv_delete"
-                        android:layout_width="30dp"
-                        android:layout_height="40dp"
-                        android:layout_margin="10dp"
-                        android:src="@android:drawable/ic_menu_delete"
-                        android:visibility="gone"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintTop_toTopOf="parent" />
-                </androidx.constraintlayout.widget.ConstraintLayout>
-
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="0.6dp"
-                android:background="#999999">
-
-            </LinearLayout>
 
             <TextView
                 android:id="@+id/tv_time"
@@ -170,12 +176,34 @@
 
             <ImageView
                 android:id="@+id/iv_Image"
-                android:layout_width="match_parent"
-                android:layout_height="300dp"
+                android:layout_width="400dp"
+                android:layout_height="400dp"
+                android:layout_gravity="center"
                 android:layout_marginLeft="20dp"
-                android:layout_marginRight="20dp" />
+                android:layout_marginRight="20dp"
+                android:visibility="gone"
+                tools:visibility="visible" />
+
+            <ProgressBar
+                android:id="@+id/pb_image"
+                android:layout_width="400dp"
+                android:layout_height="400dp"
+                android:layout_margin="10dp"
+                android:padding="160dp"
+                android:layout_gravity="center"
+                android:visibility="gone"
+                tools:visibility="visible" />
 
         </LinearLayout>
     </ScrollView>
+
+    <ProgressBar
+        android:id="@+id/progress_bar"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/title_layout"
+        android:padding="200dp"
+        android:visibility="gone"
+        tools:visibility="visible" />
 
 </RelativeLayout>
