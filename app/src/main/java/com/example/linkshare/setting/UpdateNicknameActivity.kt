@@ -153,6 +153,10 @@ class UpdateNicknameActivity : AppCompatActivity() {
     // Nickname 중복 확인
     private fun checkNicknameDuplication() {
         val nickname = binding.etNickname.text.toString()
+        if (nickname.isBlank()) {
+            showErrorFeedback(binding.etNicknameLayout, "닉네임을 입력해주세요.")
+            return
+        }
         nicknameViewModel.checkNicknameDuplication(nickname)
     }
 

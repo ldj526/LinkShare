@@ -6,12 +6,17 @@ import android.graphics.Color
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
+import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import com.example.linkshare.R
 import com.example.linkshare.databinding.ActivityNicknameBinding
+import com.example.linkshare.setting.NicknameViewModel
+import com.example.linkshare.setting.SettingRepository
+import com.example.linkshare.setting.SettingViewModelFactory
 import com.example.linkshare.view.MainActivity
 import com.google.android.material.textfield.TextInputLayout
 import com.google.firebase.Firebase
@@ -24,6 +29,7 @@ class NicknameActivity : AppCompatActivity() {
     private lateinit var binding: ActivityNicknameBinding
     private lateinit var auth: FirebaseAuth
     private lateinit var db: FirebaseFirestore
+    private lateinit var nicknameViewModel: NicknameViewModel
     private var isNicknameDuplicated = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -34,6 +40,11 @@ class NicknameActivity : AppCompatActivity() {
         // Initialize Firebase Auth
         auth = Firebase.auth
         db = FirebaseFirestore.getInstance()
+        val settingRepository = SettingRepository(db, auth)
+        val factory = SettingViewModelFactory(settingRepository)
+        nicknameViewModel = ViewModelProvider(this, factory)[NicknameViewModel::class.java]
+
+        observeViewModel()
 
         binding.etNicknameLayout.editText?.addTextChangedListener(nicknameListener)
 
@@ -44,6 +55,51 @@ class NicknameActivity : AppCompatActivity() {
         binding.btnNext.setOnClickListener {
             createNickname()
         }
+
+        nicknameViewModel.setLoading(false)
+    }
+
+    // ViewModel
+    private fun observeViewModel() {
+        nicknameViewModel.nicknameDuplicationResult.observe(this, Observer { result ->
+            result.onSuccess { isDuplicated ->
+                isNicknameDuplicated = isDuplicated
+                if (isDuplicated) {
+                    showErrorFeedback(binding.etNicknameLayout, "중복된 닉네임입니다.")
+                } else {
+                    showPositiveFeedback(binding.etNicknameLayout, "사용 가능한 닉네임입니다.")
+                }
+                flagCheck()
+            }.onFailure {
+                showErrorFeedback(binding.etNicknameLayout, "닉네임 중복을 확인하는데 실패했습니다.")
+                isNicknameDuplicated = true
+                flagCheck()
+            }
+        })
+
+        nicknameViewModel.updateNicknameResult.observe(this, Observer { result ->
+            result.onSuccess {
+                Toast.makeText(this, "성공", Toast.LENGTH_SHORT).show()
+                moveToMain()
+            }.onFailure {
+                Toast.makeText(this, "저장하는데 실패했습니다.", Toast.LENGTH_SHORT).show()
+            }
+        })
+
+        nicknameViewModel.loading.observe(this, Observer { isLoading ->
+            if (isLoading) {
+                binding.progressBar.visibility = View.VISIBLE
+            } else {
+                binding.progressBar.visibility = View.GONE
+            }
+        })
+    }
+
+    private fun moveToMain() {
+        val intent = Intent(this, MainActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+        startActivity(intent)
+        finish()
     }
 
     private val nicknameListener = object : TextWatcher {
@@ -63,46 +119,22 @@ class NicknameActivity : AppCompatActivity() {
 
     }
 
-    // 닉네임 중복 확인
+    // Nickname 중복 확인
     private fun checkNicknameDuplication() {
         val nickname = binding.etNickname.text.toString()
-
-        if (nickname == "") {
-            showErrorFeedback(binding.etNicknameLayout, "닉네임을 입력하세요.")
-            isNicknameDuplicated = true
-            flagCheck()
-        } else {
-            db.collection("users").whereEqualTo("nickname", nickname).get()
-                .addOnSuccessListener { documents ->
-                    isNicknameDuplicated = documents.isEmpty.not()
-                    if (documents.isEmpty) {
-                        showPositiveFeedback(binding.etNicknameLayout, "사용 가능한 닉네임입니다.")
-                    } else {
-                        showErrorFeedback(binding.etNicknameLayout, "중복된 닉네임입니다.")
-                    }
-                    flagCheck()
-                }.addOnFailureListener {
-                    showErrorFeedback(binding.etNicknameLayout, "닉네임 중복을 확인하는데 실패했습니다.")
-                    isNicknameDuplicated = true
-                    flagCheck()
-                }
+        if (nickname.isBlank()) {
+            showErrorFeedback(binding.etNicknameLayout, "닉네임을 입력해주세요.")
+            return
         }
+        nicknameViewModel.checkNicknameDuplication(nickname)
     }
 
-    // Nickname 만들고 MainActivity로 이동
+    // Firestore에 email, nickname 저장
     private fun createNickname() {
         val nickname = binding.etNickname.text.toString()
-        val email = auth.currentUser!!.uid
-        val user = hashMapOf("email" to email, "nickname" to nickname)
-        // Firestore에 사용자 정보 저장
-        db.collection("users").document(auth.currentUser!!.uid).set(user).addOnSuccessListener {
-            Toast.makeText(this, "성공", Toast.LENGTH_SHORT).show()
-            val intent = Intent(this, MainActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-            startActivity(intent)
-        }.addOnFailureListener {
-            Toast.makeText(this, "저장하는데 실패했습니다.", Toast.LENGTH_SHORT).show()
-        }
+        val email = auth.currentUser?.email ?: return
+        val userId = auth.currentUser?.uid ?: return
+        nicknameViewModel.updateNickname(userId, email, nickname)
     }
 
     // TextInputLayout 조건 맞을 때

@@ -5,9 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.view.Gravity
 import android.view.View
-import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -19,7 +17,6 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.android.gms.common.SignInButton
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.tasks.RuntimeExecutionException
 import com.google.android.gms.tasks.Task
@@ -92,10 +89,8 @@ class IntroActivity : AppCompatActivity() {
 
             auth.signInWithEmailAndPassword(email, pwd).addOnCompleteListener(this) { task ->
                 if (task.isSuccessful) {
-                    Toast.makeText(this, "로그인 성공", Toast.LENGTH_LONG).show()
-                    val intent = Intent(this, MainActivity::class.java)
-                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-                    startActivity(intent)
+                    val currentUser = auth.currentUser
+                    checkNickname(currentUser?.uid)
                 } else {
                     Toast.makeText(this, "로그인 실패", Toast.LENGTH_LONG).show()
                 }

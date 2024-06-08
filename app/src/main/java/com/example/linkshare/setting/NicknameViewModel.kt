@@ -27,6 +27,10 @@ class NicknameViewModel(private val settingRepository: SettingRepository) : View
     private val delayTime = 500L
     private val nicknameChangeLimitDays = 30
 
+    init {
+        _loading.value = false // ViewModel 초기화 시 로딩 상태를 false로 설정
+    }
+
     // Nickname 가져오기
     fun fetchUserNickname(userId: String) {
         viewModelScope.launch {
@@ -95,5 +99,10 @@ class NicknameViewModel(private val settingRepository: SettingRepository) : View
             _loading.value = false
             _updateNicknameResult.value = result
         }
+    }
+
+    // 로딩 상태 설정
+    fun setLoading(isLoading: Boolean) {
+        _loading.value = isLoading
     }
 }
