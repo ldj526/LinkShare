@@ -33,7 +33,7 @@ class SettingRepository(private val firestore: FirebaseFirestore, private val au
 
     // 사용자의 카카오 데이터 가져오기
     fun isKakaoAccount(user: FirebaseUser): Boolean {
-        return user.providerData.any { it.providerId == "kakao.com" }
+        return user.providerData.any { it.providerId == "oidc.kakao.com" }
     }
 
     // 사용자의 카카오 이메일 가져오기

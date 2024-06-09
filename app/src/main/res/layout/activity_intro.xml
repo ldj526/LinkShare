@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -9,39 +9,46 @@
     tools:context=".auth.IntroActivity">
 
     <LinearLayout
+        android:id="@+id/linearLayout3"
         android:layout_width="match_parent"
         android:layout_height="150dp"
-        android:layout_marginTop="30dp">
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
         <TextView
             android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:gravity="center"
+            android:layout_height="wrap_content"
             android:text="로그인"
+            android:layout_gravity="center"
+            android:gravity="center"
             android:textColor="#000000"
-            android:textSize="20sp"
+            android:textSize="24sp"
             android:textStyle="bold" />
     </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/linearLayout2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout3">
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/email_layout"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="10dp" >
+            android:layout_margin="10dp">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/et_email"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:maxLines="1"
                 android:hint="이메일"
-                android:inputType="text" />
+                android:inputType="text"
+                android:maxLines="1" />
 
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -50,15 +57,15 @@
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="10dp" >
+            android:layout_margin="10dp">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/et_pwd"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:maxLines="1"
                 android:hint="비밀번호"
-                android:inputType="textPassword" />
+                android:inputType="textPassword"
+                android:maxLines="1" />
 
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -66,80 +73,90 @@
             android:layout_width="match_parent"
             android:layout_height="24dp"
             android:layout_marginTop="10dp"
-            android:orientation="horizontal" >
+            android:orientation="horizontal">
 
             <TextView
                 android:id="@+id/tv_join"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="회원가입"
                 android:layout_weight="1"
+                android:background="@drawable/ripple_effect"
                 android:gravity="center"
-                android:background="@drawable/ripple_effect"/>
+                android:text="회원가입" />
 
             <View
                 android:layout_width="0.6dp"
                 android:layout_height="wrap_content"
-                android:background="#000000"/>
+                android:background="#000000" />
 
             <TextView
                 android:id="@+id/tv_find_info"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="이메일 / 비밀번호 찾기"
                 android:layout_weight="1"
+                android:background="@drawable/ripple_effect"
                 android:gravity="center"
-                android:background="@drawable/ripple_effect"/>
+                android:text="이메일 / 비밀번호 찾기" />
         </LinearLayout>
 
         <android.widget.Button
             android:id="@+id/btn_login"
             android:layout_width="match_parent"
             android:layout_height="50dp"
-            android:background="@drawable/button_ripple"
             android:layout_margin="20dp"
+            android:background="@drawable/button_ripple"
             android:text="로그인하기" />
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
             android:gravity="center_vertical"
+            android:orientation="horizontal"
             android:padding="20dp">
 
             <View
                 android:layout_width="0dp"
                 android:layout_height="0.8dp"
                 android:layout_weight="1"
-                android:background="#000000"/>
+                android:background="#000000" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:paddingHorizontal="15dp"
                 android:text="간편 로그인"
-                android:textColor="#000000"/>
+                android:textColor="#000000" />
 
             <View
                 android:layout_width="0dp"
                 android:layout_height="0.8dp"
                 android:layout_weight="1"
-                android:background="#000000"/>
+                android:background="#000000" />
         </LinearLayout>
 
-        <include layout="@layout/google_login_button"
+        <include
             android:id="@+id/google_login"
-            android:layout_gravity="center"
+            layout="@layout/google_login_button"
             android:layout_width="wrap_content"
-            android:layout_margin="10dp"
-            android:layout_height="50dp"/>
+            android:layout_height="50dp"
+            android:layout_gravity="center"
+            android:layout_margin="10dp" />
 
-        <include layout="@layout/kakao_login_button"
+        <include
             android:id="@+id/kakao_login"
-            android:layout_gravity="center"
+            layout="@layout/kakao_login_button"
             android:layout_width="wrap_content"
-            android:layout_height="50dp"/>
+            android:layout_height="50dp"
+            android:layout_gravity="center" />
 
     </LinearLayout>
 
-</LinearLayout>
+    <ProgressBar
+        android:id="@+id/progress_bar"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="180dp"
+        android:visibility="gone"
+        tools:visibility="visible" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

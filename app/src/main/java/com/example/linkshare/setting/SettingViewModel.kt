@@ -93,10 +93,8 @@ class SettingViewModel(private val settingRepository: SettingRepository): ViewMo
                 }
 
                 settingRepository.isKakaoAccount(user) -> {
-                    viewModelScope.launch {
-                        val result = settingRepository.fetchKakaoUserEmail()
-                        _profileEmail.value = result.getOrNull() ?: "이메일 정보 없음"
-                    }
+                    val result = settingRepository.fetchKakaoUserEmail()
+                    _profileEmail.value = result.getOrNull() ?: "이메일 정보 없음"
                 }
 
                 else -> {
