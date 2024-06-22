@@ -70,4 +70,46 @@ class AuthRepository(private val auth: FirebaseAuth, private val firestore: Fire
             }
         }
     }
+
+    // 이메일 중복 확인
+    suspend fun checkEmailDuplication(email: String): Result<Boolean> {
+        return try {
+            val result = firestore.collection("users")
+                .whereEqualTo("email", email)
+                .get()
+                .await()
+            Result.success(result.isEmpty)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    // 닉네임 중복 확인
+    suspend fun checkNicknameDuplication(nickname: String): Result<Boolean> {
+        return try {
+            val result = firestore.collection("users")
+                .whereEqualTo("nickname", nickname)
+                .get()
+                .await()
+            Result.success(result.isEmpty)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    // 회원가입
+    suspend fun signUpUser(email: String, password: String, nickname: String): Result<Unit> {
+        return try {
+            val authResult = auth.createUserWithEmailAndPassword(email, password).await()
+            val user = authResult.user ?: throw Exception("User creation failed")
+            val userData = hashMapOf(
+                "email" to email,
+                "nickname" to nickname
+            )
+            firestore.collection("users").document(user.uid).set(userData).await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }

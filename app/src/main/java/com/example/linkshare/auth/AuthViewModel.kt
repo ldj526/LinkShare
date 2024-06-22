@@ -17,6 +17,15 @@ class AuthViewModel(private val repository: AuthRepository): ViewModel() {
     private val _nicknameExists = MutableLiveData<Boolean>()
     val nicknameExists: LiveData<Boolean> get() = _nicknameExists
 
+    private val _isEmailDuplicated = MutableLiveData<Result<Boolean>>()
+    val isEmailDuplicated: LiveData<Result<Boolean>> get() = _isEmailDuplicated
+
+    private val _isNicknameDuplicated = MutableLiveData<Result<Boolean>>()
+    val isNicknameDuplicated: LiveData<Result<Boolean>> get() = _isNicknameDuplicated
+
+    private val _signUpResult = MutableLiveData<Result<Unit>>()
+    val signUpResult: LiveData<Result<Unit>> get() = _signUpResult
+
     private val _loading = MutableLiveData<Boolean>()
     val loading: LiveData<Boolean> get() = _loading
 
@@ -74,6 +83,24 @@ class AuthViewModel(private val repository: AuthRepository): ViewModel() {
             job.cancel()
             _loading.value = false
             _nicknameExists.postValue(exists)
+        }
+    }
+
+    fun checkEmailDuplication(email: String) {
+        viewModelScope.launch {
+            _isEmailDuplicated.value = repository.checkEmailDuplication(email)
+        }
+    }
+
+    fun checkNicknameDuplication(nickname: String) {
+        viewModelScope.launch {
+            _isNicknameDuplicated.value = repository.checkNicknameDuplication(nickname)
+        }
+    }
+
+    fun signUpUser(email: String, password: String, nickname: String) {
+        viewModelScope.launch {
+            _signUpResult.value = repository.signUpUser(email, password, nickname)
         }
     }
 }

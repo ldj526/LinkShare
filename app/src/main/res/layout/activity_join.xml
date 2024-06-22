@@ -57,7 +57,8 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:layout_marginLeft="10dp"
-                    android:layout_marginRight="10dp" >
+                    android:layout_marginRight="10dp"
+                    app:errorIconDrawable="@null">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/et_nickname"
@@ -87,7 +88,8 @@
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="10dp">
+                android:layout_margin="10dp"
+                app:errorIconDrawable="@null">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/et_email"
@@ -105,7 +107,8 @@
                 android:layout_marginLeft="10dp"
                 android:layout_marginRight="10dp"
                 app:counterEnabled="true"
-                app:counterMaxLength="20">
+                app:counterMaxLength="20"
+                app:errorIconDrawable="@null">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/et_pwd"
