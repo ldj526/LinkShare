@@ -93,6 +93,33 @@ class SettingRepository(private val firestore: FirebaseFirestore, private val au
         }
     }
 
+    // 비밀번호 변경 시 확인을 위한 재인증
+    suspend fun reauthenticateUser(email: String, currentPassword: String): Result<Boolean> {
+        val user = auth.currentUser ?: return Result.failure(Exception("User not logged in"))
+        val credential = EmailAuthProvider.getCredential(email, currentPassword)
+        return try {
+            withContext(Dispatchers.IO) {
+                user.reauthenticate(credential).await()
+                Result.success(true)
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    // 비밀번호 변경
+    suspend fun updatePassword(newPassword: String): Result<Boolean> {
+        val user = auth.currentUser ?: return Result.failure(Exception("User not logged in"))
+        return try {
+            withContext(Dispatchers.IO) {
+                user.updatePassword(newPassword).await()
+                Result.success(true)
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     // Firestore와 Authentication에서 삭제
     suspend fun deleteUserAccount(): Result<Unit> {
         val user = auth.currentUser

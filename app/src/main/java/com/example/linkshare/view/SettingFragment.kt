@@ -12,6 +12,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.example.linkshare.auth.IntroActivity
 import com.example.linkshare.databinding.FragmentSettingBinding
+import com.example.linkshare.setting.ChangePasswordActivity
 import com.example.linkshare.setting.SettingRepository
 import com.example.linkshare.setting.SettingViewModel
 import com.example.linkshare.setting.SettingViewModelFactory
@@ -68,7 +69,8 @@ class SettingFragment : Fragment() {
         }
 
         binding.llPwd.setOnClickListener {
-
+            val intent = Intent(requireContext(), ChangePasswordActivity::class.java)
+            startActivity(intent)
         }
 
         binding.tvWithdraw.setOnClickListener {
@@ -89,6 +91,11 @@ class SettingFragment : Fragment() {
 
         settingViewModel.authMethod.observe(viewLifecycleOwner, Observer { method ->
             binding.tvLoginMethod.text = method
+            if (method == "이메일 계정") {
+                binding.llPwd.visibility = View.VISIBLE
+            } else {
+                binding.llPwd.visibility = View.GONE
+            }
         })
 
         settingViewModel.profileEmail.observe(viewLifecycleOwner, Observer { email ->

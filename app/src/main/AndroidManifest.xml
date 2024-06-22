@@ -17,13 +17,16 @@
         android:theme="@style/Theme.LinkShare"
         tools:targetApi="31">
         <activity
-            android:name=".setting.UpdateNicknameActivity"
-            android:windowSoftInputMode="adjustResize"
+            android:name=".setting.ChangePasswordActivity"
             android:exported="false" />
         <activity
+            android:name=".setting.UpdateNicknameActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+        <activity
             android:name=".auth.NicknameActivity"
-            android:windowSoftInputMode="adjustResize"
-            android:exported="false" />
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".board.MoreBoardActivity"
             android:exported="false" />
@@ -49,20 +52,20 @@
 
         <activity
             android:name=".link.UpdateLinkActivity"
-            android:windowSoftInputMode="adjustResize"
-            android:exported="false" />
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".link.NewLinkActivity"
-            android:windowSoftInputMode="adjustResize"
-            android:exported="false" />
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".auth.JoinActivity"
-            android:windowSoftInputMode="adjustResize"
-            android:exported="false" />
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".auth.IntroActivity"
-            android:windowSoftInputMode="adjustResize"
-            android:exported="false" />
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".SplashActivity"
             android:exported="true"

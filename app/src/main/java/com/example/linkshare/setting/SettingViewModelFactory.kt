@@ -13,6 +13,9 @@ class SettingViewModelFactory(private val settingRepository: SettingRepository) 
             modelClass.isAssignableFrom(NicknameViewModel::class.java) -> {
                 NicknameViewModel(settingRepository) as T
             }
+            modelClass.isAssignableFrom(ChangePasswordViewModel::class.java) -> {
+                ChangePasswordViewModel(settingRepository) as T
+            }
             else -> throw IllegalArgumentException("Unknown ViewModel class")
         }
     }
