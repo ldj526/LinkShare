@@ -1,4 +1,4 @@
-package com.example.linkshare.auth
+package com.example.linkshare.setting
 
 import android.content.Intent
 import android.content.res.ColorStateList
@@ -6,6 +6,7 @@ import android.graphics.Color
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -13,10 +14,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.example.linkshare.R
-import com.example.linkshare.databinding.ActivityNicknameBinding
-import com.example.linkshare.setting.NicknameViewModel
-import com.example.linkshare.setting.SettingRepository
-import com.example.linkshare.setting.SettingViewModelFactory
+import com.example.linkshare.databinding.ActivitySetNicknameBinding
 import com.example.linkshare.view.MainActivity
 import com.google.android.material.textfield.TextInputLayout
 import com.google.firebase.Firebase
@@ -24,9 +22,9 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.FirebaseFirestore
 
-class NicknameActivity : AppCompatActivity() {
+class SetNicknameActivity : AppCompatActivity() {
 
-    private lateinit var binding: ActivityNicknameBinding
+    private lateinit var binding: ActivitySetNicknameBinding
     private lateinit var auth: FirebaseAuth
     private lateinit var db: FirebaseFirestore
     private lateinit var nicknameViewModel: NicknameViewModel
@@ -34,14 +32,14 @@ class NicknameActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityNicknameBinding.inflate(layoutInflater)
+        binding = ActivitySetNicknameBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         // Initialize Firebase Auth
         auth = Firebase.auth
         db = FirebaseFirestore.getInstance()
-        val settingRepository = SettingRepository(db, auth)
-        val factory = SettingViewModelFactory(settingRepository)
+        val nicknameRepository = NicknameRepository(db, auth, this)
+        val factory = NicknameViewModelFactory(nicknameRepository)
         nicknameViewModel = ViewModelProvider(this, factory)[NicknameViewModel::class.java]
 
         observeViewModel()
@@ -132,9 +130,27 @@ class NicknameActivity : AppCompatActivity() {
     // Firestore에 email, nickname 저장
     private fun createNickname() {
         val nickname = binding.etNickname.text.toString()
-        val email = auth.currentUser?.email ?: return
-        val userId = auth.currentUser?.uid ?: return
-        nicknameViewModel.updateNickname(userId, email, nickname)
+        val currentUser = auth.currentUser
+        if (currentUser == null) {
+            Toast.makeText(this, "사용자 정보를 가져오지 못했습니다. 다시 로그인 해주세요.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val userId = currentUser.uid
+        val loginProvider = currentUser.providerData.firstOrNull { it.providerId != "firebase" }?.providerId
+        Log.d("SetNicknameActivity", "loginProvider: $loginProvider")
+        if (loginProvider == null) {
+            Toast.makeText(this, "로그인 제공자를 확인할 수 없습니다.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        nicknameViewModel.fetchUserEmail(loginProvider).observe(this) { result ->
+            result.onSuccess { email ->
+                nicknameViewModel.updateNickname(userId, email!!, nickname)
+            }.onFailure {
+                Toast.makeText(this, "이메일을 가져오는데 실패했습니다.", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     // TextInputLayout 조건 맞을 때

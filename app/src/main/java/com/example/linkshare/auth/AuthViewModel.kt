@@ -45,13 +45,13 @@ class AuthViewModel(private val repository: AuthRepository): ViewModel() {
         }
     }
 
-    fun signInWithGoogle(idToken: String) {
+    fun signInWithGoogle(idToken: String, email: String?) {
         viewModelScope.launch {
             val job = launch {
                 delay(delayTime)
                 _loading.value = true
             }
-            val result = repository.signInWithGoogle(idToken)
+            val result = repository.signInWithGoogle(idToken ,email)
             job.cancel()
             _loading.value = false
             _loginResult.postValue(result)
@@ -88,19 +88,37 @@ class AuthViewModel(private val repository: AuthRepository): ViewModel() {
 
     fun checkEmailDuplication(email: String) {
         viewModelScope.launch {
+            val job = launch {
+                delay(delayTime)
+                _loading.value = true
+            }
             _isEmailDuplicated.value = repository.checkEmailDuplication(email)
+            job.cancel()
+            _loading.value = false
         }
     }
 
     fun checkNicknameDuplication(nickname: String) {
         viewModelScope.launch {
+            val job = launch {
+                delay(delayTime)
+                _loading.value = true
+            }
             _isNicknameDuplicated.value = repository.checkNicknameDuplication(nickname)
+            job.cancel()
+            _loading.value = false
         }
     }
 
     fun signUpUser(email: String, password: String, nickname: String) {
         viewModelScope.launch {
+            val job = launch {
+                delay(delayTime)
+                _loading.value = true
+            }
             _signUpResult.value = repository.signUpUser(email, password, nickname)
+            job.cancel()
+            _loading.value = false
         }
     }
 }

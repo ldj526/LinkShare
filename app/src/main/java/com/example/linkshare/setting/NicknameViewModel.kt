@@ -7,7 +7,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-class NicknameViewModel(private val settingRepository: SettingRepository) : ViewModel() {
+class NicknameViewModel(private val nicknameRepository: NicknameRepository) : ViewModel() {
 
     private val _updateNicknameResult = MutableLiveData<Result<Unit>>()
     val updateNicknameResult: LiveData<Result<Unit>> get() = _updateNicknameResult
@@ -38,7 +38,7 @@ class NicknameViewModel(private val settingRepository: SettingRepository) : View
                 delay(delayTime)
                 _loading.value = true
             }
-            val result = settingRepository.getUserNickname(userId)
+            val result = nicknameRepository.getUserNickname(userId)
             job.cancel()
             _loading.value = false
             _userNicknameResult.value = result
@@ -52,7 +52,7 @@ class NicknameViewModel(private val settingRepository: SettingRepository) : View
                 delay(delayTime)
                 _loading.value = true
             }
-            val result = settingRepository.getUserLastUpdated(userId)
+            val result = nicknameRepository.getUserLastUpdated(userId)
             job.cancel()
             _loading.value = false
             _lastUpdatedResult.value = result
@@ -80,7 +80,7 @@ class NicknameViewModel(private val settingRepository: SettingRepository) : View
                 delay(delayTime)
                 _loading.value = true
             }
-            val result = settingRepository.isNicknameDuplicated(nickname)
+            val result = nicknameRepository.isNicknameDuplicated(nickname)
             job.cancel()
             _loading.value = false
             _nicknameDuplicationResult.value = result
@@ -94,11 +94,27 @@ class NicknameViewModel(private val settingRepository: SettingRepository) : View
                 delay(delayTime)
                 _loading.value = true
             }
-            val result = settingRepository.updateNickname(userId, email, nickname)
+            val result = nicknameRepository.updateNickname(userId, email, nickname)
             job.cancel()
             _loading.value = false
             _updateNicknameResult.value = result
         }
+    }
+
+    // 로그인 제공자에 따른 이메일 가져오기
+    fun fetchUserEmail(providerId: String): LiveData<Result<String?>> {
+        val emailLiveData = MutableLiveData<Result<String?>>()
+        viewModelScope.launch {
+            val job = launch {
+                delay(delayTime)
+                _loading.value = true
+            }
+            val result = nicknameRepository.fetchUserEmail(providerId)
+            job.cancel()
+            _loading.value = false
+            emailLiveData.value = result
+        }
+        return emailLiveData
     }
 
     // 로딩 상태 설정

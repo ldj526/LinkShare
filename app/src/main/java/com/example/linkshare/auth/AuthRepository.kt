@@ -6,6 +6,7 @@ import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.OAuthProvider
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 import com.kakao.sdk.user.UserApiClient
 import kotlinx.coroutines.tasks.await
 import kotlin.coroutines.resume
@@ -24,10 +25,17 @@ class AuthRepository(private val auth: FirebaseAuth, private val firestore: Fire
     }
 
     // 구글로 로그인 성공여부
-    suspend fun signInWithGoogle(idToken: String): Result<FirebaseUser?> {
+    suspend fun signInWithGoogle(idToken: String, email: String?): Result<FirebaseUser?> {
         return try {
             val credential = GoogleAuthProvider.getCredential(idToken, null)
             val authResult = auth.signInWithCredential(credential).await()
+            val user = authResult.user ?: throw Exception("Google Sign-In failed")
+            val userData = hashMapOf(
+                "email" to email,
+                "nickname" to null,
+                "lastUpdated" to 0L
+            )
+            firestore.collection("users").document(user.uid).set(userData, SetOptions.merge()).await()
             Result.success(authResult.user)
         } catch (e: Exception) {
             Result.failure(e)
@@ -41,9 +49,34 @@ class AuthRepository(private val auth: FirebaseAuth, private val firestore: Fire
                 .addCustomParameter("access_token", token)
                 .build()
             val authResult = auth.startActivityForSignInWithProvider(activity, provider).await()
+            val user = authResult.user ?: throw Exception("Kakao Sign-In failed")
+            val email = fetchKakaoUserEmail()
+            val userData = hashMapOf(
+                "email" to email,
+                "nickname" to null,
+                "lastUpdated" to 0L
+            )
+            firestore.collection("users").document(user.uid).set(userData, SetOptions.merge()).await()
             Result.success(authResult.user)
         } catch (e: Exception) {
             Result.failure(e)
+        }
+    }
+
+    private suspend fun fetchKakaoUserEmail(): String? {
+        return try {
+            val result = suspendCoroutine { continuation ->
+                UserApiClient.instance.me { user, error ->
+                    if (error != null) {
+                        continuation.resumeWith(Result.failure(error))
+                    } else {
+                        continuation.resume(Result.success(user?.kakaoAccount?.email))
+                    }
+                }
+            }
+            result.getOrNull()
+        } catch (e: Exception) {
+            null
         }
     }
 
@@ -51,23 +84,10 @@ class AuthRepository(private val auth: FirebaseAuth, private val firestore: Fire
     suspend fun checkNickname(uid: String): Boolean {
         return try {
             val document = firestore.collection("users").document(uid).get().await()
-            document.exists()
+            val nickname = document.getString("nickname")
+            !nickname.isNullOrEmpty()
         } catch (e: Exception) {
             false
-        }
-    }
-
-    // 카카오 계정의 Email 가져오기
-    suspend fun fetchKakaoUserEmail(client: UserApiClient): Result<String?> {
-        return suspendCoroutine { continuation ->
-            client.me { user, error ->
-                if (error != null) {
-                    continuation.resumeWith(Result.failure(error))
-                } else {
-                    val email = user?.kakaoAccount?.email
-                    continuation.resume(Result.success(email))
-                }
-            }
         }
     }
 
@@ -104,7 +124,8 @@ class AuthRepository(private val auth: FirebaseAuth, private val firestore: Fire
             val user = authResult.user ?: throw Exception("User creation failed")
             val userData = hashMapOf(
                 "email" to email,
-                "nickname" to nickname
+                "nickname" to nickname,
+                "lastUpdated" to 0L
             )
             firestore.collection("users").document(user.uid).set(userData).await()
             Result.success(Unit)

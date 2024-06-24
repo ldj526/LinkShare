@@ -10,9 +10,6 @@ class SettingViewModelFactory(private val settingRepository: SettingRepository) 
             modelClass.isAssignableFrom(SettingViewModel::class.java) -> {
                 SettingViewModel(settingRepository) as T
             }
-            modelClass.isAssignableFrom(NicknameViewModel::class.java) -> {
-                NicknameViewModel(settingRepository) as T
-            }
             modelClass.isAssignableFrom(ChangePasswordViewModel::class.java) -> {
                 ChangePasswordViewModel(settingRepository) as T
             }

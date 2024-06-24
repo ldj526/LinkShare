@@ -13,6 +13,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.example.linkshare.BuildConfig
 import com.example.linkshare.R
 import com.example.linkshare.databinding.ActivityIntroBinding
+import com.example.linkshare.setting.SetNicknameActivity
 import com.example.linkshare.view.MainActivity
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
@@ -22,6 +23,7 @@ import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.kakao.sdk.auth.model.OAuthToken
 import com.kakao.sdk.common.KakaoSdk
 import com.kakao.sdk.common.model.ClientError
 import com.kakao.sdk.common.model.ClientErrorCause
@@ -100,7 +102,7 @@ class IntroActivity : AppCompatActivity() {
                 intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
                 startActivity(intent)
             } else {
-                val intent = Intent(this, NicknameActivity::class.java)
+                val intent = Intent(this, SetNicknameActivity::class.java)
                 startActivity(intent)
             }
         }
@@ -121,7 +123,8 @@ class IntroActivity : AppCompatActivity() {
         try {
             val account = completedTask.getResult(ApiException::class.java)!!
             // Google 로그인이 성공했을 때 Firebase 인증을 진행
-            authViewModel.signInWithGoogle(account.idToken!!)
+            val email = account.email
+            authViewModel.signInWithGoogle(account.idToken!!, email)
         } catch (e: ApiException) {
             // Google 로그인 실패 처리
             Toast.makeText(this, "로그인 실패: ${e.statusCode}", Toast.LENGTH_LONG).show()
@@ -130,31 +133,32 @@ class IntroActivity : AppCompatActivity() {
 
     // 카카오 로그인 방법
     private fun kakaoLogin() {
-        // 카카오톡이 설치되어 있으면 카카오톡으로 로그인, 아니면 카카오계정으로 로그인
         if (UserApiClient.instance.isKakaoTalkLoginAvailable(this)) {
             UserApiClient.instance.loginWithKakaoTalk(this) { token, error ->
-                if (error != null) {
-                    Toast.makeText(this, "카카오계정으로 로그인 실패 : $error", Toast.LENGTH_SHORT).show()
-                    if (error is ClientError && error.reason == ClientErrorCause.Cancelled) {
-                        return@loginWithKakaoTalk
-                    }
-                    loginWithKaKaoAccount(this)
-                } else if (token != null) {
-                    authViewModel.signInWithKakao(this, token.accessToken)
-                }
+                handleKakaoLoginResult(token, error)
             }
         } else {
-            loginWithKaKaoAccount(this)
+            loginWithKakaoAccount(this)
+        }
+    }
+
+    // 카카오 로그인 결과 처리
+    private fun handleKakaoLoginResult(token: OAuthToken?, error: Throwable?) {
+        if (error != null) {
+            Toast.makeText(this, "카카오 로그인 실패: $error", Toast.LENGTH_SHORT).show()
+            if (error is ClientError && error.reason == ClientErrorCause.Cancelled) {
+                return
+            }
+        } else if (token != null) {
+            Log.d("KakaoCheck", "Kakao Access Token: ${token.accessToken}")
+            authViewModel.signInWithKakao(this, token.accessToken)
         }
     }
 
     // 카카오 계정으로 로그인
-    private fun loginWithKaKaoAccount(context: Context) {
+    private fun loginWithKakaoAccount(context: Context) {
         UserApiClient.instance.loginWithKakaoAccount(context) { token, error ->
-            if (token != null) {
-                Log.d("KakaoCheck", "Kakao Access Token: ${token.accessToken}")
-                authViewModel.signInWithKakao(this, token.accessToken)
-            }
+            handleKakaoLoginResult(token, error)
         }
     }
 
