@@ -1,5 +1,8 @@
 package com.example.linkshare.setting
 
+import android.content.Context
+import android.util.Log
+import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
@@ -12,7 +15,7 @@ import kotlinx.coroutines.withContext
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-class SettingRepository(private val firestore: FirebaseFirestore, private val auth: FirebaseAuth, private val userApiClient: UserApiClient? = null) {
+class SettingRepository(private val firestore: FirebaseFirestore, private val auth: FirebaseAuth, private val context: Context) {
 
     // 현재 사용자 가져오기
     suspend fun getCurrentUser(): FirebaseUser? {
@@ -21,33 +24,60 @@ class SettingRepository(private val firestore: FirebaseFirestore, private val au
         }
     }
 
-    // 사용자의 이메일 가져오기
-    fun isEmailAccount(user: FirebaseUser): Boolean {
-        return user.providerData.any { it.providerId == EmailAuthProvider.PROVIDER_ID }
-    }
-
-    // 사용자의 구글 데이터 가져오기
-    fun isGoogleAccount(user: FirebaseUser): Boolean {
-        return user.providerData.any { it.providerId == GoogleAuthProvider.PROVIDER_ID }
-    }
-
-    // 사용자의 카카오 데이터 가져오기
-    fun isKakaoAccount(user: FirebaseUser): Boolean {
-        return user.providerData.any { it.providerId == "oidc.kakao.com" }
-    }
-
     // 사용자의 카카오 이메일 가져오기
-    suspend fun fetchKakaoUserEmail(): Result<String?> {
-        val client = userApiClient ?: return Result.failure(IllegalStateException("UserApiClient is not provided"))
-        return suspendCoroutine { continuation ->
-            client.me { user, error ->
-                if (error != null) {
-                    continuation.resumeWith(Result.failure(error))
-                } else {
-                    val email = user?.kakaoAccount?.email
-                    continuation.resume(Result.success(email))
+    private suspend fun fetchKakaoUserEmail(): Result<String?> {
+        return try {
+            val result = suspendCoroutine { continuation ->
+                UserApiClient.instance.me { user, error ->
+                    if (error != null) {
+                        continuation.resumeWith(Result.failure(error))
+                    } else {
+                        continuation.resume(Result.success(user?.kakaoAccount?.email))
+                    }
                 }
             }
+            result
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    // 구글 사용자 이메일 가져오기
+    private fun fetchGoogleUserEmail(): Result<String?> {
+        return try {
+            val account = GoogleSignIn.getLastSignedInAccount(context)
+            val email = account?.email
+            if (email != null) {
+                Result.success(email)
+            } else {
+                Result.failure(Exception("Google user email is null"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    // 로그인 제공자에 따른 이메일 가져오기
+    suspend fun fetchUserEmail(providerId: String): Result<String?> {
+        return when (providerId) {
+            "구글" -> fetchGoogleUserEmail()
+            "카카오" -> fetchKakaoUserEmail()
+            "이메일" -> {
+                val email = auth.currentUser?.email
+                if (email != null) Result.success(email) else Result.failure(Exception("Email not found"))
+            }
+            else -> Result.failure(Exception("Unknown provider"))
+        }
+    }
+
+    // 로그인 제공자 가져오기
+    fun getLoginProvider(): String {
+        val user = auth.currentUser
+        return when {
+            user?.providerData?.any { it.providerId == GoogleAuthProvider.PROVIDER_ID } == true -> "구글"
+            user?.providerData?.any { it.providerId == "oidc.kakao.com" } == true -> "카카오"
+            user?.providerData?.any { it.providerId == EmailAuthProvider.PROVIDER_ID } == true -> "이메일"
+            else -> "Unknown"
         }
     }
 

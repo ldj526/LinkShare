@@ -31,8 +31,8 @@ class SettingViewModel(private val settingRepository: SettingRepository): ViewMo
     private val _authMethod = MutableLiveData<String>()
     val authMethod: LiveData<String> get() = _authMethod
 
-    private val _profileEmail = MutableLiveData<String?>()
-    val profileEmail: LiveData<String?> get() = _profileEmail
+    private val _profileEmail = MutableLiveData<Result<String?>>()
+    val profileEmail: LiveData<Result<String?>> get() = _profileEmail
 
     private val delayTime = 500L
 
@@ -50,59 +50,28 @@ class SettingViewModel(private val settingRepository: SettingRepository): ViewMo
         }
     }
 
-    // 사용자 가져오기
-    fun fetchCurrentUser() {
+    // 로그인 제공자와 이메일 가져오기
+    fun fetchUserDetails() {
         viewModelScope.launch {
-            _currentUser.value = settingRepository.getCurrentUser()
-        }
-    }
-
-    // 어떤 계정인지 가져오기
-    fun determineAuthMethod(user: FirebaseUser) {
-        viewModelScope.launch {
-            val job = launch {
+            val methodJob = launch {
                 delay(delayTime)
                 _loginMethodLoading.value = true
             }
-            val method = when {
-                settingRepository.isEmailAccount(user) -> "이메일 계정"
-                settingRepository.isGoogleAccount(user) -> "구글 계정"
-                settingRepository.isKakaoAccount(user) -> "카카오 계정"
-                else -> "알 수 없음"
-            }
-            job.cancel()
-            _loginMethodLoading.value = false
-            _authMethod.value = method
-        }
-    }
 
-    // 해당하는 계정의 이메일 가져오기
-    fun fetchUserEmail(user: FirebaseUser) {
-        viewModelScope.launch {
-            val job = launch {
+            val emailJob = launch {
                 delay(delayTime)
                 _emailLoading.value = true
             }
-            when {
-                settingRepository.isEmailAccount(user) -> {
-                    _profileEmail.value = user.email
-                }
 
-                settingRepository.isGoogleAccount(user) -> {
-                    _profileEmail.value = user.email
-                }
+            val provider = settingRepository.getLoginProvider()
+            methodJob.cancel()
+            _loginMethodLoading.value = false
+            _authMethod.value = provider
 
-                settingRepository.isKakaoAccount(user) -> {
-                    val result = settingRepository.fetchKakaoUserEmail()
-                    _profileEmail.value = result.getOrNull() ?: "이메일 정보 없음"
-                }
-
-                else -> {
-                    _profileEmail.value = "이메일 정보 없음"
-                }
-            }
-            job.cancel()
+            val emailResult = settingRepository.fetchUserEmail(provider)
+            emailJob.cancel()
             _emailLoading.value = false
+            _profileEmail.value = emailResult
         }
     }
 

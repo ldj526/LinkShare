@@ -37,7 +37,7 @@ class ChangePasswordActivity : AppCompatActivity() {
         // Initialize Firebase Auth
         auth = Firebase.auth
         db = FirebaseFirestore.getInstance()
-        val settingRepository = SettingRepository(db, auth)
+        val settingRepository = SettingRepository(db, auth, context = this)
         val factory = SettingViewModelFactory(settingRepository)
         changePasswordViewModel = ViewModelProvider(this, factory)[ChangePasswordViewModel::class.java]
 

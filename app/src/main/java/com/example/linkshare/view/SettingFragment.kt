@@ -43,7 +43,7 @@ class SettingFragment : Fragment() {
         auth = Firebase.auth
         db = FirebaseFirestore.getInstance()
         userApiClient = UserApiClient.instance
-        val settingRepository = SettingRepository(db, auth, userApiClient)
+        val settingRepository = SettingRepository(db, auth, requireContext())
         val factory = SettingViewModelFactory(settingRepository)
         settingViewModel = ViewModelProvider(this, factory)[SettingViewModel::class.java]
 
@@ -53,7 +53,7 @@ class SettingFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        settingViewModel.fetchCurrentUser()
+        settingViewModel.fetchUserDetails()
         observeViewModel()
 
         // 사용자 닉네임 가져오기
@@ -80,26 +80,17 @@ class SettingFragment : Fragment() {
 
     // ViewModel
     private fun observeViewModel() {
-        settingViewModel.currentUser.observe(viewLifecycleOwner, Observer { user ->
-            if (user != null) {
-                settingViewModel.determineAuthMethod(user)
-                settingViewModel.fetchUserEmail(user)
-            } else {
-                updateProfileUI(null)
-            }
+        settingViewModel.authMethod.observe(viewLifecycleOwner, Observer { provider ->
+            binding.tvLoginMethod.text = provider
+            binding.llPwd.visibility = if (provider == "이메일") View.VISIBLE else View.GONE
         })
 
-        settingViewModel.authMethod.observe(viewLifecycleOwner, Observer { method ->
-            binding.tvLoginMethod.text = method
-            if (method == "이메일 계정") {
-                binding.llPwd.visibility = View.VISIBLE
-            } else {
-                binding.llPwd.visibility = View.GONE
+        settingViewModel.profileEmail.observe(viewLifecycleOwner, Observer { result ->
+            result.onSuccess { email ->
+                binding.tvProfileEmail.text = email
+            }.onFailure {
+                Toast.makeText(requireContext(), "이메일을 가져오는 데 실패했습니다.", Toast.LENGTH_SHORT).show()
             }
-        })
-
-        settingViewModel.profileEmail.observe(viewLifecycleOwner, Observer { email ->
-            updateProfileUI(email)
         })
 
         settingViewModel.userNicknameResult.observe(viewLifecycleOwner, Observer { result ->
@@ -157,11 +148,6 @@ class SettingFragment : Fragment() {
     private fun fetchUserNickname() {
         val userId = auth.currentUser?.uid ?: return
         settingViewModel.fetchUserNickname(userId)
-    }
-
-    // 이메일 표시
-    private fun updateProfileUI(email: String?) {
-        binding.tvProfileEmail.text = email ?: "이메일 정보 없음"
     }
 
     private fun showLogoutDialog() {
