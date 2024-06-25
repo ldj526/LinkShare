@@ -32,10 +32,16 @@ class AuthRepository(private val auth: FirebaseAuth, private val firestore: Fire
             val user = authResult.user ?: throw Exception("Google Sign-In failed")
             val userData = hashMapOf(
                 "email" to email,
-                "nickname" to null,
                 "lastUpdated" to 0L
             )
-            firestore.collection("users").document(user.uid).set(userData, SetOptions.merge()).await()
+            val userRef = firestore.collection("users").document(user.uid)
+            firestore.runTransaction { transaction ->
+                val snapshot = transaction.get(userRef)
+                if (!snapshot.exists()) {
+                    userData["nickname"] = null
+                }
+                transaction.set(userRef, userData, SetOptions.merge())
+            }.await()
             Result.success(authResult.user)
         } catch (e: Exception) {
             Result.failure(e)
@@ -53,10 +59,16 @@ class AuthRepository(private val auth: FirebaseAuth, private val firestore: Fire
             val email = fetchKakaoUserEmail()
             val userData = hashMapOf(
                 "email" to email,
-                "nickname" to null,
                 "lastUpdated" to 0L
             )
-            firestore.collection("users").document(user.uid).set(userData, SetOptions.merge()).await()
+            val userRef = firestore.collection("users").document(user.uid)
+            firestore.runTransaction { transaction ->
+                val snapshot = transaction.get(userRef)
+                if (!snapshot.exists()) {
+                    userData["nickname"] = null
+                }
+                transaction.set(userRef, userData, SetOptions.merge())
+            }.await()
             Result.success(authResult.user)
         } catch (e: Exception) {
             Result.failure(e)
