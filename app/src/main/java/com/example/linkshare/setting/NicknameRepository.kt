@@ -80,8 +80,6 @@ class NicknameRepository(private val firestore: FirebaseFirestore, private val a
         return try {
             val account = GoogleSignIn.getLastSignedInAccount(context!!)
             val email = account?.email
-            Log.d("SetNicknameActivity", "fetchGoogleUserEmail email: $email")
-            Log.d("SetNicknameActivity", "fetchGoogleUserEmail auth.currentUser: ${auth.currentUser}")
             if (email != null) {
                 Result.success(email)
             } else {

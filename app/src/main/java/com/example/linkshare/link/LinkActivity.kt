@@ -14,6 +14,7 @@ import com.example.linkshare.databinding.ActivityLinkBinding
 import com.example.linkshare.util.CustomDialog
 import com.example.linkshare.util.FBAuth
 import com.example.linkshare.util.FBRef
+import com.example.linkshare.view.WebViewActivity
 import com.google.android.material.chip.Chip
 
 class LinkActivity : AppCompatActivity() {
@@ -48,6 +49,14 @@ class LinkActivity : AppCompatActivity() {
         linkViewModel.getImageUrl(key)
 
         observeViewModel()
+
+        binding.tvLink.setOnClickListener {
+            val url = binding.tvLink.text.toString()
+            val intent = Intent(this, WebViewActivity::class.java).apply {
+                putExtra("url", url)
+            }
+            startActivity(intent)
+        }
 
         // 수정 버튼 클릭 시
         binding.ivUpdate.setOnClickListener {

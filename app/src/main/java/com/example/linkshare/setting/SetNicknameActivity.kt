@@ -6,7 +6,6 @@ import android.graphics.Color
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -138,7 +137,6 @@ class SetNicknameActivity : AppCompatActivity() {
 
         val userId = currentUser.uid
         val loginProvider = currentUser.providerData.firstOrNull { it.providerId != "firebase" }?.providerId
-        Log.d("SetNicknameActivity", "loginProvider: $loginProvider")
         if (loginProvider == null) {
             Toast.makeText(this, "로그인 제공자를 확인할 수 없습니다.", Toast.LENGTH_SHORT).show()
             return

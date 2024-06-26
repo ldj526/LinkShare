@@ -39,7 +39,7 @@ class UpdateNicknameActivity : AppCompatActivity() {
         // Initialize Firebase Auth
         auth = Firebase.auth
         db = FirebaseFirestore.getInstance()
-        val nicknameRepository = NicknameRepository(db, auth)
+        val nicknameRepository = NicknameRepository(db, auth, this)
         val factory = NicknameViewModelFactory(nicknameRepository)
         nicknameViewModel = ViewModelProvider(this, factory)[NicknameViewModel::class.java]
 
@@ -163,9 +163,26 @@ class UpdateNicknameActivity : AppCompatActivity() {
     // Nickname 변경
     private fun updateNickname() {
         val nickname = binding.etNickname.text.toString()
-        val email = auth.currentUser?.email ?: return
-        val userId = auth.currentUser?.uid ?: return
-        nicknameViewModel.updateNickname(userId, email, nickname)
+        val currentUser = auth.currentUser
+        if (currentUser == null) {
+            Toast.makeText(this, "사용자 정보를 가져오지 못했습니다. 다시 로그인 해주세요.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val userId = currentUser.uid
+        val loginProvider = currentUser.providerData.firstOrNull { it.providerId != "firebase" }?.providerId
+        if (loginProvider == null) {
+            Toast.makeText(this, "로그인 제공자를 확인할 수 없습니다.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        nicknameViewModel.fetchUserEmail(loginProvider).observe(this) { result ->
+            result.onSuccess { email ->
+                nicknameViewModel.updateNickname(userId, email!!, nickname)
+            }.onFailure {
+                Toast.makeText(this, "이메일을 가져오는데 실패했습니다.", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     // MainActivity로 돌아가서 SettingFragment로 navigate

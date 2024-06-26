@@ -4,11 +4,14 @@ import android.app.Activity
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
+import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
@@ -24,6 +27,7 @@ import com.example.linkshare.util.CustomDialog
 import com.example.linkshare.util.FBAuth
 import com.example.linkshare.util.FBRef
 import com.example.linkshare.util.ShareResult
+import com.example.linkshare.view.WebViewActivity
 import com.google.android.material.chip.Chip
 import java.io.ByteArrayOutputStream
 
@@ -80,6 +84,14 @@ class BoardActivity : AppCompatActivity() {
 
         boardObserveViewModel()
         commentObserveViewModel()
+
+        binding.tvLink.setOnClickListener {
+            val url = binding.tvLink.text.toString()
+            val intent = Intent(this, WebViewActivity::class.java).apply {
+                putExtra("url", url)
+            }
+            startActivity(intent)
+        }
 
         // 수정 버튼 클릭 시
         binding.ivUpdate.setOnClickListener {

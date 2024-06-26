@@ -13,7 +13,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.linkshare"
-        minSdk = 24
+        minSdk = 27
         targetSdk = 33
         versionCode = 1
         versionName = "1.0"
@@ -114,6 +114,9 @@ dependencies {
 
     // SwipeRefreshLayout
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
+
+    // AndroidX WebKit 라이브러리 추가
+    implementation("androidx.webkit:webkit:1.11.0")
 
     implementation("androidx.core:core-ktx:1.9.0")
     implementation("androidx.appcompat:appcompat:1.6.1")
