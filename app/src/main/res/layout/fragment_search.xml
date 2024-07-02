@@ -10,7 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <LinearLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/search_layout"
             android:layout_width="match_parent"
             android:layout_height="50dp"
@@ -21,34 +21,45 @@
 
             <Spinner
                 android:id="@+id/spinner_search"
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:layout_weight="2" />
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
             <androidx.appcompat.widget.SearchView
                 android:id="@+id/search_view"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                app:queryHint="검색어를 입력하세요."
                 app:iconifiedByDefault="false"
-                android:layout_weight="5" />
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/spinner_search"
+                app:layout_constraintTop_toTopOf="parent"
+                app:queryHint="검색어를 입력하세요." />
 
-        </LinearLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <LinearLayout
-            android:id="@+id/current_search_linearlayout"
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/recent_popular_layout"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="0dp"
             android:orientation="vertical"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/search_layout">
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/search_layout"
+            android:visibility="visible">
 
             <TextView
+                android:id="@+id/current_search_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="최근 검색어"
                 android:layout_marginStart="10dp"
+                android:layout_marginTop="10dp"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
                 android:textSize="16sp"
                 android:textStyle="bold"/>
 
@@ -57,6 +68,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_margin="10dp"
+                app:layout_constraintTop_toBottomOf="@id/current_search_text"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
                 android:scrollbars="none">
 
                 <com.google.android.material.chip.ChipGroup
@@ -67,16 +81,40 @@
 
                 </com.google.android.material.chip.ChipGroup>
             </HorizontalScrollView>
-        </LinearLayout>
+            
+            <TextView
+                android:id="@+id/popular_search_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintTop_toBottomOf="@id/horizontal_scrollview"
+                app:layout_constraintStart_toStartOf="parent"
+                android:text="인기 검색어"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="15dp"
+                android:textSize="16sp"
+                android:textStyle="bold"/>
+            
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_popular_search"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                app:layout_constraintTop_toBottomOf="@id/popular_search_text"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"/>
 
-        <LinearLayout
-            android:id="@+id/sort_layout"
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/link_list_layout"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="end"
-            app:layout_constraintTop_toBottomOf="@id/current_search_linearlayout"
+            android:layout_height="0dp"
+            app:layout_constraintTop_toBottomOf="@id/search_layout"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent">
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:visibility="gone"
+            tools:visibility="visible">
 
             <TextView
                 android:id="@+id/tv_sort"
@@ -86,29 +124,32 @@
                 android:layout_marginBottom="5dp"
                 android:layout_marginEnd="15dp"
                 android:text="최신순"
-                android:gravity="end"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
                 android:textSize="16sp"
                 android:textStyle="bold"
                 android:background="@drawable/ripple_effect" />
-        </LinearLayout>
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rv_searchFragment"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/sort_layout" />
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_searchFragment"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/tv_sort" />
 
-        <ProgressBar
-            android:id="@+id/progress_bar"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/sort_layout"
-            android:visibility="gone" />
+            <ProgressBar
+                android:id="@+id/progress_bar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tv_sort"
+                android:visibility="gone"
+                tools:visibility="visible"/>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 </FrameLayout>

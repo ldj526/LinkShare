@@ -17,6 +17,7 @@ import com.example.linkshare.R
 import com.example.linkshare.board.BoardRVAdapter
 import com.example.linkshare.databinding.FragmentSearchBinding
 import com.example.linkshare.link.Link
+import com.example.linkshare.search.PopularSearchAdapter
 import com.example.linkshare.search.SearchQuery
 import com.example.linkshare.search.SearchRepository
 import com.example.linkshare.search.SearchViewModel
@@ -30,6 +31,7 @@ class SearchFragment : Fragment() {
     private var _binding: FragmentSearchBinding? = null
     private val binding get() = _binding!!
     private lateinit var boardRVAdapter: BoardRVAdapter
+    private lateinit var popularSearchAdapter: PopularSearchAdapter
     private var selectedSearchItem: String? = null
     private var searchText = ""
     private val linkList = mutableListOf<Link>()
@@ -68,12 +70,20 @@ class SearchFragment : Fragment() {
                     searchViewModel.saveSearchQuery(searchText)
                     performSearch(searchText)
                     binding.searchView.clearFocus()
+                    binding.recentPopularLayout.visibility = View.GONE
+                    binding.linkListLayout.visibility = View.VISIBLE
                 }
                 return true
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
                 // 실시간으로 검색을 원하면 여기에 검색 로직을 추가
+                if (newText.isNullOrEmpty()) {
+                    binding.recentPopularLayout.visibility = View.VISIBLE
+                    binding.linkListLayout.visibility = View.GONE
+                    searchViewModel.fetchPopularSearchQueries()
+                    searchViewModel.fetchLatestSearchQueries()
+                }
                 return false
             }
         })
@@ -97,6 +107,10 @@ class SearchFragment : Fragment() {
         boardRVAdapter = BoardRVAdapter(linkList)
         binding.rvSearchFragment.adapter = boardRVAdapter
         binding.rvSearchFragment.layoutManager = LinearLayoutManager(context)
+
+        popularSearchAdapter= PopularSearchAdapter()
+        binding.rvPopularSearch.adapter = popularSearchAdapter
+        binding.rvPopularSearch.layoutManager = LinearLayoutManager(context)
     }
 
     private fun checkLoginAndInitialize() {
@@ -112,6 +126,7 @@ class SearchFragment : Fragment() {
         searchViewModel = ViewModelProvider(this, SearchViewModelFactory(repository))[SearchViewModel::class.java]
 
         searchViewModel.fetchLatestSearchQueries()
+        searchViewModel.fetchPopularSearchQueries()
     }
 
     private fun observeViewModel() {
@@ -130,6 +145,10 @@ class SearchFragment : Fragment() {
         searchViewModel.latestSearchQueries.observe(viewLifecycleOwner) { queries ->
             setupChips(queries)
         }
+
+        searchViewModel.popularSearchQueries.observe(viewLifecycleOwner) { queries ->
+            popularSearchAdapter.updateItems(queries)
+        }
     }
 
     // chipGroup setting
@@ -147,9 +166,11 @@ class SearchFragment : Fragment() {
                     binding.searchView.setQuery(query.query, false)
                     performSearch(query.query)
                     binding.searchView.clearFocus()
+                    binding.recentPopularLayout.visibility = View.GONE
+                    binding.linkListLayout.visibility = View.VISIBLE
                 }
                 setOnCloseIconClickListener {
-                    searchViewModel.deleteSearchQuery(query)
+                    searchViewModel.deleteSearchQuery(query.query)
                 }
             }
             binding.chipGroup.addView(chip)

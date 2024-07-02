@@ -15,6 +15,10 @@ class SearchViewModel(private val repository: SearchRepository) : ViewModel() {
     private val _searchResult = MutableLiveData<Result<MutableList<Link>>>()
     val searchResult: LiveData<Result<MutableList<Link>>> get() = _searchResult
 
+    private val _popularSearchQueries = MutableLiveData<List<SearchQuery>>()
+    val popularSearchQueries: LiveData<List<SearchQuery>> get() = _popularSearchQueries
+
+
     private val _loading = MutableLiveData<Boolean>()
     val loading: LiveData<Boolean> = _loading
 
@@ -51,13 +55,24 @@ class SearchViewModel(private val repository: SearchRepository) : ViewModel() {
         }
     }
 
-    fun deleteSearchQuery(searchQuery: SearchQuery) {
+    fun fetchPopularSearchQueries() {
         viewModelScope.launch {
-            val result = repository.deleteSearchQuery(searchQuery)
+            val result = repository.getPopularSearchQueries()
+            if (result.isSuccess) {
+                _popularSearchQueries.value = result.getOrNull()
+            } else {
+                _error.value = result.exceptionOrNull()?.message
+            }
+        }
+    }
+
+    fun deleteSearchQuery(query: String) {
+        viewModelScope.launch {
+            val result = repository.deleteSearchQuery(query)
             if (result.isFailure) {
                 _error.value = result.exceptionOrNull()?.message
             } else {
-                _queries.remove(searchQuery)
+                _queries.removeAll { it.query == query }
                 _latestSearchQueries.value = _queries.toList()
             }
         }
