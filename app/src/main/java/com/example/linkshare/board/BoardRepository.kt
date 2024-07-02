@@ -13,31 +13,6 @@ import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 
 class BoardRepository {
-    // 링크 검색하기
-    suspend fun searchLinks(searchText: String, searchOption: String): Result<MutableList<Link>> = withContext(Dispatchers.IO) {
-        try {
-            val linkList = mutableListOf<Link>()
-            val snapshot = FBRef.linkCategory.get().await()
-            // Get Post object and use the values to update the UI
-            for (dataModel in snapshot.children) {
-                // Link 형식의 데이터 받기
-                val item = dataModel.getValue(Link::class.java)
-                item?.let {
-                    val containedLink = when (searchOption) {
-                        "제목" -> it.title.contains(searchText, true)
-                        "내용" -> it.content.contains(searchText, true)
-                        "링크" -> it.link.contains(searchText, true)
-                        else -> false
-                    }
-                    if (containedLink) linkList.add(it)
-                }
-            }
-            linkList.sortByDescending { it.time }
-            Result.success(linkList)
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
-    }
 
     // 카테고리가 일치하는 게시물 가져오기
     suspend fun getEqualCategoryLinkList(category: String, sortOrder: Int): Result<MutableList<Link>> = withContext(Dispatchers.IO) {

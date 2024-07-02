@@ -33,27 +33,11 @@ class BoardViewModel(private val boardRepository: BoardRepository): ViewModel() 
     private val _imageLoading = MutableLiveData<Boolean>()
     val imageLoading: LiveData<Boolean> = _imageLoading
 
-    private val _searchResult = MutableLiveData<Result<MutableList<Link>>>()
-    val searchResult: LiveData<Result<MutableList<Link>>> get() = _searchResult
-
     private val _categoryResult = MutableLiveData<Result<MutableList<Link>>>()
     val categoryResult: LiveData<Result<MutableList<Link>>> get() = _categoryResult
 
     private val delayTime = 500L
 
-    // 검색된 링크 가져오기
-    fun getSearchedLinks(searchText: String, searchOption: String) {
-        viewModelScope.launch {
-            val job = launch {// 빠르게 처리되면 progressBar 안나타나게 하기 위함
-                delay(delayTime)
-                _loading.value = true
-            }
-            val result = boardRepository.searchLinks(searchText, searchOption)
-            _searchResult.value = result
-            job.cancel()
-            _loading.value = false
-        }
-    }
 
     // 카테고리에 맞는 LinkList 가져오기
     fun getEqualCategoryLinkList(category: String, sortOrder: Int, limit: Int) {

@@ -36,11 +36,45 @@
         </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/current_search_linearlayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/search_layout">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="최근 검색어"
+                android:layout_marginStart="10dp"
+                android:textSize="16sp"
+                android:textStyle="bold"/>
+
+            <HorizontalScrollView
+                android:id="@+id/horizontal_scrollview"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                android:scrollbars="none">
+
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/chipGroup"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:singleSelection="true">
+
+                </com.google.android.material.chip.ChipGroup>
+            </HorizontalScrollView>
+        </LinearLayout>
+
+        <LinearLayout
             android:id="@+id/sort_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="end"
-            app:layout_constraintTop_toBottomOf="@id/search_layout"
+            app:layout_constraintTop_toBottomOf="@id/current_search_linearlayout"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent">
 
