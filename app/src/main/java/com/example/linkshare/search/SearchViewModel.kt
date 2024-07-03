@@ -18,6 +18,8 @@ class SearchViewModel(private val repository: SearchRepository) : ViewModel() {
     private val _popularSearchQueries = MutableLiveData<List<SearchQuery>>()
     val popularSearchQueries: LiveData<List<SearchQuery>> get() = _popularSearchQueries
 
+    private val _autoCompleteSuggestions = MutableLiveData<List<String>>()
+    val autoCompleteSuggestions: LiveData<List<String>> get() = _autoCompleteSuggestions
 
     private val _loading = MutableLiveData<Boolean>()
     val loading: LiveData<Boolean> = _loading
@@ -39,6 +41,17 @@ class SearchViewModel(private val repository: SearchRepository) : ViewModel() {
             _searchResult.value = result
             job.cancel()
             _loading.value = false
+        }
+    }
+
+    fun fetchAutoCompleteSuggestions(query: String) {
+        viewModelScope.launch {
+            val result = repository.getAutoCompleteSuggestions(query)
+            if (result.isSuccess) {
+                _autoCompleteSuggestions.value = result.getOrNull()
+            } else {
+                _error.value = result.exceptionOrNull()?.message
+            }
         }
     }
 

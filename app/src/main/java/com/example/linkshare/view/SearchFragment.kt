@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import android.widget.AutoCompleteTextView
 import android.widget.Toast
 import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
@@ -61,6 +62,9 @@ class SearchFragment : Fragment() {
 
     private fun setupSearchView() {
         binding.searchView.isSubmitButtonEnabled = true
+        val autoCompleteTextView = binding.searchView.findViewById<AutoCompleteTextView>(androidx.appcompat.R.id.search_src_text)
+        val adapter = ArrayAdapter<String>(requireContext(), android.R.layout.simple_dropdown_item_1line)
+        autoCompleteTextView.setAdapter(adapter)
         binding.searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 searchText = query ?: ""
@@ -83,6 +87,8 @@ class SearchFragment : Fragment() {
                     binding.linkListLayout.visibility = View.GONE
                     searchViewModel.fetchPopularSearchQueries()
                     searchViewModel.fetchLatestSearchQueries()
+                } else {
+                    searchViewModel.fetchAutoCompleteSuggestions(newText)
                 }
                 return false
             }
@@ -149,6 +155,17 @@ class SearchFragment : Fragment() {
         searchViewModel.popularSearchQueries.observe(viewLifecycleOwner) { queries ->
             popularSearchAdapter.updateItems(queries)
         }
+
+        searchViewModel.autoCompleteSuggestions.observe(viewLifecycleOwner) { suggestions ->
+            updateAutoCompleteSuggestions(suggestions)
+        }
+    }
+
+    private fun updateAutoCompleteSuggestions(suggestions: List<String>) {
+        val autoCompleteTextView = binding.searchView.findViewById<AutoCompleteTextView>(androidx.appcompat.R.id.search_src_text)
+        val adapter = ArrayAdapter<String>(requireContext(), android.R.layout.simple_dropdown_item_1line, suggestions)
+        autoCompleteTextView.setAdapter(adapter)
+        autoCompleteTextView.showDropDown()
     }
 
     // chipGroup setting

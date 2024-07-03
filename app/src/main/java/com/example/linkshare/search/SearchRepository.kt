@@ -2,6 +2,7 @@ package com.example.linkshare.search
 
 import com.example.linkshare.link.Link
 import com.example.linkshare.util.FBRef
+import com.google.firebase.firestore.FieldPath
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import kotlinx.coroutines.Dispatchers
@@ -75,6 +76,29 @@ class SearchRepository(private val userUid: String, private val firestore: Fireb
                 }
             }.await()
             Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    // 자동완성을 위한 검색어 query 가져오기
+    suspend fun getAutoCompleteSuggestions(query: String): Result<List<String>> {
+        return try {
+            val querySnapshot = popularSearchCollection
+                .orderBy(FieldPath.documentId())
+                .startAt(query)
+                .endAt(query + "\uf8ff")
+                .limit(10)
+                .get()
+                .await()
+
+            val suggestions = querySnapshot.documents.map { document ->
+                document.id to (document.getLong("count") ?: 0L)
+            }
+                .sortedByDescending { it.second }
+                .map { it.first }
+
+            Result.success(suggestions)
         } catch (e: Exception) {
             Result.failure(e)
         }
