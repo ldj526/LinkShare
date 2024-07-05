@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.linkshare.link.Link
+import com.example.linkshare.util.FBAuth
 import com.example.linkshare.util.ShareResult
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -34,6 +35,9 @@ class BoardViewModel(private val boardRepository: BoardRepository): ViewModel() 
 
     private val _categoryResult = MutableLiveData<Result<MutableList<Link>>>()
     val categoryResult: LiveData<Result<MutableList<Link>>> get() = _categoryResult
+
+    private val _viewCountUpdateStatus = MutableLiveData<Boolean>()
+    val viewCountUpdateStatus: LiveData<Boolean> = _viewCountUpdateStatus
 
     private val delayTime = 500L
 
@@ -122,6 +126,16 @@ class BoardViewModel(private val boardRepository: BoardRepository): ViewModel() 
             }
             job.cancel()
             _loading.value = false
+        }
+    }
+
+
+    // 조회수 증가
+    fun increaseViewCount(uid: String, linkId: String) {
+        val currentUserId = FBAuth.getUid()
+        viewModelScope.launch {
+            val result = boardRepository.increaseViewCount(uid, linkId, currentUserId)
+            _viewCountUpdateStatus.value = result.isSuccess
         }
     }
 }

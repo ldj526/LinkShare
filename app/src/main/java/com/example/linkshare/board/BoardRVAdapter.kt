@@ -19,8 +19,10 @@ import com.example.linkshare.R
 import com.example.linkshare.link.Link
 import com.example.linkshare.util.FBAuth
 
-class BoardRVAdapter(var linkList: MutableList<Link>) :
-    RecyclerView.Adapter<BoardRVAdapter.ViewHolder>() {
+class BoardRVAdapter(
+    var linkList: MutableList<Link>,
+    private val boardViewModel: BoardViewModel
+) : RecyclerView.Adapter<BoardRVAdapter.ViewHolder>() {
 
     fun setBoardData(newLinkList: MutableList<Link>) {
         val diffCallback = BoardDiffCallback(linkList, newLinkList)
@@ -90,6 +92,7 @@ class BoardRVAdapter(var linkList: MutableList<Link>) :
             val intent = Intent(it.context, BoardActivity::class.java)
             intent.putExtra("linkId", memo.key)   // key 값 전달
             intent.putExtra("writeUid", memo.uid)   // 글 uid 값 전달
+            boardViewModel.increaseViewCount(memo.uid, memo.key)
             it.context.startActivity(intent)
         }
         holder.bind(linkList[position])

@@ -16,6 +16,9 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.linkshare.R
 import com.example.linkshare.board.BoardRVAdapter
+import com.example.linkshare.board.BoardRepository
+import com.example.linkshare.board.BoardViewModel
+import com.example.linkshare.board.BoardViewModelFactory
 import com.example.linkshare.databinding.FragmentSearchBinding
 import com.example.linkshare.link.Link
 import com.example.linkshare.search.PopularSearchAdapter
@@ -25,7 +28,6 @@ import com.example.linkshare.search.SearchViewModel
 import com.example.linkshare.search.SearchViewModelFactory
 import com.google.android.material.chip.Chip
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
 
 class SearchFragment : Fragment() {
 
@@ -38,6 +40,7 @@ class SearchFragment : Fragment() {
     private val linkList = mutableListOf<Link>()
     private var checkedItem = -1
     private lateinit var searchViewModel: SearchViewModel
+    private lateinit var boardViewModel: BoardViewModel
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -50,8 +53,8 @@ class SearchFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        setupRecyclerView()
         checkLoginAndInitialize()
+        setupRecyclerView()
         observeViewModel()
         setupSpinner()
         setupSearchView()
@@ -110,7 +113,7 @@ class SearchFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
-        boardRVAdapter = BoardRVAdapter(linkList)
+        boardRVAdapter = BoardRVAdapter(linkList, boardViewModel)
         binding.rvSearchFragment.adapter = boardRVAdapter
         binding.rvSearchFragment.layoutManager = LinearLayoutManager(context)
 
@@ -129,6 +132,10 @@ class SearchFragment : Fragment() {
     private fun initializeViewModels(userEmail: String) {
         val repository = SearchRepository(userEmail)
         searchViewModel = ViewModelProvider(this, SearchViewModelFactory(repository))[SearchViewModel::class.java]
+
+        val boardRepository = BoardRepository()
+        val boardFactory = BoardViewModelFactory(boardRepository)
+        boardViewModel = ViewModelProvider(this, boardFactory)[BoardViewModel::class.java]
 
         searchViewModel.fetchLatestSearchQueries()
         searchViewModel.fetchPopularSearchQueries()

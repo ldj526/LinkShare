@@ -19,6 +19,7 @@ class MoreBoardActivity : AppCompatActivity() {
     private val linkList = mutableListOf<Link>()
     private lateinit var boardRVAdapter: BoardRVAdapter
     private lateinit var moreBoardViewModel: MoreBoardViewModel
+    private lateinit var boardViewModel: BoardViewModel
     private var totalItemCount = 0 // 현재 데이터 총 개수
     private var isLoading = false
     private var isEndOfData = false
@@ -31,6 +32,7 @@ class MoreBoardActivity : AppCompatActivity() {
         val boardRepository = BoardRepository()
         val boardFactory = BoardViewModelFactory(boardRepository)
         moreBoardViewModel = ViewModelProvider(this, boardFactory)[MoreBoardViewModel::class.java]
+        boardViewModel = ViewModelProvider(this, boardFactory)[BoardViewModel::class.java]
 
         val category = intent.getStringExtra("category")?: ""
         setupRecyclerView(category)
@@ -110,7 +112,7 @@ class MoreBoardActivity : AppCompatActivity() {
 
     // RecyclerView setup
     private fun setupRecyclerView(category: String) {
-        boardRVAdapter = BoardRVAdapter(linkList)
+        boardRVAdapter = BoardRVAdapter(linkList, boardViewModel)
         binding.rvMore.adapter = boardRVAdapter
         binding.rvMore.layoutManager = LinearLayoutManager(this)
 

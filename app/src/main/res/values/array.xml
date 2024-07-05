@@ -2,14 +2,14 @@
 <resources>
     <string-array name="category">
         <item>전체보기</item>
-        <item>카테고리1</item>
-        <item>카테고리2</item>
-        <item>카테고리3333</item>
-        <item>카테고리44</item>
-        <item>카테고리55555555</item>
-        <item>카테고리66666</item>
-        <item>카테고리77777777777</item>
-        <item>카테고리8</item>
+        <item>가방/잡화</item>
+        <item>신발</item>
+        <item>스포츠/레저</item>
+        <item>뷰티</item>
+        <item>음식</item>
+        <item>장소</item>
+        <item>가전/디지털</item>
+        <item>문구</item>
     </string-array>
     <string-array name="sort">
         <item>최신순</item>

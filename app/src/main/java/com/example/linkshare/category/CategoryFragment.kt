@@ -51,7 +51,7 @@ class CategoryFragment : Fragment() {
 
     // Recyclerview Setting
     private fun setupRecyclerView() {
-        boardRVAdapter = BoardRVAdapter(linkList)
+        boardRVAdapter = BoardRVAdapter(linkList, boardViewModel)
         binding.rvCategory.adapter = boardRVAdapter
         binding.rvCategory.layoutManager = LinearLayoutManager(context)
     }

@@ -1,5 +1,6 @@
 package com.example.linkshare.board
 
+import android.util.Log
 import com.example.linkshare.link.Link
 import com.example.linkshare.util.FBAuth
 import com.example.linkshare.util.FireBaseCollection
@@ -106,6 +107,37 @@ class BoardRepository {
             linkRef.delete().await()
             Result.success(true)
         } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    // 조회수 증가
+    suspend fun increaseViewCount(uid: String, linkId: String, currentUserId: String): Result<Boolean> = withContext(Dispatchers.IO) {
+        return@withContext try {
+            val linkRef = FireBaseCollection.getUserLinksCollection(uid).document(linkId)
+            val userViewRef = linkRef.collection("views").document(currentUserId)
+
+            val linkSnapshot = userViewRef.get().await()
+            val linkData = linkSnapshot.toObject(Link::class.java)
+
+            if (linkData?.uid == currentUserId) {   // 내가 쓴 글이면 조회수 증가 안되게 하기
+                return@withContext Result.success(false)
+            }
+
+            val userViewSnapshot = userViewRef.get().await()
+            if (!userViewSnapshot.exists()) {
+                FireBaseCollection.firestore.runTransaction { transaction ->
+                    val snapshot = transaction.get(linkRef)
+                    val newViewCount = snapshot.getLong("viewCount")?.plus(1) ?: 1
+                    transaction.update(linkRef, "viewCount", newViewCount)
+
+                    transaction.set(userViewRef, mapOf("viewed" to true))
+                }.await()
+            }
+
+            Result.success(true)
+        } catch (e: Exception) {
+            Log.e("BoardRepository", "Error increasing view count", e)
             Result.failure(e)
         }
     }

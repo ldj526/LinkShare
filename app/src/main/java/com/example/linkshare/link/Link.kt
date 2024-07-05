@@ -16,5 +16,6 @@ data class Link(
     val firebaseRef: String = "",
     var shareCount: Int = 0,
     val shareUid: String? = null,
-    val imageUrl: String? = null
+    val imageUrl: String? = null,
+    var viewCount: Int = 0
 )
