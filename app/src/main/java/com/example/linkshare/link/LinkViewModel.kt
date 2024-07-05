@@ -62,13 +62,13 @@ class LinkViewModel(private val linkRepository: LinkRepository) : ViewModel() {
     }
 
     // 메모, 게시글에서 볼 데이터를 받아오는 기능
-    fun getPostData(key: String) {
+    fun getPostData(uid: String, key: String) {
         viewModelScope.launch {
             val job = launch {
                 delay(delayTime)
                 _imageLoading.value = true
             }
-            val linkData = linkRepository.getLinkDataByKey(key)
+            val linkData = linkRepository.getLinkDataByKey(uid, key)
             _linkData.postValue(linkData)
             job.cancel()
             _loading.value = false
@@ -108,13 +108,13 @@ class LinkViewModel(private val linkRepository: LinkRepository) : ViewModel() {
     }
 
     // 메모 삭제
-    fun deleteMemo(ref: DatabaseReference, key: String) {
+    fun deleteMemo(uid: String, key: String) {
         viewModelScope.launch {
             val job = launch {
                 delay(delayTime)
                 _loading.value = true
             }
-            val result = linkRepository.deleteLink(ref, key)
+            val result = linkRepository.deleteLink(uid, key)
             _deleteStatus.value = result
             job.cancel()
             _loading.value = false

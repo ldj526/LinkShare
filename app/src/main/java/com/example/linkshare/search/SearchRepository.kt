@@ -1,44 +1,45 @@
 package com.example.linkshare.search
 
+import android.util.Log
 import com.example.linkshare.link.Link
-import com.example.linkshare.util.FBRef
+import com.example.linkshare.util.FireBaseCollection
 import com.google.firebase.firestore.FieldPath
-import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 
-class SearchRepository(private val userUid: String, private val firestore: FirebaseFirestore) {
-
-    private val userSearchCollection = firestore.collection("users").document(userUid).collection("search_queries")
-    private val popularSearchCollection = firestore.collection("popular_search_queries")
-    private val searchHistoryCollection = firestore.collection("users").document(userUid).collection("search_history")
-
+class SearchRepository(private val userUid: String) {
 
     // 링크 검색하기
     suspend fun searchLinks(searchText: String, searchOption: String): Result<MutableList<Link>> = withContext(
         Dispatchers.IO) {
-        try {
+        return@withContext try {
             val linkList = mutableListOf<Link>()
-            val snapshot = FBRef.linkCategory.get().await()
-            // Get Post object and use the values to update the UI
-            for (dataModel in snapshot.children) {
-                // Link 형식의 데이터 받기
-                val item = dataModel.getValue(Link::class.java)
-                item?.let {
-                    val containedLink = when (searchOption) {
-                        "제목" -> it.title.contains(searchText, true)
-                        "내용" -> it.content.contains(searchText, true)
-                        "링크" -> it.link.contains(searchText, true)
-                        else -> false
-                    }
-                    if (containedLink) linkList.add(it)
-                }
+            val searchLower = searchText.lowercase()
+            val firestore = FireBaseCollection.firestore
+
+            // Firestore에서 검색어와 일치하는 userLinks 컬렉션의 문서를 가져옵니다.
+            val querySnapshot = when (searchOption) {
+                "제목" -> firestore.collectionGroup("userLinks")
+                    .whereGreaterThanOrEqualTo("title", searchLower)
+                    .whereLessThanOrEqualTo("title", "$searchLower\uf8ff")
+                    .get().await()
+                "내용" -> firestore.collectionGroup("userLinks")
+                    .whereGreaterThanOrEqualTo("content", searchLower)
+                    .whereLessThanOrEqualTo("content", "$searchLower\uf8ff")
+                    .get().await()
+                "링크" -> firestore.collectionGroup("userLinks")
+                    .whereGreaterThanOrEqualTo("link", searchLower)
+                    .whereLessThanOrEqualTo("link", "$searchLower\uf8ff")
+                    .get().await()
+                else -> throw IllegalArgumentException("Invalid search option")
             }
+            linkList.addAll(querySnapshot.documents.mapNotNull { it.toObject(Link::class.java) })
             linkList.sortByDescending { it.time }
             Result.success(linkList)
         } catch (e: Exception) {
+            Log.e("SearchRepository", "Error fetching links", e)
             Result.failure(e)
         }
     }
@@ -46,12 +47,12 @@ class SearchRepository(private val userUid: String, private val firestore: Fireb
     // 최근 검색어에 저장
     suspend fun saveSearchQuery(query: String): Result<Unit> {
         return try {
-            val userQueryRef = userSearchCollection.document(query)
-            val popularQueryRef = popularSearchCollection.document(query)
-            val historyQueryRef = searchHistoryCollection.document(query)
+            val userQueryRef = FireBaseCollection.getUserCurrentSearchCollection(userUid).document(query)
+            val popularQueryRef = FireBaseCollection.popularSearchCollection.document(query)
+            val historyQueryRef = FireBaseCollection.getAllUserSearchCollection(userUid).document(query)
             val timestamp = System.currentTimeMillis()
 
-            firestore.runTransaction { transaction ->
+            FireBaseCollection.firestore.runTransaction { transaction ->
                 // 최근 검색어 업데이트
                 val userSearchSnapshot = transaction.get(userQueryRef)
                 val popularSnapshot = transaction.get(popularQueryRef)
@@ -84,7 +85,7 @@ class SearchRepository(private val userUid: String, private val firestore: Fireb
     // 자동완성을 위한 검색어 query 가져오기
     suspend fun getAutoCompleteSuggestions(query: String): Result<List<String>> {
         return try {
-            val querySnapshot = popularSearchCollection
+            val querySnapshot = FireBaseCollection.popularSearchCollection
                 .orderBy(FieldPath.documentId())
                 .startAt(query)
                 .endAt(query + "\uf8ff")
@@ -107,7 +108,7 @@ class SearchRepository(private val userUid: String, private val firestore: Fireb
     // 인기 있는 검색어 가져오기
     suspend fun getPopularSearchQueries(): Result<List<SearchQuery>> {
         return try {
-            val snapshot = popularSearchCollection
+            val snapshot = FireBaseCollection.popularSearchCollection
                 .orderBy("count", Query.Direction.DESCENDING)
                 .orderBy("timestamp", Query.Direction.ASCENDING)
                 .limit(10)
@@ -130,7 +131,7 @@ class SearchRepository(private val userUid: String, private val firestore: Fireb
     // 최근 검색어 삭제
     suspend fun deleteSearchQuery(query: String): Result<Unit> {
         return try {
-            userSearchCollection.document(query).delete().await()
+            FireBaseCollection.getUserCurrentSearchCollection(userUid).document(query).delete().await()
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
@@ -140,7 +141,7 @@ class SearchRepository(private val userUid: String, private val firestore: Fireb
     // 최근 검색어 가져오기
     suspend fun getLatestSearchQueries(): Result<List<SearchQuery>> {
         return try {
-            val snapshot = userSearchCollection
+            val snapshot = FireBaseCollection.getUserCurrentSearchCollection(userUid)
                 .orderBy("timestamp", Query.Direction.DESCENDING)
                 .limit(15)
                 .get()

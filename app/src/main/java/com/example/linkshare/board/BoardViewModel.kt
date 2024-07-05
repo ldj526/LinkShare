@@ -6,7 +6,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.linkshare.link.Link
 import com.example.linkshare.util.ShareResult
-import com.google.firebase.database.DatabaseReference
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -54,13 +53,13 @@ class BoardViewModel(private val boardRepository: BoardRepository): ViewModel() 
     }
 
     // 링크 공유하기
-    fun shareLink(key: String, imageData: ByteArray?) {
+    fun shareLink(uid: String, key: String, imageData: ByteArray?) {
         viewModelScope.launch {
             val job = launch {
                 delay(delayTime)
                 _loading.value = true
             }
-            val result = boardRepository.shareLink(key, imageData)
+            val result = boardRepository.shareLink(uid, key, imageData)
             result.onSuccess { newShareCount ->
                 _shareCount.value = newShareCount
                 _shareStatus.value = ShareResult.SUCCESS
@@ -73,13 +72,13 @@ class BoardViewModel(private val boardRepository: BoardRepository): ViewModel() 
     }
 
     // 메모, 게시글에서 볼 데이터를 받아오는 기능
-    fun getPostData(key: String) {
+    fun getPostData(uid: String, key: String) {
         viewModelScope.launch {
             val job = launch {
                 delay(delayTime)
                 _loading.value = true
             }
-            val result = boardRepository.getLinkDataByKey(key)
+            val result = boardRepository.getLinkDataByKey(uid, key)
             result.onSuccess { linkData ->
                 _linkData.postValue(linkData)
             }.onFailure {
@@ -109,13 +108,13 @@ class BoardViewModel(private val boardRepository: BoardRepository): ViewModel() 
     }
 
     // 링크 삭제
-    fun deleteLink(ref: DatabaseReference, key: String) {
+    fun deleteLink(uid: String, key: String) {
         viewModelScope.launch {
             val job = launch {
                 delay(delayTime)
                 _loading.value = true
             }
-            val result = boardRepository.deleteLink(ref, key)
+            val result = boardRepository.deleteLink(uid, key)
             result.onSuccess {
                 _deleteStatus.value = true
             }.onFailure {

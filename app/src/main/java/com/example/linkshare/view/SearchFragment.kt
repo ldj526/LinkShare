@@ -127,8 +127,7 @@ class SearchFragment : Fragment() {
     }
 
     private fun initializeViewModels(userEmail: String) {
-        val firestore = FirebaseFirestore.getInstance()
-        val repository = SearchRepository(userEmail, firestore)
+        val repository = SearchRepository(userEmail)
         searchViewModel = ViewModelProvider(this, SearchViewModelFactory(repository))[SearchViewModel::class.java]
 
         searchViewModel.fetchLatestSearchQueries()

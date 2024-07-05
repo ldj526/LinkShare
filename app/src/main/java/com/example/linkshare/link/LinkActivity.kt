@@ -13,7 +13,7 @@ import com.example.linkshare.board.MapActivity
 import com.example.linkshare.databinding.ActivityLinkBinding
 import com.example.linkshare.util.CustomDialog
 import com.example.linkshare.util.FBAuth
-import com.example.linkshare.util.FBRef
+import com.example.linkshare.util.FireBaseCollection
 import com.example.linkshare.view.WebViewActivity
 import com.google.android.material.chip.Chip
 
@@ -21,7 +21,7 @@ class LinkActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityLinkBinding
     private lateinit var key: String
-    private lateinit var writeUid: String
+    private var writeUid: String = FBAuth.getUid()
     private var latitude: Double? = 0.0
     private var longitude: Double? = 0.0
     private var firebaseRef = ""
@@ -45,7 +45,7 @@ class LinkActivity : AppCompatActivity() {
         val linkFactory = LinkViewModelFactory(linkRepository)
         linkViewModel = ViewModelProvider(this, linkFactory)[LinkViewModel::class.java]
 
-        linkViewModel.getPostData(key)
+        linkViewModel.getPostData(writeUid, key)
         linkViewModel.getImageUrl(key)
 
         observeViewModel()
@@ -155,7 +155,7 @@ class LinkActivity : AppCompatActivity() {
             }
             latitude = it.latitude
             longitude = it.longitude
-            binding.tvTime.text = it.time
+            binding.tvTime.text = FBAuth.formatTimestamp(it.time)
             writeUid = it.uid
             firebaseRef = it.firebaseRef
             adjustMemoViewVisibility(writeUid, it.shareUid)
@@ -176,8 +176,8 @@ class LinkActivity : AppCompatActivity() {
     // 삭제 다이얼로그 생성
     private fun showDeleteDialog() {
         val dialog = CustomDialog("삭제 하시겠습니까?", onYesClicked = {
-            if (firebaseRef == "link") linkViewModel.deleteMemo(FBRef.linkCategory, key)
-            else if (firebaseRef == "sharedLink") linkViewModel.deleteMemo(FBRef.sharedLinkCategory, key)
+            if (firebaseRef == "link") linkViewModel.deleteMemo(writeUid, key)
+            else if (firebaseRef == "sharedLink") linkViewModel.deleteMemo(writeUid, key)
         })
         // 다이얼로그 창 밖에 클릭 불가
         dialog.isCancelable = false

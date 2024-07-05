@@ -19,7 +19,7 @@ import com.example.linkshare.category.CategorySelectActivity
 import com.example.linkshare.databinding.FragmentWriteLinkBinding
 import com.example.linkshare.util.CustomDialog
 import com.example.linkshare.util.FBAuth
-import com.example.linkshare.util.FBRef
+import com.example.linkshare.util.FireBaseCollection
 import com.example.linkshare.view.MainActivity
 import com.example.linkshare.view.MapViewActivity
 import com.google.android.material.chip.Chip
@@ -30,14 +30,14 @@ class WriteLinkFragment : Fragment() {
     private var _binding: FragmentWriteLinkBinding? = null
     private val binding get() = _binding!!
     private var isEditMode: Boolean = false
-    private var latitude: Double? = 0.0
-    private var longitude: Double? = 0.0
+    private var latitude: Double = 0.0
+    private var longitude: Double = 0.0
     private var firebaseRef = ""
     private var shareCnt: Int = 0
     private var selectedCategories: List<String>? = null
     private lateinit var key: String
-    private lateinit var writeUid: String
-    private lateinit var time: String
+    private var writeUid: String = FBAuth.getUid()
+    private var time: Long = 0L
     private lateinit var galleryLauncher: ActivityResultLauncher<String>
     private val linkDataResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
@@ -98,7 +98,7 @@ class WriteLinkFragment : Fragment() {
         updateCategoriesView(selectedCategories)
 
         if (key.isNotEmpty()) {
-            linkViewModel.getPostData(key)
+            linkViewModel.getPostData(writeUid, key)
             linkViewModel.linkData.observe(viewLifecycleOwner) { result ->
                 result.onSuccess { link ->
                     loadLink(link)
@@ -185,8 +185,8 @@ class WriteLinkFragment : Fragment() {
             content = binding.etContent.text.toString(),
             link = binding.etLink.text.toString(),
             location = binding.tvMap.text.toString(), latitude = latitude, longitude = longitude,
-            uid = if (isEditMode) writeUid else FBAuth.getUid(),
-            time = if (isEditMode) time else FBAuth.getTime(), firebaseRef = "link",
+            uid = writeUid,
+            time = if (isEditMode) time else FBAuth.getTimestamp(), firebaseRef = "link",
             shareCount = if (isEditMode) shareCnt else 0
         )
 
@@ -218,8 +218,8 @@ class WriteLinkFragment : Fragment() {
             binding.etLink.setText(it.link)
             binding.etContent.setText(it.content)
             binding.tvMap.text = it.location
-            latitude = it.latitude
-            longitude = it.longitude
+            latitude = it.latitude ?: 0.0
+            longitude = it.longitude ?: 0.0
             writeUid = it.uid
             time = it.time
             firebaseRef = it.firebaseRef
@@ -230,8 +230,8 @@ class WriteLinkFragment : Fragment() {
     // 다이얼로그 생성
     private fun showDeleteDialog() {
         val dialog = CustomDialog("삭제 하시겠습니까?", onYesClicked = {
-            if (firebaseRef == "link") linkViewModel.deleteMemo(FBRef.linkCategory, key)
-            else if (firebaseRef == "sharedLink") linkViewModel.deleteMemo(FBRef.sharedLinkCategory, key)
+            if (firebaseRef == "link") linkViewModel.deleteMemo(writeUid, key)
+            else if (firebaseRef == "sharedLink") linkViewModel.deleteMemo(writeUid, key)
             requireActivity().finish()
         })
         // 다이얼로그 창 밖에 클릭 불가

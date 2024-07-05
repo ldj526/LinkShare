@@ -4,14 +4,11 @@ import android.app.Activity
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
-import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
@@ -25,7 +22,6 @@ import com.example.linkshare.link.Link
 import com.example.linkshare.link.UpdateLinkActivity
 import com.example.linkshare.util.CustomDialog
 import com.example.linkshare.util.FBAuth
-import com.example.linkshare.util.FBRef
 import com.example.linkshare.util.ShareResult
 import com.example.linkshare.view.WebViewActivity
 import com.google.android.material.chip.Chip
@@ -34,7 +30,7 @@ import java.io.ByteArrayOutputStream
 class BoardActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityBoardBinding
-    private lateinit var key: String
+    private lateinit var linkId: String
     private lateinit var writeUid: String
     private lateinit var boardViewModel: BoardViewModel
     private lateinit var commentViewModel: CommentViewModel
@@ -57,7 +53,8 @@ class BoardActivity : AppCompatActivity() {
         binding = ActivityBoardBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        key = intent.getStringExtra("key").toString()
+        linkId = intent.getStringExtra("linkId").toString()
+        writeUid = intent.getStringExtra("writeUid").toString()
 
         val boardRepository = BoardRepository()
         val boardFactory = BoardViewModelFactory(boardRepository)
@@ -68,19 +65,20 @@ class BoardActivity : AppCompatActivity() {
         commentViewModel = ViewModelProvider(this, commentFactory)[CommentViewModel::class.java]
 
         // comment RecyclerView 연결
-        commentRVAdapter = CommentRVAdapter(commentList) { commentId ->
+        commentRVAdapter = CommentRVAdapter(commentList, { commentId ->
             val dialog = CustomDialog("삭제 하시겠습니까?", onYesClicked = {
-                commentViewModel.deleteComment(key, commentId)
+                commentViewModel.deleteComment(linkId, commentId)
             })
             // 다이얼로그 창 밖에 클릭 불가
             dialog.isCancelable = false
             dialog.show(supportFragmentManager, "DeleteDialog")
-        }
+        }, commentRepository)
         binding.rvComment.adapter = commentRVAdapter
         binding.rvComment.layoutManager = LinearLayoutManager(this)
 
-        boardViewModel.getPostData(key)
-        boardViewModel.getImageUrl(key)
+        boardViewModel.getPostData(writeUid, linkId)
+        boardViewModel.getImageUrl(linkId)
+        commentViewModel.getComments(linkId)
 
         boardObserveViewModel()
         commentObserveViewModel()
@@ -110,10 +108,18 @@ class BoardActivity : AppCompatActivity() {
 
         // 댓글 입력 버튼 클릭 시
         binding.btnComment.setOnClickListener {
-            val comment =
-                Comment(null, binding.etComment.text.toString(), FBAuth.getUid(), FBAuth.getTime())
-            commentViewModel.insertComment(comment, key)
-            binding.etComment.setText("")
+            val commentText = binding.etComment.text.toString()
+            if (commentText.isNotEmpty()) {
+                val comment = Comment(
+                    id = null,
+                    comment = commentText,
+                    uid = FBAuth.getUid(),
+                    nickname = null,
+                    time = FBAuth.getTimestamp()
+                )
+                commentViewModel.insertComment(comment, linkId)
+                binding.etComment.setText("")
+            }
         }
 
         binding.tvMap.setOnClickListener {
@@ -188,7 +194,7 @@ class BoardActivity : AppCompatActivity() {
 
     // Observe CommentViewModel
     private fun commentObserveViewModel() {
-        commentViewModel.getCommentData(key).observe(this) { comments ->
+        commentViewModel.comments.observe(this) { comments ->
             commentRVAdapter.setCommentData(comments)
         }
 
@@ -212,7 +218,7 @@ class BoardActivity : AppCompatActivity() {
     // 삭제 다이얼로그 생성
     private fun showDeleteDialog() {
         val dialog = CustomDialog("삭제 하시겠습니까?", onYesClicked = {
-            boardViewModel.deleteLink(FBRef.linkCategory, key)
+            boardViewModel.deleteLink(writeUid, linkId)
         })
         // 다이얼로그 창 밖에 클릭 불가
         dialog.isCancelable = false
@@ -223,7 +229,7 @@ class BoardActivity : AppCompatActivity() {
     private fun showUpdateDialog() {
         val dialog = CustomDialog("수정 하시겠습니까?", onYesClicked = {
             val intent = Intent(this, UpdateLinkActivity::class.java)
-            intent.putExtra("key", key)   // key 값 전달
+            intent.putExtra("linkId", linkId)   // key 값 전달
             startActivity(intent)
         })
         // 다이얼로그 창 밖에 클릭 불가
@@ -235,7 +241,7 @@ class BoardActivity : AppCompatActivity() {
     private fun showShareDialog() {
         val dialog = CustomDialog("개인 메모로 공유하시겠습니까?", onYesClicked = {
             val data = shareLink()
-            boardViewModel.shareLink(key, data)
+            boardViewModel.shareLink(writeUid, linkId, data)
         })
         // 다이얼로그 창 밖에 클릭 불가
         dialog.isCancelable = false
@@ -270,7 +276,7 @@ class BoardActivity : AppCompatActivity() {
             }
             binding.tvTitle.text = it.title
             binding.tvLink.text = if (it.link == "") "없음" else it.link
-            binding.tvTime.text = it.time
+            binding.tvTime.text = FBAuth.formatTimestamp(it.time)
             binding.tvContent.text = it.content
             binding.tvLocation.apply {
                 visibility = if (it.location!!.isEmpty()) View.GONE else View.VISIBLE

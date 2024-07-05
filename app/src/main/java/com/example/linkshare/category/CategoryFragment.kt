@@ -1,6 +1,7 @@
 package com.example.linkshare.category
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -42,9 +43,8 @@ class CategoryFragment : Fragment() {
         val boardFactory = BoardViewModelFactory(boardRepository)
         boardViewModel = ViewModelProvider(this, boardFactory)[BoardViewModel::class.java]
 
-        observeViewModel()
-
         setupRecyclerView()
+        observeViewModel()
         loadCategoryData()
         return binding.root
     }
@@ -64,9 +64,11 @@ class CategoryFragment : Fragment() {
 
         boardViewModel.categoryResult.observe(viewLifecycleOwner) { result ->
             result.onSuccess { links ->
+                Log.d("CategoryFragment", "Links loaded successfully: $links")
                 boardRVAdapter.setBoardData(links)
                 binding.rvCategory.scrollToPosition(0)
             }.onFailure {
+                Log.e("CategoryFragment", "Failed to load links", it)
                 Toast.makeText(requireContext(), "검색 실패", Toast.LENGTH_SHORT).show()
             }
         }

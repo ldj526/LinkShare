@@ -41,7 +41,7 @@ class MoreBoardViewModel(private val boardRepository: BoardRepository) : ViewMod
             }
             val result = boardRepository.getEqualCategoryLinkList(category, sortOrder)
             _categoryResult.value = result.map { it.take(limit).toMutableList() }
-            _isEndOfData.value = result.getOrNull()?.size ?: 0 < pageSize
+            _isEndOfData.value = (result.getOrNull()?.size ?: 0) < pageSize
             job.cancel()
             if (initialLoad) {
                 _loading.value = false

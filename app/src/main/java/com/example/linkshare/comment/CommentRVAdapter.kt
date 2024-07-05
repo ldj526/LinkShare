@@ -1,20 +1,24 @@
 package com.example.linkshare.comment
 
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.example.linkshare.R
 import com.example.linkshare.util.FBAuth
-import com.example.linkshare.util.FBUser
 import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.launch
 
-class CommentRVAdapter(var commentList: MutableList<Comment>, private val onClick: (String) -> Unit) :
-    RecyclerView.Adapter<CommentRVAdapter.ViewHolder>() {
+class CommentRVAdapter(
+    var commentList: MutableList<Comment>,
+    private val onClick: (String) -> Unit,
+    private val commentRepository: CommentRepository
+) : RecyclerView.Adapter<CommentRVAdapter.ViewHolder>() {
 
     private val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
 
@@ -35,7 +39,7 @@ class CommentRVAdapter(var commentList: MutableList<Comment>, private val onClic
 
         fun bind(comment: Comment) {
             title.text = comment.comment
-            time.text = comment.time
+            time.text = FBAuth.formatTimestamp(comment.time)
 
             if (comment.uid == currentUserId) {
                 delete.visibility = View.VISIBLE
@@ -51,12 +55,10 @@ class CommentRVAdapter(var commentList: MutableList<Comment>, private val onClic
                 }
             }
 
-            FBUser.getUserNickname(comment.uid, onSuccess = { userNickname ->
+            (itemView.context as? LifecycleOwner)?.lifecycleScope?.launch {
+                val userNickname = commentRepository.getUserNickname(comment.uid)
                 nickname.text = userNickname ?: "알 수 없음"
-            }, onFailure = { exception ->
-                Log.e("CommentRVADatper", "닉네임 가져오기 실패", exception)
-                nickname.text = "알 수 없음"
-            })
+            }
         }
     }
 

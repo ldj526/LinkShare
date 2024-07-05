@@ -1,5 +1,7 @@
 package com.example.linkshare.link
 
+import com.example.linkshare.util.FBAuth
+
 data class Link(
     val key: String = "",
     val category: List<String>? = null,
@@ -10,7 +12,7 @@ data class Link(
     val latitude: Double? = 0.0,
     val longitude: Double? = 0.0,
     val uid: String = "",
-    val time: String = "",
+    val time: Long = FBAuth.getTimestamp(),
     val firebaseRef: String = "",
     var shareCount: Int = 0,
     val shareUid: String? = null,

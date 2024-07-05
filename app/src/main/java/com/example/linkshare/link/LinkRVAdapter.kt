@@ -16,6 +16,7 @@ import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
 import com.example.linkshare.R
+import com.example.linkshare.util.FBAuth
 
 class LinkRVAdapter(var linkList: MutableList<Link>) :
     RecyclerView.Adapter<LinkRVAdapter.ViewHolder>() {
@@ -40,7 +41,7 @@ class LinkRVAdapter(var linkList: MutableList<Link>) :
         fun bind(link: Link) {
             title.text = link.title
             this.link.text = link.link
-            time.text = link.time
+            time.text = FBAuth.formatTimestamp(link.time)
 
             progressBar.visibility = View.VISIBLE
 

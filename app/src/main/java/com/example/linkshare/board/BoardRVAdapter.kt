@@ -17,6 +17,7 @@ import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
 import com.example.linkshare.R
 import com.example.linkshare.link.Link
+import com.example.linkshare.util.FBAuth
 
 class BoardRVAdapter(var linkList: MutableList<Link>) :
     RecyclerView.Adapter<BoardRVAdapter.ViewHolder>() {
@@ -30,12 +31,6 @@ class BoardRVAdapter(var linkList: MutableList<Link>) :
         diffResult.dispatchUpdatesTo(this)
     }
 
-    fun addBoardData(newLinks: List<Link>) {
-        val currentSize = linkList.size
-        linkList.addAll(newLinks)
-        notifyItemRangeInserted(currentSize, newLinks.size)
-    }
-
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val title = itemView.findViewById<TextView>(R.id.tv_board_title)
         val link = itemView.findViewById<TextView>(R.id.tv_board_link)
@@ -47,7 +42,7 @@ class BoardRVAdapter(var linkList: MutableList<Link>) :
         fun bind(link: Link) {
             title.text = link.title
             this.link.text = link.link
-            time.text = link.time
+            time.text = FBAuth.formatTimestamp(link.time)
             shareCount.text = "공유 : ${link.shareCount}"
 
             progressBar.visibility = View.VISIBLE
@@ -93,7 +88,8 @@ class BoardRVAdapter(var linkList: MutableList<Link>) :
         val memo = linkList[position]
         holder.itemView.setOnClickListener {
             val intent = Intent(it.context, BoardActivity::class.java)
-            intent.putExtra("key", memo.key)   // key 값 전달
+            intent.putExtra("linkId", memo.key)   // key 값 전달
+            intent.putExtra("writeUid", memo.uid)   // 글 uid 값 전달
             it.context.startActivity(intent)
         }
         holder.bind(linkList[position])
