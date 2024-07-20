@@ -1,9 +1,12 @@
 package com.example.linkshare.view
 
+import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.addCallback
 import androidx.appcompat.app.AppCompatActivity
+import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.ui.setupWithNavController
 import com.example.linkshare.R
@@ -13,6 +16,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private var backKeyPressedTime = 0L
+    private lateinit var navController: NavController
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -21,7 +25,7 @@ class MainActivity : AppCompatActivity() {
 
         // BottomNavigation 연결
         val bottomNavigationView = binding.bottomNavigationView
-        val navController = findNavController(R.id.fragment_container_view)
+        navController = findNavController(R.id.fragment_container_view)
         bottomNavigationView.setupWithNavController(navController)
 
         // 뒤로가기 2번 클릭 시 앱 종료
@@ -34,15 +38,38 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // SettingFragment에서 Activity이동 후 Activity 종료 시 SettingFragment로 View 이동
-        if (intent.getBooleanExtra("navigateToSettingFragment", false)) {
-            findNavController(R.id.fragment_container_view).navigate(R.id.setting_fragment)
-        }
+        handleIntent(intent)
+    }
 
-        // SettingFragment에서 Activity이동 후 Activity 종료 시 LinkFragment로 View 이동
-        if (intent.getBooleanExtra("navigateToLinkFragment", false)) {
-            findNavController(R.id.fragment_container_view).navigate(R.id.link_fragment)
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleIntent(intent)
+    }
+
+    private fun handleIntent(intent: Intent) {
+        intent.extras?.let {
+            when {
+                it.getBoolean("navigateToSettingFragment", false) -> {
+                    navController.navigate(R.id.setting_fragment)
+                    clearIntentExtras(intent)
+                }
+                it.getBoolean("navigateToLinkFragment", false) -> {
+                    navController.navigate(R.id.link_fragment)
+                    clearIntentExtras(intent)
+                }
+            }
         }
+    }
+
+    private fun clearIntentExtras(intent: Intent) {
+        Log.d("MainActivity", "intent 값: $intent")
+        intent.removeExtra("navigateToSettingFragment")
+        intent.removeExtra("navigateToLinkFragment")
+        Log.d("MainActivity", "intent 값: $intent")
+        // Optionally clear other extras if needed
+        setIntent(Intent()) // Clear the intent to avoid reusing the extras
+        Log.d("MainActivity", "intent 값: $intent")
     }
     companion object {
         private const val BACK_PRESSED_DURATION = 2000L

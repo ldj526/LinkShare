@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
+
     <item
-        android:id="@+id/link_fragment"
-        android:title="메모"
+        android:id="@+id/main_view_fragment"
+        android:title="메인"
         android:icon="@android:drawable/arrow_up_float" />
 
     <item
@@ -13,6 +14,11 @@
     <item
         android:id="@+id/search_fragment"
         android:title="검색"
+        android:icon="@android:drawable/arrow_up_float" />
+
+    <item
+        android:id="@+id/link_fragment"
+        android:title="메모"
         android:icon="@android:drawable/arrow_up_float" />
 
     <item

@@ -7,4 +7,12 @@
     <color name="selected_chip_background_color">@color/black</color>
     <color name="unselected_chip_background_color">@color/white</color>
     <color name="correct_input_layout">#008D23</color>
+
+    <color name="chip_background">#FFFFFF</color>
+    <color name="chip_stroke">#CCCCCC</color>
+    <color name="chip_text">#000000</color>
+    <color name="chip_selected_background">#9ABFA9</color>
+    <color name="chip_selected_text">#FFFFFF</color>
+    <color name="chip_unselected_background">#E0E0E0</color>
+    <color name="chip_unselected_text">#000000</color>
 </resources>

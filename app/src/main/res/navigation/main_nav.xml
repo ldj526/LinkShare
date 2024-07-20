@@ -3,8 +3,13 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main_nav"
-    app:startDestination="@id/link_fragment">
+    app:startDestination="@id/main_view_fragment">
 
+    <fragment
+        android:id="@+id/main_view_fragment"
+        android:name="com.example.linkshare.view.MainViewFragment"
+        android:label="fragment_main_view"
+        tools:layout="@layout/fragment_main_view" />
     <fragment
         android:id="@+id/link_fragment"
         android:name="com.example.linkshare.view.LinkFragment"

@@ -30,4 +30,22 @@
     <style name="RoundCornerModalStyle" parent="Widget.Design.BottomSheet.Modal">
         <item name="android:background">@drawable/white_round_top_border</item>
     </style>
+
+    <!-- Chip Styles -->
+    <style name="Widget.CustomChip" parent="Widget.MaterialComponents.Chip.Entry">
+        <item name="chipBackgroundColor">@color/chip_background</item>
+        <item name="chipStrokeColor">@color/chip_stroke</item>
+        <item name="chipStrokeWidth">1dp</item>
+        <item name="android:textColor">@color/chip_text</item>
+    </style>
+
+    <style name="Widget.CustomChip.Selected" parent="Widget.CustomChip">
+        <item name="chipBackgroundColor">@color/chip_selected_background</item>
+        <item name="android:textColor">@color/chip_selected_text</item>
+    </style>
+
+    <style name="Widget.CustomChip.Unselected" parent="Widget.CustomChip">
+        <item name="chipBackgroundColor">@color/chip_unselected_background</item>
+        <item name="android:textColor">@color/chip_unselected_text</item>
+    </style>
 </resources>

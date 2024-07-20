@@ -23,7 +23,7 @@ class CategorySelectActivity : AppCompatActivity() {
 
         currentSelectedCategories = intent.getStringArrayListExtra("currentSelectedCategories") ?: arrayListOf()
 
-        val categories = resources.getStringArray(R.array.category)
+        val categories = resources.getStringArray(R.array.category).filter { it != "전체보기" }
 
         categories.forEach { category ->
             val chip = Chip(this).apply {

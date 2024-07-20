@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".view.MainViewFragment">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:id="@+id/tv_top_views"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:text="TOP 조회수"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/chip_group_view_time_range"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            app:singleSelection="true"
+            app:selectionRequired="true"
+            app:checkedChip="@+id/chip_view_monthly"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_top_views">
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_view_monthly"
+                style="@style/Widget.CustomChip"
+                app:chipBackgroundColor="@color/chip_selected_background"
+                app:checkedIconVisible="false"
+                app:closeIconEnabled="false"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Monthly" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_view_weekly"
+                style="@style/Widget.CustomChip"
+                app:chipBackgroundColor="@color/chip_unselected_background"
+                app:checkedIconVisible="false"
+                app:closeIconEnabled="false"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Weekly" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_view_daily"
+                style="@style/Widget.CustomChip"
+                app:chipBackgroundColor="@color/chip_unselected_background"
+                app:checkedIconVisible="false"
+                app:closeIconEnabled="false"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Daily" />
+
+        </com.google.android.material.chip.ChipGroup>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_top_views"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/chip_group_view_time_range"/>
+
+        <ProgressBar
+            android:id="@+id/top_view_progressbar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="@id/rv_top_views"
+            app:layout_constraintEnd_toEndOf="@id/rv_top_views"
+            app:layout_constraintTop_toTopOf="@id/rv_top_views"
+            app:layout_constraintBottom_toBottomOf="@id/rv_top_views"
+            android:visibility="gone"
+            tools:visibility="visible" />
+
+        <TextView
+            android:id="@+id/tv_top_shares"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="40dp"
+            android:text="TOP 공유수"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/rv_top_views" />
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/chip_group_share_time_range"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            app:singleSelection="true"
+            app:selectionRequired="true"
+            app:checkedChip="@+id/chip_view_monthly"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tv_top_shares">
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_share_monthly"
+                style="@style/Widget.CustomChip"
+                app:chipBackgroundColor="@color/chip_selected_background"
+                app:checkedIconVisible="false"
+                app:closeIconEnabled="false"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Monthly" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_share_weekly"
+                style="@style/Widget.CustomChip"
+                app:chipBackgroundColor="@color/chip_unselected_background"
+                app:checkedIconVisible="false"
+                app:closeIconEnabled="false"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Weekly" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_share_daily"
+                style="@style/Widget.CustomChip"
+                app:chipBackgroundColor="@color/chip_unselected_background"
+                app:checkedIconVisible="false"
+                app:closeIconEnabled="false"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Daily" />
+
+        </com.google.android.material.chip.ChipGroup>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_top_shares"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/chip_group_share_time_range"/>
+
+        <ProgressBar
+            android:id="@+id/top_share_progressbar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="@id/rv_top_shares"
+            app:layout_constraintEnd_toEndOf="@id/rv_top_shares"
+            app:layout_constraintTop_toTopOf="@id/rv_top_shares"
+            app:layout_constraintBottom_toBottomOf="@id/rv_top_shares"
+            android:visibility="gone"
+            tools:visibility="visible" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</FrameLayout>

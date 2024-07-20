@@ -118,7 +118,7 @@ class WriteLinkFragment : Fragment() {
             result.onSuccess { isSuccess ->
                 if (isSuccess) {
                     Toast.makeText(requireContext(), "메모 저장 성공", Toast.LENGTH_SHORT).show()
-                    navigateToLinkFragment()
+                    requireActivity().finish()
                 } else {
                     Toast.makeText(requireContext(), "메모 저장 실패", Toast.LENGTH_SHORT).show()
                 }
@@ -157,14 +157,6 @@ class WriteLinkFragment : Fragment() {
             }
             selectedCategoryResultLauncher.launch(intent)
         }
-    }
-
-    // MainActivity로 돌아가서 LinkFragment로 navigate
-    private fun navigateToLinkFragment() {
-        val intent = Intent(context, MainActivity::class.java)
-        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-        intent.putExtra("navigateToLinkFragment", true)
-        startActivity(intent)
     }
 
     private fun updateCategoriesView(categories: List<String>?) {

@@ -96,7 +96,7 @@ class UpdateNicknameActivity : AppCompatActivity() {
         nicknameViewModel.updateNicknameResult.observe(this, Observer { result ->
             result.onSuccess {
                 Toast.makeText(this, "성공", Toast.LENGTH_SHORT).show()
-                navigateToSettingFragment()
+                finish()
             }.onFailure {
                 Toast.makeText(this, "저장하는데 실패했습니다.", Toast.LENGTH_SHORT).show()
             }
@@ -183,15 +183,6 @@ class UpdateNicknameActivity : AppCompatActivity() {
                 Toast.makeText(this, "이메일을 가져오는데 실패했습니다.", Toast.LENGTH_SHORT).show()
             }
         }
-    }
-
-    // MainActivity로 돌아가서 SettingFragment로 navigate
-    private fun navigateToSettingFragment() {
-        val intent = Intent(this, MainActivity::class.java)
-        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-        intent.putExtra("navigateToSettingFragment", true)
-        startActivity(intent)
-        finish()
     }
 
     // TextInputLayout 조건 맞을 때
