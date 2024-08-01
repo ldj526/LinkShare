@@ -6,6 +6,9 @@ import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
 import android.os.Bundle
+import android.text.Editable
+import android.text.InputType
+import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -55,6 +58,7 @@ class WriteLinkFragment : Fragment() {
         }
     }
     private lateinit var linkViewModel: LinkViewModel
+    private val prefix = "https://"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         arguments?.let {
@@ -96,6 +100,7 @@ class WriteLinkFragment : Fragment() {
         }
 
         updateCategoriesView(selectedCategories)
+        setupEditText()
 
         if (key.isNotEmpty()) {
             linkViewModel.getPostData(writeUid, key)
@@ -156,6 +161,35 @@ class WriteLinkFragment : Fragment() {
                 }
             }
             selectedCategoryResultLauncher.launch(intent)
+        }
+    }
+
+    // Link 입력 시 'https://' 자동으로 입력
+    private fun setupEditText() {
+        binding.etLink.apply {
+            setText(prefix)
+            setSelection(prefix.length)
+            inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_URI
+            addTextChangedListener(object : TextWatcher {
+                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+
+                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                    if (!s.toString().startsWith(prefix)) {
+                        setText(prefix)
+                        setSelection(prefix.length)
+                    }
+                }
+
+                override fun afterTextChanged(s: Editable?) {}
+            })
+            onFocusChangeListener = View.OnFocusChangeListener { v, hasFocus ->
+                if (hasFocus) {
+                    if (!text.toString().startsWith(prefix)) {
+                        setText(prefix)
+                    }
+                    setSelection(prefix.length)
+                }
+            }
         }
     }
 
