@@ -12,13 +12,25 @@ import android.webkit.WebViewClient
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.NestedScrollView
+import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.webkit.WebSettingsCompat
 import androidx.webkit.WebViewFeature
 import com.example.linkshare.databinding.ActivityWebViewBinding
+import com.example.linkshare.history.HistoryAdapter
+import com.example.linkshare.history.HistoryDao
+import com.example.linkshare.history.HistoryDatabase
+import com.example.linkshare.history.HistoryItem
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class WebViewActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityWebViewBinding
+    private lateinit var historyAdapter: HistoryAdapter
+    private lateinit var historyDao: HistoryDao
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -27,7 +39,13 @@ class WebViewActivity : AppCompatActivity() {
 
         setupWebView()
         setupAddressBar()
+        setupRecyclerView()
         setupScrollListener()
+
+        val database = HistoryDatabase.getDatabase(applicationContext)
+        historyDao = database.historyDao()
+
+        observeHistory()
 
         val url = intent.getStringExtra("url")
         if (url != null) {
@@ -40,6 +58,10 @@ class WebViewActivity : AppCompatActivity() {
 
         binding.btnCancel.setOnClickListener {
             exitEditMode()
+        }
+
+        binding.btnClearAll.setOnClickListener {
+            clearAllHistory()
         }
     }
 
@@ -59,6 +81,10 @@ class WebViewActivity : AppCompatActivity() {
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
                 binding.tvAddress.text = url
+
+                if (url != null) {
+                    addHistoryItem(url)
+                }
             }
 
             override fun onSafeBrowsingHit(
@@ -134,6 +160,75 @@ class WebViewActivity : AppCompatActivity() {
             } else {
                 binding.appBarLayout.setExpanded(true, true)
             }
+        })
+    }
+
+    // RecyclerView setup
+    private fun setupRecyclerView() {
+        historyAdapter = HistoryAdapter(mutableListOf()) { historyItem ->
+            deleteHistoryItem(historyItem)
+        }
+
+        binding.rvHistory.apply {
+            adapter = historyAdapter
+            layoutManager = LinearLayoutManager(this@WebViewActivity)
+        }
+    }
+
+    // 인터넷 방문 기록 추가
+    private fun addHistoryItem(url: String) {
+        // 페이지 제목 가져오기
+        val title = binding.webView.title ?: url
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            // 먼저 해당 URL이 이미 존재하는지 확인
+            val existingItem = historyDao.getHistoryItemByUrl(url)
+            if (existingItem != null) {
+                // 기존에 존재하는 경우, 해당 항목을 삭제
+                historyDao.delete(existingItem)
+            }
+
+            // 새로운 HistoryItem 생성 및 삽입
+            val historyItem = HistoryItem(title = title, url = url)
+            historyDao.insert(historyItem)
+
+            // 메인 스레드에서 UI 업데이트
+            withContext(Dispatchers.Main) {
+                observeHistory()
+            }
+        }
+    }
+
+    // 인터넷 방문 기록 선택하여 삭제
+    private fun deleteHistoryItem(historyItem: HistoryItem) {
+        val position = historyAdapter.historyItems.indexOf(historyItem) // 삭제할 항목의 위치를 찾습니다.
+        if (position != -1) {
+            lifecycleScope.launch(Dispatchers.IO) {
+                historyDao.deleteByUrl(historyItem.url) // 데이터베이스에서 항목 삭제
+
+                // UI 업데이트는 메인 스레드에서 이루어져야 하므로 UI 스레드에서 실행합니다.
+                withContext(Dispatchers.Main) {
+                    historyAdapter.removeItem(position) // 어댑터에서 항목 삭제
+                }
+            }
+        }
+    }
+
+    // 인터넷 방문 기록 모두 삭제
+    private fun clearAllHistory() {
+        lifecycleScope.launch(Dispatchers.IO) {
+            historyDao.deleteAll()
+
+            // 모든 항목을 어댑터에서 제거함
+            withContext(Dispatchers.Main) {
+                historyAdapter.updateHistoryItems(emptyList())
+            }
+        }
+    }
+
+    private fun observeHistory() {
+        historyDao.getAllHistoryItems().observe(this, Observer { historyItems ->
+            historyAdapter.updateHistoryItems(historyItems)
         })
     }
 
